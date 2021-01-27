@@ -1,10 +1,8 @@
 import express from 'express';
+import { SERVER_APP_PORT } from './environment';
 
 // Create a new express app instance
 const app: express.Application = express();
-
-// Environment variables
-const { SERVER_APP_PORT } = process.env;
 
 app.get('/', (req, res) => res.send('Hello World!'));
 app.listen(SERVER_APP_PORT, () =>

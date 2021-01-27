@@ -1,6 +1,7 @@
 import { Client } from 'discord.js';
 
-import { initialiseDatabase } from './db';
+import { DISCORD_APP_BOT_TOKEN } from './environment';
+// import { initialiseDatabase } from './db';
 import {
   playYoutubeURLRequests,
   execute,
@@ -30,10 +31,10 @@ const djBotus = new Client();
 djBotus.on('ready', () => {
   const userTag = djBotus?.user?.tag ?? '-';
   console.log(`Alright pal, I'm up. My handle is ${userTag}.`);
-  initialiseDatabase((message) => {
-    console.log(message);
-    console.log(`Alright, I'm all set up for my database.`);
-  });
+  // initialiseDatabase((message) => {
+  //   console.log(message);
+  //   console.log(`Alright, I'm all set up for my database.`);
+  // });
 });
 
 djBotus.once('reconnecting', () => {
@@ -96,4 +97,4 @@ djBotus.on('message', async (message) => {
   }
 });
 
-djBotus.login(process.env.DISCORD_APP_BOT_TOKEN);
+djBotus.login(DISCORD_APP_BOT_TOKEN);

@@ -1,5 +1,3 @@
-import dotenv from 'dotenv';
-dotenv.config();
-
+import './environment';
 import './express';
 import './bot';

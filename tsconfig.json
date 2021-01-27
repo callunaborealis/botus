@@ -10,9 +10,6 @@
     "moduleResolution": "node",
     "outDir": "dist",
     "noImplicitAny": true,
-    "paths": {
-      "@src/*": ["src/*"]
-    },
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,
