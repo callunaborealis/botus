@@ -25,7 +25,6 @@ export const play = (guild: Message['guild'], song: SongShape) => {
   }
   serverQueue.currentSong = serverQueue.songs[0];
   const dispatcher = serverQueue.connection
-    // @ts-ignore
     .play(ytdl(song.url))
     .on('finish', () => {
       const prevSong = serverQueue.songs.shift();
@@ -156,7 +155,6 @@ export const execute = async (message: Message) => {
 
     try {
       const connection = await voiceChannel.join();
-      // @ts-ignore
       queueShape.connection = connection;
       play(message.guild, queueShape.songs[0]);
     } catch (err) {
@@ -219,7 +217,6 @@ export const skip = (message: Message) => {
   if (!serverQueue?.connection) {
     return message.channel.send('There is no song that I could skip!');
   }
-  // @ts-ignore
   serverQueue.connection.dispatcher.end();
 };
 
@@ -241,6 +238,5 @@ export const stop = (message: Message) => {
   if (!serverQueue?.connection) {
     return;
   }
-  // @ts-ignore
   serverQueue.connection.dispatcher.end();
 };

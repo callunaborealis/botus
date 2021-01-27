@@ -10,7 +10,7 @@ export interface SongShape {
 export interface QueueShape {
   textChannel: Message['channel'];
   voiceChannel: GuildMember['voice']['channel'];
-  connection: GuildMember['voice']['channel'] | null;
+  connection: GuildMember['voice']['connection'] | null;
   songs: SongShape[];
   volume: number;
   currentSong: SongShape | null;
