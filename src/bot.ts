@@ -96,4 +96,4 @@ djBotus.on('message', async (message) => {
   }
 });
 
-djBotus.login(process.env.APP_BOT_TOKEN);
+djBotus.login(process.env.DISCORD_APP_BOT_TOKEN);

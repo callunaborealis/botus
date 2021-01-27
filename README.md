@@ -4,7 +4,7 @@ Discord Bot for Music
 
 ## Get Botus to work
 
-- Add `DISCORD_APP_BOT_TOKEN` in a new file `.env` with your DJ Botus implementation.
+- Add `DISCORD_APP_BOT_TOKEN` along with `SERVER_APP_PORT` in a new file `.env` with your DJ Botus implementation.
 - Next steps
   - `npm install` to install local packages
   - `npm start` to run the server app for development (watches for changes)
