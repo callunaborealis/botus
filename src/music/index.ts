@@ -440,13 +440,56 @@ export const skip = (message: Message) => {
     );
   }
   if (!playlist?.connection) {
-    return message.channel.send('There is no song that I could skip!');
+    return;
   }
   playlist.connection.dispatcher.end();
 };
 
 export const removeSong = (message: Message) => {
   const playlist = getPlaylist(message, defaultPlaylistName);
+  if (!playlist) {
+    return message.channel.send(
+      "_looks at the empty playlist queue blankly._ There's nothing to remove.",
+    );
+  }
+  if (!playlist?.connection) {
+    return;
+  }
+  const songNrCandidate = message.content.split(/;rm /)[1];
+  const parsedSongNrCandidate = parseInt(songNrCandidate, 10);
+  if (!isFinite(parsedSongNrCandidate)) {
+    return message.channel.send(
+      `I don't know which song you want me to remove...`,
+    );
+  }
+  const songs = [...playlist.songs];
+  const indexOfSongToBeRemoved = songs.findIndex(
+    (_, i) => i === parsedSongNrCandidate - 1,
+  );
+  if (indexOfSongToBeRemoved === -1) {
+    return message.channel.send(`That song doesn't exist on the playlist.`);
+  }
+  const removedSong = songs[indexOfSongToBeRemoved];
+  const updatedSongs = [...songs];
+  updatedSongs.splice(parsedSongNrCandidate - 1, 1);
+  const [previousSong, currentSong, nextSong] = dryRunTraversePlaylistByStep(
+    { ...playlist, songs: updatedSongs },
+    1,
+  );
+  const updatedPlaylist = {
+    ...playlist,
+    previousSong,
+    currentSong,
+    nextSong,
+    songs: updatedSongs,
+  };
+  setPlaylist(message, defaultPlaylistName, updatedPlaylist);
+  message.channel.send(
+    `_removes_ **${removedSong.title}** _from the_ **${defaultPlaylistName}** _playlist and never looks back._`,
+  );
+  if (updatedSongs.length === 0 || currentSong.id === removedSong.id) {
+    playlist.connection.dispatcher.end();
+  }
 };
 
 export const loop = (message: Message, loopType?: LoopType) => {

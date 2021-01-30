@@ -3,7 +3,15 @@ import { Client } from 'discord.js';
 import { DISCORD_APP_BOT_TOKEN } from './environment';
 // import { initialiseDatabase } from './db';
 import logger from './logger';
-import { execute, skip, clear, loop, list, setSongVolume } from './music';
+import {
+  execute,
+  skip,
+  clear,
+  loop,
+  list,
+  setSongVolume,
+  removeSong,
+} from './music';
 import {
   playYoutubeURLRequests,
   clearRequests,
@@ -79,6 +87,9 @@ djBotus.on('message', async (message) => {
   }
   if (message.content.match(/^;v/gim)) {
     return setSongVolume(message);
+  }
+  if (message.content.match(/^;rm [\d]+/gim)) {
+    return removeSong(message);
   }
 
   // Music

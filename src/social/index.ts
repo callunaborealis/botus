@@ -41,6 +41,7 @@ export const sendHelpDoc = (message: Message) => {
       '`;p {youtube link} at vol 5`   -- Plays / Adds a track to the playlist with volume set',
       '`botus play/add {youtube link}`    -- Plays / Adds a track to the playlist',
       '`botus play/add {youtube link} at volume 4`    -- Plays / Adds a track to the playlist with volume set',
+      '`;rm {track number}`   -- Removes a track by number. Removing the current track skips or ends the playlist.',
       '`;q`   -- Show what is being played',
       '`;l`   -- Loop (cycle)',
       '`;lq` | `;loop queue` | `;lp`    -- Loop (playlist)',
