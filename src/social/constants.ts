@@ -27,14 +27,17 @@ export const greetingRequests = [
   /^wa[s]{1,100}up botus/gim,
   /^botus wh[au]t[ ]?up/gim,
   /^wh[au]t[ ]?up botus/gim,
+  // Debug
+  /;hi/i,
 ];
 export const greetingResponses = [
   () => '_barely nods._',
   () => 'Mm-hm.',
   (username: string) => `Yep, hello to you too, ${username}.`,
   () => '_gives a lazy salute._',
-  (username: string) => `_nods_ Nice to see you too, ${username}`,
-  (username: string) => `Hello to you too, ${username}`,
+  (username: string) => `_nods_ Nice to see you too, ${username}.`,
+  (username: string) => `Hello to you too, ${username}.`,
+  () => `:wave:`,
 ];
 
 export const howsItGoingRequests = [
@@ -51,21 +54,26 @@ export const howsItGoingRequests = [
   /^botus[,.!?]? how is it goin[g]?/gim,
   /^botus[,.!?]? wassup/gim,
   /^[was]?sup botus/gim,
+  // Debug
+  /;howru/i,
 ];
 
 export const howsItGoingResponses = [
   () => "_shrugs._ It's alright, I guess.",
-  (username: string) => `I'm good, ${username}.`,
+  (username: string) => `It's going ok, ${username}.`,
   () => 'Could be better I suppose. But alright.',
   () => '_gives a thumbs up._',
+  () => 'Another day, another dollar, I suppose.',
 ];
 
 export const gratitudeRequests = [
-  /^botus[,.!]? thank you/gim,
-  /^botus[,.!]? thanks/gim,
-  /^thank you[,.!]? botus/gim,
-  /^thanks[,.!]? botus/gim,
-  /^thanks for [^.,!?-]+,? botus/i,
+  /^[\w\d\s]{0,10}botus[,.!]? thank you/gim,
+  /^[\w\d\s]{0,10}botus[,.!]? thanks/gim,
+  /^[\w\d\s]{0,10}thank you[,.!]? botus/gim,
+  /^[\w\d\s]{0,10}thanks[[^,!?-]|[\w\d\s]]{0,20}? botus/gim,
+  /^[\w\d\s]{0,10}thanks for[[^,!?-]|[\w\d\s]]{0,20},? botus/i,
+  // Debug
+  /;thanks/i,
 ];
 export const gratitudeResponses = [
   (username: string) =>
@@ -81,16 +89,17 @@ export const gratitudeResponses = [
 // Bot is mentioned but doesn't know how to respond. Botus will behave awkwardly.
 export const defaultResponses = [
   () => '_shrugs._',
+  () => ':confused: What...?',
   () => '_flips his hair and looks away, unconcerned._',
   (username: string) => `_stares at ${username} blankly._`,
   (username: string) => `_gives a half-hearted wave to ${username}._`,
   (username: string) =>
     `_turns to look at ${username} and then goes back to sleep._`,
   (username: string) => `_looks at ${username} and raises an eyebrow._`,
-  () => `_looks behind him and raises his hands in exasperation._`,
+  () => `_squints and just shakes his head._`,
   () => 'Uhhh... no idea what ya want there.',
   (username: string) =>
-    `_lights a cigarette, ignoring what ${username} have said._`,
+    `_lights a cigarette, ignoring what ${username} had said._`,
   (username: string) =>
-    `gives a polite laugh then immediately walks away, completely forgetting what ${username} has said.`,
+    `_gives a polite laugh then immediately walks away, completely forgetting what ${username} has said._`,
 ];

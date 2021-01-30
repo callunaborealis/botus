@@ -2,18 +2,16 @@ import { Client } from 'discord.js';
 
 import { DISCORD_APP_BOT_TOKEN } from './environment';
 // import { initialiseDatabase } from './db';
+import logger from './logger';
+import { execute, skip, clear, loop, list, setSongVolume } from './music';
 import {
   playYoutubeURLRequests,
-  execute,
-  skip,
-  stop,
-  list,
+  clearRequests,
   listRequests,
   skipRequests,
-  stopRequests,
-} from './music';
+} from './music/constants';
 
-import { respond, interpretRequest } from './social';
+import { respond, interpretRequest, sendHelpDoc } from './social';
 import {
   defaultResponses,
   gratitudeRequests,
@@ -46,10 +44,41 @@ djBotus.once('disconnect', () => {
 });
 
 djBotus.on('message', async (message) => {
-  const userTag = djBotus?.user?.tag ?? '-';
+  const userId = djBotus?.user?.id ?? '-';
   if (message.author.bot) {
     // Don't talk to itself or other bots
     return false;
+  }
+
+  if (message.content.match(/^;/) || message.mentions.has(userId)) {
+    logger.log({
+      level: 'info',
+      message: `${message.author.tag} | ${message.author.id} | ${message.content}`,
+    });
+  }
+
+  if (message.content.match(/^(;help[ ]?help)|(botus help[ ]?help)/gim)) {
+    return message.channel.send('No help for you!');
+  }
+  if (message.content.match(/^(;h)|(;help)|(botus help)/gim)) {
+    return sendHelpDoc(message);
+  }
+
+  // Looping
+  if (message.content.match(/^;(loop track|ls|lt|loop song)/gim)) {
+    return loop(message, 'song');
+  }
+  if (message.content.match(/^;lq|loop queue|lp/gim)) {
+    return loop(message, 'playlist');
+  }
+  if (message.content.match(/^;loop stop/gim)) {
+    return loop(message, 'off');
+  }
+  if (message.content.match(/^;l/gim)) {
+    return loop(message);
+  }
+  if (message.content.match(/^;v/gim)) {
+    return setSongVolume(message);
   }
 
   // Music
@@ -62,8 +91,8 @@ djBotus.on('message', async (message) => {
   if (interpretRequest(message, skipRequests)) {
     return skip(message);
   }
-  if (interpretRequest(message, stopRequests)) {
-    return stop(message);
+  if (interpretRequest(message, clearRequests)) {
+    return clear(message);
   }
 
   // Social
@@ -81,11 +110,10 @@ djBotus.on('message', async (message) => {
   }
 
   const isHailed = (() => {
-    if (message.mentions.has(userTag)) {
+    if (message.mentions.has(userId)) {
       // Respond to mentions of it
       return true;
     }
-
     return interpretRequest(message, hailRequests);
   })();
   if (isHailed) {

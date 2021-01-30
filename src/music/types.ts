@@ -7,12 +7,16 @@ export interface SongShape {
   volume: number;
 }
 
-export interface QueueShape {
+export type LoopType = 'song' | 'playlist' | 'off';
+
+export interface PlaylistShape {
   textChannel: Message['channel'];
   voiceChannel: GuildMember['voice']['channel'];
-  connection: GuildMember['voice']['connection'] | null;
+  connection: GuildMember['voice']['connection'];
   songs: SongShape[];
   volume: number;
-  currentSong: SongShape | null;
-  previousSong: SongShape | null;
+  currentSong: SongShape;
+  previousSong: SongShape;
+  nextSong: SongShape;
+  loop: LoopType;
 }

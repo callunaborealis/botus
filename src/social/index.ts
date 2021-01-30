@@ -29,3 +29,26 @@ export const respond = (
 export const reply = (message: Message, reply: string) => {
   return message.reply(reply);
 };
+
+export const sendHelpDoc = (message: Message) => {
+  return message.channel.send(
+    [
+      '',
+      '**Music**',
+      'I\'m like Groovy but with a ";" instead of a "-" prefix.',
+      '',
+      '`;p {youtube link}`   -- Plays / Adds a track to the playlist',
+      '`;p {youtube link} at vol 5`   -- Plays / Adds a track to the playlist with volume set',
+      '`botus play/add {youtube link}`    -- Plays / Adds a track to the playlist',
+      '`botus play/add {youtube link} at volume 4`    -- Plays / Adds a track to the playlist with volume set',
+      '`;q`   -- Show what is being played',
+      '`;l`   -- Loop (cycle)',
+      '`;lq` | `;loop queue` | `;lp`    -- Loop (playlist)',
+      '`;loop track` | `;ls` | `;lt` | `;loop song`   -- Loop (song)',
+      '`;loop stop`   -- Loop (Off)',
+      '`;v {volume}`    -- Change volume of current track to volume given',
+      '`;clear`   -- Stop and clears the playlist',
+      '`;h` | `;help` | `botus help`    -- Displays this help message',
+    ].join('\n'),
+  );
+};

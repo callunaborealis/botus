@@ -1,83 +1,273 @@
 import { Message } from 'discord.js';
 import isArray from 'lodash/isArray';
 import isFinite from 'lodash/isFinite';
+import isNull from 'lodash/isNull';
 import isString from 'lodash/isString';
 import { v4 as uuidv4 } from 'uuid';
 import ytdl from 'ytdl-core';
 
-import { QueueShape, SongShape } from './types';
+import { multiServerSession } from '../constants';
+import {
+  maxAllowableVolume,
+  songScaffold,
+  loopOrder,
+  loopOrderedMessages,
+  volumeBeingSetPattern,
+  youtubeLinkPattern,
+} from './constants';
+import { LoopType, PlaylistShape, SongShape } from './types';
+import { getNextLoopedIndex } from '../utils';
 
-const interserverQueue: Map<string, QueueShape> = new Map();
+const defaultPlaylistName = 'default';
 
-const maxAllowableVolume = 10; // Any more and we might all be deaf
-
-export const play = (guild: Message['guild'], song: SongShape) => {
-  const serverQueue = guild?.id ? interserverQueue.get(guild?.id) : null;
-  if (!song || !serverQueue || !serverQueue.connection) {
-    serverQueue?.textChannel.send(
-      '_packs up the DJ kit and lights a cigarette_ Alright, I gonna take five.',
-    );
-    serverQueue?.voiceChannel?.leave();
-    if (guild?.id) {
-      interserverQueue.delete(guild?.id);
+const createServerSession = (message: Message) => {
+  const serverId = message.guild?.id;
+  if (!serverId) {
+    return null;
+  }
+  const serverSession = multiServerSession.get(serverId);
+  if (!serverSession) {
+    const voiceChannel = message.member?.voice.channel;
+    if (!voiceChannel) {
+      return null;
     }
+    const newPlaylist: PlaylistShape = {
+      textChannel: message.channel,
+      voiceChannel: voiceChannel,
+      connection: null,
+      songs: [],
+      volume: 0,
+      currentSong: songScaffold,
+      previousSong: songScaffold,
+      nextSong: songScaffold,
+      loop: 'off',
+    };
+    const newServerSession = {
+      playlists: {
+        [defaultPlaylistName]: newPlaylist,
+      },
+    };
+    multiServerSession.set(serverId, newServerSession);
+    return newServerSession;
+  }
+  return serverSession;
+};
+
+const createPlaylist = (message: Message, name: string) => {
+  const serverId = message.guild?.id;
+  if (!serverId) {
+    return null;
+  }
+  const voiceChannel = message.member?.voice.channel;
+  if (!voiceChannel) {
+    message.channel.send(
+      `I can't create a new playlist named "${name}" as no one is in voice chat.`,
+    );
+    return null;
+  }
+  const newPlaylist: PlaylistShape = {
+    textChannel: message.channel,
+    voiceChannel: voiceChannel,
+    connection: null,
+    songs: [],
+    volume: 0,
+    currentSong: songScaffold,
+    previousSong: songScaffold,
+    nextSong: songScaffold,
+    loop: 'off',
+  };
+  if (!multiServerSession.has(serverId)) {
+    // This will always run until multi-playlists are supported
+    const serverSession = createServerSession(message);
+    const playlist = serverSession?.playlists[name] || null;
+    return playlist;
+  }
+  const serverSession = multiServerSession.get(serverId);
+  if (!serverSession) {
+    // Redundant for typing consistency
+    return null;
+  }
+  const playlist = serverSession?.playlists[name];
+  if (playlist) {
+    message.channel.send(
+      `I can't create a new playlist named "${name}" as one already exists.`,
+    );
+    return null;
+  }
+  multiServerSession.set(serverId, {
+    ...serverSession,
+    playlists: {
+      ...serverSession.playlists,
+      [defaultPlaylistName]: newPlaylist,
+    },
+  });
+  return newPlaylist;
+};
+
+const getPlaylist = (message: Message, name: string) => {
+  const serverId = message.guild?.id;
+  if (!serverId) {
+    return null;
+  }
+  if (!multiServerSession.has(serverId)) {
+    return null;
+  }
+  const serverSession = multiServerSession.get(serverId);
+  const playlist = serverSession?.playlists[name];
+  if (playlist) {
+    return playlist;
+  }
+  return null;
+};
+
+const deletePlaylist = (message: Message, name: string) => {
+  const serverId = message.guild?.id;
+  if (!serverId) {
+    return message.channel.send('_struggles to find the playlist to delete._');
+  }
+  const serverSession = multiServerSession.get(serverId);
+  if (!serverSession) {
     return;
   }
-  serverQueue.currentSong = serverQueue.songs[0];
-  const dispatcher = serverQueue.connection
-    .play(ytdl(song.url))
-    .on('finish', () => {
-      const prevSong = serverQueue.songs.shift();
-      // @ts-ignore
-      serverQueue.previousSong = prevSong;
-      play(guild, serverQueue.songs[0]);
-    })
-    .on('error', (error: any) => console.error(error));
-  dispatcher.setVolumeLogarithmic(serverQueue.songs[0].volume / 5);
-  serverQueue.textChannel.send(
-    `_loads the next record labelled_ **${song.title}** _and turns the volume to_ **${serverQueue.songs[0].volume}**.`,
-  );
+  const playlists = serverSession.playlists;
+  delete playlists[name];
+  multiServerSession.set(serverId, {
+    ...serverSession,
+    playlists,
+  });
+};
+
+export const setPlaylist = (
+  message: Message,
+  name: string,
+  playlist: PlaylistShape,
+) => {
+  const serverId = message.guild?.id;
+  if (!serverId) {
+    return message.channel.send('_struggles to find the playlist to update._');
+  }
+  const serverSession = multiServerSession.get(serverId);
+  if (!serverSession) {
+    return;
+  }
+  multiServerSession.set(serverId, {
+    ...serverSession,
+    playlists: {
+      ...serverSession.playlists,
+      [name]: playlist,
+    },
+  });
 };
 
 /**
- * Ultimate YouTube link detector. See <https://regexr.com/3akf5>
+ *
+ * @param playlist
+ * @param stepsToNextSong Location of next song relative to current song. Must never be 0.
+ * @returns {[SongShape, SongShape, SongShape]} Current song, next song and next next song if steps down or
+ * up the playlist was made. They should always be a song inside the playlist. Previous song is
+ * the song if back button was pressed.
  */
-const youtubeLinkPattern = new RegExp(
-  /(?:https?:\/\/)?(?:(?:(?:www\.?)?youtube\.com(?:\/(?:(?:watch\?\S*?(v=[^&\s]+)\S*)|(?:v(\/\S*))|(channel\/\S+)|(?:user\/(\S+))|(?:results\?(search_query=\S+))))?)|(?:youtu\.be(\/\S*)?))/gim,
-);
+const dryRunTraversePlaylistByStep = (
+  playlist: PlaylistShape,
+  stepsToNextSong: number,
+): [SongShape, SongShape, SongShape, SongShape] => {
+  if (playlist.loop === 'song') {
+    return [
+      playlist.currentSong,
+      playlist.currentSong,
+      playlist.currentSong,
+      playlist.currentSong,
+    ];
+  }
 
-const volumeBeingSetPattern = new RegExp(/vol(ume)?( as| at| to)? (\d)+/i);
+  const indexOfCurrentSong = playlist.songs.findIndex(
+    (s) => s.id === playlist.currentSong.id,
+  );
 
-export const playYoutubeURLRequests = [
-  // hey / hi / sup / hello / yo / oi / oy (optional) botus play [youtube link] (natural language processing)
-  /^([h]?ello |[h]?ey |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] )?botus[,?!]? play (?:https?:\/\/)?(?:(?:(?:www\.?)?youtube\.com(?:\/(?:(?:watch\?\S*?(v=[^&\s]+)\S*)|(?:v(\/\S*))|(channel\/\S+)|(?:user\/(\S+))|(?:results\?(search_query=\S+))))?)|(?:youtu\.be(\/\S*)?))/gim,
-  // --p [youtube link] (shortcut)
-  /^--(p|play) (?:https?:\/\/)?(?:(?:(?:www\.?)?youtube\.com(?:\/(?:(?:watch\?\S*?(v=[^&\s]+)\S*)|(?:v(\/\S*))|(channel\/\S+)|(?:user\/(\S+))|(?:results\?(search_query=\S+))))?)|(?:youtu\.be(\/\S*)?))/gim,
-];
+  if (playlist.loop === 'playlist') {
+    const previousSongIndex = getNextLoopedIndex(
+      playlist.songs,
+      (_, i) => i === indexOfCurrentSong,
+      -stepsToNextSong,
+    );
+    const nextSongIndex = getNextLoopedIndex(
+      playlist.songs,
+      (_, i) => i === indexOfCurrentSong,
+      stepsToNextSong,
+    );
+    const nextNextSongIndex = getNextLoopedIndex(
+      playlist.songs,
+      (_, i) => i === indexOfCurrentSong,
+      stepsToNextSong > 0 ? stepsToNextSong * 2 : -stepsToNextSong * 2,
+    );
+    return [
+      playlist.songs[previousSongIndex],
+      playlist.currentSong,
+      playlist.songs[nextSongIndex],
+      playlist.songs[nextNextSongIndex],
+    ];
+  }
+  const prevSong =
+    playlist.songs[indexOfCurrentSong - stepsToNextSong] || playlist.songs[0];
+  const nextSong =
+    playlist.songs[indexOfCurrentSong + stepsToNextSong] || songScaffold;
+  const nextNextSong =
+    playlist.songs[indexOfCurrentSong + stepsToNextSong * 2] || songScaffold;
 
-export const listRequests = [
-  /^([h]?ello |[h]?ey |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] )?botus[,?!]? list/gim,
-  // Shortcut
-  /^--(q|queue|playlist|list|ls)/gim,
-];
+  return [prevSong, playlist.currentSong, nextSong, nextNextSong];
+};
 
-export const skipRequests = [
-  /^([h]?ello |[h]?ey |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] )?botus[,?!]? skip/gim,
-  // Shortcut
-  /^--(next|skip)/gim,
-];
+export const play = (message: Message, song: SongShape) => {
+  if (!message.guild?.id) {
+    return;
+  }
+  const playlist = getPlaylist(message, defaultPlaylistName);
+  if (!playlist) {
+    return;
+  }
+  if (!playlist || !playlist.connection) {
+    playlist.textChannel.send('_flips his glorious hair and leaves silently._');
+    playlist.voiceChannel?.leave();
+    deletePlaylist(message, defaultPlaylistName);
+    return;
+  }
+  if (song.id === songScaffold.id) {
+    playlist.textChannel.send(
+      "_lays back in his chair and lights a fresh cigarette._  Party's over. See ya all.",
+    );
+    playlist.voiceChannel?.leave();
+    deletePlaylist(message, defaultPlaylistName);
+    return;
+  }
 
-export const stopRequests = [
-  /^([h]?ello |[h]?ey |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] )?botus[,?!]? (stop|go away|no more music|halt|enough music|you can go|that'?s enough)/gim,
-  // Shortcut
-  /^--stop/gim,
-];
+  const dispatcher = playlist.connection
+    .play(ytdl(song.url))
+    .on('start', () => {
+      dispatcher.setVolumeLogarithmic(song.volume / 5);
+      playlist.textChannel.send(
+        `_loads the next record labelled_ **${song.title}** ` +
+          `_and turns the volume to_ **${song.volume}**.`,
+      );
+    })
+    .on('finish', () => {
+      const [
+        _,
+        currentSong,
+        nextSong,
+        nextNextSong,
+      ] = dryRunTraversePlaylistByStep(playlist, 1);
+      playlist.previousSong = currentSong;
+      playlist.currentSong = nextSong;
+      playlist.nextSong = nextNextSong;
+      play(message, nextSong);
+    })
+    .on('error', (error: any) => console.error(error));
+};
 
 export const execute = async (message: Message) => {
   if (!message.guild?.id) {
     return;
   }
-  const serverQueue = interserverQueue.get(message.guild?.id);
 
   const voiceChannel = message.member?.voice.channel;
   if (!voiceChannel) {
@@ -110,7 +300,7 @@ export const execute = async (message: Message) => {
       const volumeOrder = volumeMatches[0];
       if (isString(volumeOrder)) {
         return volumeOrder.split(' ').reduce((prevOrDefault, v) => {
-          const candidate = parseInt(v, 10);
+          const candidate = parseFloat(v);
           if (isFinite(candidate) && candidate <= maxAllowableVolume) {
             return candidate;
           }
@@ -137,35 +327,38 @@ export const execute = async (message: Message) => {
     url: songInfo.videoDetails.video_url,
     volume,
   };
-
-  if (!serverQueue) {
-    const queueShape: QueueShape = {
-      textChannel: message.channel,
-      voiceChannel: voiceChannel,
-      connection: null,
-      songs: [],
-      volume,
-      currentSong: song,
-      previousSong: null,
-    };
-
-    interserverQueue.set(message.guild?.id, queueShape);
-
-    queueShape.songs.push(song);
-
+  const playlist = getPlaylist(message, defaultPlaylistName);
+  if (!playlist) {
+    const newPlaylist = createPlaylist(message, defaultPlaylistName);
     try {
+      if (isNull(newPlaylist)) {
+        throw new Error('No playlist found.');
+      }
       const connection = await voiceChannel.join();
-      queueShape.connection = connection;
-      play(message.guild, queueShape.songs[0]);
+      setPlaylist(message, defaultPlaylistName, {
+        ...newPlaylist,
+        connection,
+        currentSong: song,
+        songs: [song],
+      });
+      play(message, song);
     } catch (err) {
       console.log(err);
-      interserverQueue.delete(message.guild.id);
+      deletePlaylist(message, defaultPlaylistName);
       return message.channel.send(err);
     }
   } else {
-    serverQueue.songs.push(song);
+    playlist.songs.push(song);
+    const [previousSong, currentSong, nextSong] = dryRunTraversePlaylistByStep(
+      playlist,
+      1,
+    );
+    playlist.previousSong = previousSong;
+    playlist.currentSong = currentSong;
+    playlist.nextSong = nextSong;
+    setPlaylist(message, defaultPlaylistName, playlist);
     return message.channel.send(
-      `_nods and adds_ **${song.title}** with volume at ${song.volume}_to the list._`,
+      `_nods and adds_ **${song.title}** with volume at **${song.volume}** _to the list._`,
     );
   }
 };
@@ -174,69 +367,169 @@ export const execute = async (message: Message) => {
  * Shows the playlist
  */
 export const list = (message: Message) => {
-  if (!message?.guild?.id) {
-    return;
+  const playlist = getPlaylist(message, defaultPlaylistName);
+  if (!playlist?.currentSong) {
+    return message.channel.send("Nothing's playing at the moment.");
   }
-  const serverQueue = interserverQueue.get(message.guild.id);
-  if (!serverQueue?.currentSong) {
-    return message.channel.send("Nothing's playing at the moment");
-  }
-  const currentSongId = serverQueue.currentSong.id;
-  const listOfSongsInAMessage = serverQueue.songs.reduce(
+  const currentSongId = playlist.currentSong.id;
+  const nextSongId = playlist.nextSong.id;
+  const loopType = playlist.loop;
+  const loopMessages: Record<LoopType, string> = {
+    playlist: 'Now looping',
+    off: 'Now playing',
+    song: `Just playing one song from`,
+  };
+  const listOfSongsInAMessage = playlist.songs.reduce(
     (
       eventualSongList: any,
-      currentSongDetails: { id: any; title: any; url: any; volume: any },
+      currentSongDetails,
       index: number,
+      songsList: SongShape[],
     ) => {
-      const nowPlayingSuffix = (() => {
+      const nowPlayingTag = (() => {
+        if (
+          currentSongDetails.id === currentSongId &&
+          currentSongDetails.id === nextSongId &&
+          playlist.loop !== 'off'
+        ) {
+          return '**:arrow_forward: :repeat_one: `Looping this song`** |';
+        }
         if (currentSongDetails.id === currentSongId) {
-          return ' -- **Now Playing**';
+          if (index === songsList.length - 1 && loopType === 'off') {
+            return '**:arrow_forward: :eject: `Now playing (last song)`** |';
+          }
+          return '**:arrow_forward: `Now playing`**';
+        }
+        if (currentSongDetails.id === nextSongId) {
+          if (index === songsList.length - 1 && loopType === 'off') {
+            return '**:track_next: :eject: `Up next (last song)`** |';
+          }
+          return '**:track_next: `Up next`** |';
         }
         return '';
       })();
-      return `${eventualSongList}\n${index + 1}: ${
-        currentSongDetails.title
-      }${nowPlayingSuffix}\n<${currentSongDetails.url}>\nVolume: ${
-        currentSongDetails.volume
-      }\n`;
+      const volumeTag = (() => {
+        if (currentSongDetails.volume > maxAllowableVolume * 0.75) {
+          return `:loud_sound: **${currentSongDetails.volume}**`;
+        }
+        if (currentSongDetails.volume > maxAllowableVolume * 0.5) {
+          return `:sound: **${currentSongDetails.volume}**`;
+        }
+        if (currentSongDetails.volume > maxAllowableVolume * 0.25) {
+          return `:speaker: **${currentSongDetails.volume}**`;
+        }
+        return `:mute: **${currentSongDetails.volume}**`;
+      })();
+      const lines = [
+        `${index + 1}. ${nowPlayingTag} ${volumeTag}`,
+        `${currentSongDetails.title}`,
+        `<${currentSongDetails.url}>`,
+      ];
+      return `${eventualSongList}\n${lines.join('\n')}\n`;
     },
-    'Current playlist (default):\n',
+    `${loopMessages[loopType]} the default playlist:\n`,
   );
   return message.channel.send(listOfSongsInAMessage);
 };
 
 export const skip = (message: Message) => {
-  if (!message?.guild?.id) {
-    return;
-  }
-  const serverQueue = interserverQueue.get(message.guild.id);
-  if (!message?.member?.voice.channel)
+  const playlist = getPlaylist(message, defaultPlaylistName);
+  if (!message?.member?.voice.channel) {
     return message.channel.send(
       'You have to be in a voice channel to stop the music!',
     );
-  if (!serverQueue?.connection) {
+  }
+  if (!playlist?.connection) {
     return message.channel.send('There is no song that I could skip!');
   }
-  serverQueue.connection.dispatcher.end();
+  playlist.connection.dispatcher.end();
 };
 
-export const stop = (message: Message) => {
-  if (!message?.guild?.id) {
-    return;
-  }
-  const serverQueue = interserverQueue.get(message.guild.id);
-  if (!message?.member?.voice.channel) {
+export const removeSong = (message: Message) => {
+  const playlist = getPlaylist(message, defaultPlaylistName);
+};
+
+export const loop = (message: Message, loopType?: LoopType) => {
+  const playlist = getPlaylist(message, defaultPlaylistName);
+  if (!playlist?.loop) {
     return message.channel.send(
-      "I can't stop the music if there isn't a voice channel.",
+      "I can't set the loop as there is no playlist or loop setting to begin with.",
     );
   }
-  if (!serverQueue) {
+
+  const nextLoopSettingIndex = (() => {
+    if (loopType) {
+      return getNextLoopedIndex(loopOrder, (l) => l === loopType, 0);
+    }
+    const prevLoop = playlist?.loop;
+    return getNextLoopedIndex(loopOrder, (l) => l === prevLoop, 1);
+  })();
+
+  playlist.loop = loopOrder[nextLoopSettingIndex];
+  const [previousSong, currentSong, nextSong] = dryRunTraversePlaylistByStep(
+    playlist,
+    1,
+  );
+  playlist.previousSong = previousSong;
+  playlist.currentSong = currentSong;
+  playlist.nextSong = nextSong;
+
+  message.channel.send(loopOrderedMessages[nextLoopSettingIndex]);
+};
+
+export const clear = (message: Message) => {
+  const playlist = getPlaylist(message, defaultPlaylistName);
+  if (!message?.member?.voice.channel) {
+    return message.channel.send(
+      "I can't clear the playlist if there isn't a voice channel.",
+    );
+  }
+  if (!playlist) {
     return message.channel.send('_looks at the empty playlist queue blankly._');
   }
-
-  serverQueue.songs = [];
-  if (!serverQueue?.connection) {
+  message.channel.send('_stops the music playing and clears the next tracks._');
+  playlist.songs = [];
+  playlist.previousSong = songScaffold;
+  playlist.currentSong = songScaffold;
+  playlist.nextSong = songScaffold;
+  if (!playlist?.connection) {
     return;
   }
-  serverQueue.connection.dispatcher.end();
+  playlist.connection.dispatcher.end();
+};
+
+export const setSongVolume = (message: Message) => {
+  const playlist = getPlaylist(message, defaultPlaylistName);
+  if (!playlist) {
+    return message.channel.send('_looks at the empty playlist queue blankly._');
+  }
+  if (!playlist?.connection) {
+    return;
+  }
+  const volume: any = (() => {
+    const volumeToSet: any = parseFloat(message.content.split(';v')[1]);
+    if (!isFinite(volumeToSet)) {
+      return '-';
+    }
+    return volumeToSet;
+  })();
+
+  if (volume > maxAllowableVolume) {
+    return message.channel.send(
+      `._shakes his head_ I won't play songs louder than a volume level of **${maxAllowableVolume}**.`,
+    );
+  }
+
+  if (volume === '-') {
+    return message.channel.send(
+      `...Uhh I can only change the volume in terms of digits... you know, like 0 - 10... _he looks away_`,
+    );
+  }
+
+  playlist.connection.dispatcher.setVolumeLogarithmic(volume / 5);
+  const indexOfCurrentSong = playlist.songs.findIndex(
+    (s) => s.id === playlist.currentSong.id,
+  );
+  playlist.songs[indexOfCurrentSong].volume = volume;
+  message.channel.send(`I've changed the volume for this song to ${volume}.`);
 };

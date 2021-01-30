@@ -35,6 +35,7 @@
     "fluent-ffmpeg": "^2.1.2",
     "lodash": "^4.17.20",
     "uuid": "^8.3.2",
+    "winston": "^3.3.3",
     "ytdl-core": "^4.4.5"
   }
 }
