@@ -19,4 +19,9 @@ export interface PlaylistShape {
   previousSong: SongShape;
   nextSong: SongShape;
   loop: LoopType;
+  /**
+   * Indicates to stop playlist on dispatcher
+   * end event
+   */
+  stopOnFinish: boolean;
 }

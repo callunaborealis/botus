@@ -4,19 +4,29 @@ import { DISCORD_APP_BOT_TOKEN } from './environment';
 // import { initialiseDatabase } from './db';
 import logger from './logger';
 import {
-  execute,
+  playAndOrAddYoutubeToPlaylist,
   skip,
   clear,
   loop,
   list,
   setSongVolume,
   removeSong,
+  stop,
+  playExistingTrack,
 } from './music';
 import {
   playYoutubeURLRequests,
+  playExistingTrackRequests,
   clearRequests,
   listRequests,
   skipRequests,
+  loopPlaylistRequests,
+  loopTrackRequests,
+  loopOffRequests,
+  loopCycleRequests,
+  setSongVolRequests,
+  removeSongRequests,
+  stopSongRequests,
 } from './music/constants';
 
 import { respond, interpretRequest, sendHelpDoc } from './social';
@@ -30,6 +40,10 @@ import {
   hailRequests,
   hailResponses,
   howsItGoingResponses,
+  helphelpRequests,
+  helpRequests,
+  hugRequests,
+  hugResponses,
 } from './social/constants';
 
 const djBotus = new Client();
@@ -65,36 +79,42 @@ djBotus.on('message', async (message) => {
     });
   }
 
-  if (message.content.match(/^(;help[ ]?help)|(botus help[ ]?help)/gim)) {
+  // Help
+  if (interpretRequest(message, helphelpRequests)) {
     return message.channel.send('No help for you!');
   }
-  if (message.content.match(/^(;h)|(;help)|(botus help)/gim)) {
+  if (interpretRequest(message, helpRequests)) {
     return sendHelpDoc(message);
   }
 
-  // Looping
-  if (message.content.match(/^;(loop track|ls|lt|loop song)/gim)) {
+  // Music: Loop
+  if (interpretRequest(message, loopTrackRequests)) {
     return loop(message, 'song');
   }
-  if (message.content.match(/^;lq|loop queue|lp/gim)) {
+  if (interpretRequest(message, loopPlaylistRequests)) {
     return loop(message, 'playlist');
   }
-  if (message.content.match(/^;loop stop/gim)) {
+  if (interpretRequest(message, loopOffRequests)) {
     return loop(message, 'off');
   }
-  if (message.content.match(/^;l/gim)) {
+  if (interpretRequest(message, loopCycleRequests)) {
     return loop(message);
   }
-  if (message.content.match(/^;v/gim)) {
+
+  // Music: Volume
+  if (interpretRequest(message, setSongVolRequests)) {
     return setSongVolume(message);
   }
-  if (message.content.match(/^;rm [\d]+/gim)) {
+  if (interpretRequest(message, removeSongRequests)) {
     return removeSong(message);
   }
 
-  // Music
+  // Music: Playlist Management
+  if (interpretRequest(message, playExistingTrackRequests)) {
+    return playExistingTrack(message);
+  }
   if (interpretRequest(message, playYoutubeURLRequests)) {
-    return execute(message);
+    return playAndOrAddYoutubeToPlaylist(message);
   }
   if (interpretRequest(message, listRequests)) {
     return list(message);
@@ -102,13 +122,18 @@ djBotus.on('message', async (message) => {
   if (interpretRequest(message, skipRequests)) {
     return skip(message);
   }
+  if (interpretRequest(message, stopSongRequests)) {
+    return stop(message);
+  }
   if (interpretRequest(message, clearRequests)) {
     return clear(message);
   }
 
   // Social
-  const howsItGoingAsked = interpretRequest(message, howsItGoingRequests);
-  if (howsItGoingAsked) {
+  if (interpretRequest(message, hugRequests)) {
+    return respond(message, hugResponses);
+  }
+  if (interpretRequest(message, howsItGoingRequests)) {
     return respond(message, howsItGoingResponses);
   }
 

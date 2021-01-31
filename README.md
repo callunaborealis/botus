@@ -7,9 +7,8 @@ Discord Bot for Music
 - Add `DISCORD_APP_BOT_TOKEN` along with `SERVER_APP_PORT` in a new file `.env` with your DJ Botus implementation.
 - Next steps
   - `npm install` to install local packages
+  - `npm run build` to build the server app before running
   - `npm start` to run the server app for development (watches for changes)
-  - `npm run build` to build the server app for production
-  - `npm run dev` to run the production build of the server app
 
 ## References
 
