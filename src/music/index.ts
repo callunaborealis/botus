@@ -686,7 +686,7 @@ export const setSongVolume = (message: Message) => {
   const volume: any = (() => {
     if (message.content.match(setSongVolRequests[0])) {
       const volumeToSetForCurrentSong: any = parseFloat(
-        message.content.split(/^;v/)[0],
+        message.content.split(/;v/gim)[1],
       );
       if (!isFinite(volumeToSetForCurrentSong)) {
         return volumeToSetForCurrentSong;
