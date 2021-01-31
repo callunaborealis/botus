@@ -13,7 +13,7 @@ import {
   loopOrder,
   loopOrderedMessages,
   volumeBeingSetPattern,
-  playExistingTrackRequests,
+  setSongVolRequests,
   youtubeLinkPattern,
   existingTrackPattern,
 } from './constants';
@@ -684,11 +684,15 @@ export const setSongVolume = (message: Message) => {
     return;
   }
   const volume: any = (() => {
-    const volumeToSet: any = parseFloat(message.content.split(';v')[1]);
-    if (!isFinite(volumeToSet)) {
-      return '-';
+    if (message.content.match(setSongVolRequests[0])) {
+      const volumeToSetForCurrentSong: any = parseFloat(
+        message.content.split(/^;v/)[0],
+      );
+      if (!isFinite(volumeToSetForCurrentSong)) {
+        return volumeToSetForCurrentSong;
+      }
     }
-    return volumeToSet;
+    return '-';
   })();
 
   if (volume > maxAllowableVolume) {
