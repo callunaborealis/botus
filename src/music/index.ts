@@ -13,10 +13,13 @@ import {
   loopOrder,
   loopOrderedMessages,
   volumeBeingSetPattern,
+  playExistingTrackRequests,
   youtubeLinkPattern,
+  existingTrackPattern,
 } from './constants';
 import { LoopType, PlaylistShape, SongShape } from './types';
 import { getNextLoopedIndex } from '../utils';
+import logger from '../logger';
 
 const defaultPlaylistName = 'default';
 
@@ -41,6 +44,7 @@ const createServerSession = (message: Message) => {
       previousSong: songScaffold,
       nextSong: songScaffold,
       loop: 'off',
+      stopOnFinish: false,
     };
     const newServerSession = {
       playlists: {
@@ -75,6 +79,7 @@ const createPlaylist = (message: Message, name: string) => {
     previousSong: songScaffold,
     nextSong: songScaffold,
     loop: 'off',
+    stopOnFinish: false,
   };
   if (!multiServerSession.has(serverId)) {
     // This will always run until multi-playlists are supported
@@ -171,18 +176,17 @@ const dryRunTraversePlaylistByStep = (
   playlist: PlaylistShape,
   stepsToNextSong: number,
 ): [SongShape, SongShape, SongShape, SongShape] => {
+  const indexOfCurrentSong = playlist.songs.findIndex(
+    (s) => s.id === playlist.currentSong?.id,
+  );
   if (playlist.loop === 'song') {
     return [
-      playlist.currentSong,
-      playlist.currentSong,
-      playlist.currentSong,
-      playlist.currentSong,
+      playlist.songs[indexOfCurrentSong] || songScaffold,
+      playlist.songs[indexOfCurrentSong] || songScaffold,
+      playlist.songs[indexOfCurrentSong] || songScaffold,
+      playlist.songs[indexOfCurrentSong] || songScaffold,
     ];
   }
-
-  const indexOfCurrentSong = playlist.songs.findIndex(
-    (s) => s.id === playlist.currentSong.id,
-  );
 
   if (playlist.loop === 'playlist') {
     const previousSongIndex = getNextLoopedIndex(
@@ -201,10 +205,10 @@ const dryRunTraversePlaylistByStep = (
       stepsToNextSong > 0 ? stepsToNextSong * 2 : -stepsToNextSong * 2,
     );
     return [
-      playlist.songs[previousSongIndex],
-      playlist.currentSong,
-      playlist.songs[nextSongIndex],
-      playlist.songs[nextNextSongIndex],
+      playlist.songs[previousSongIndex] || songScaffold,
+      playlist.songs[indexOfCurrentSong] || songScaffold,
+      playlist.songs[nextSongIndex] || songScaffold,
+      playlist.songs[nextNextSongIndex] || songScaffold,
     ];
   }
   const prevSong =
@@ -214,29 +218,40 @@ const dryRunTraversePlaylistByStep = (
   const nextNextSong =
     playlist.songs[indexOfCurrentSong + stepsToNextSong * 2] || songScaffold;
 
-  return [prevSong, playlist.currentSong, nextSong, nextNextSong];
+  return [prevSong, playlist.songs[indexOfCurrentSong], nextSong, nextNextSong];
 };
 
-export const play = (message: Message, song: SongShape) => {
+export const play = (
+  message: Message,
+  song: SongShape,
+  endType: 'stop' | '-' = '-',
+) => {
   if (!message.guild?.id) {
     return;
   }
   const playlist = getPlaylist(message, defaultPlaylistName);
-  if (!playlist) {
+  if (!playlist || !song) {
     return;
   }
-  if (!playlist || !playlist.connection) {
-    playlist.textChannel.send('_flips his glorious hair and leaves silently._');
+  if (!playlist.connection) {
+    playlist.textChannel?.send(
+      '_flips his glorious hair and leaves silently._',
+    );
     playlist.voiceChannel?.leave();
-    deletePlaylist(message, defaultPlaylistName);
+    return;
+  }
+  if (endType === 'stop') {
+    playlist.textChannel.send(
+      "_lays back in his chair and lights a fresh cigarette._ Alright, I'm stopping. I'll be around.",
+    );
+    playlist.voiceChannel?.leave();
     return;
   }
   if (song.id === songScaffold.id) {
     playlist.textChannel.send(
-      "_lays back in his chair and lights a fresh cigarette._  Party's over. See ya all.",
+      "_lays back in his chair and lights a fresh cigarette._ That's all the tracks.",
     );
     playlist.voiceChannel?.leave();
-    deletePlaylist(message, defaultPlaylistName);
     return;
   }
 
@@ -245,26 +260,112 @@ export const play = (message: Message, song: SongShape) => {
     .on('start', () => {
       dispatcher.setVolumeLogarithmic(song.volume / 5);
       playlist.textChannel.send(
-        `_loads the next record labelled_ **${song.title}** ` +
+        `_loads the record labelled_ **${song.title}** ` +
           `_and turns the volume to_ **${song.volume}**.`,
       );
     })
     .on('finish', () => {
+      const playlistOnFinish = getPlaylist(message, defaultPlaylistName);
+      if (!playlistOnFinish) {
+        throw new Error('Playlist no longer exists');
+      }
+      if (playlistOnFinish.stopOnFinish) {
+        playlistOnFinish.previousSong = songScaffold;
+        playlistOnFinish.currentSong = songScaffold;
+        playlistOnFinish.nextSong = songScaffold;
+        playlistOnFinish.stopOnFinish = false;
+        setPlaylist(message, defaultPlaylistName, playlistOnFinish);
+        return play(message, songScaffold, 'stop');
+      }
       const [
         _,
         currentSong,
         nextSong,
         nextNextSong,
-      ] = dryRunTraversePlaylistByStep(playlist, 1);
-      playlist.previousSong = currentSong;
-      playlist.currentSong = nextSong;
-      playlist.nextSong = nextNextSong;
+      ] = dryRunTraversePlaylistByStep(playlistOnFinish, 1);
+      playlistOnFinish.previousSong = currentSong;
+      playlistOnFinish.currentSong = nextSong;
+      playlistOnFinish.nextSong = nextNextSong;
+      setPlaylist(message, defaultPlaylistName, playlistOnFinish);
       play(message, nextSong);
     })
-    .on('error', (error: any) => console.error(error));
+    .on('error', (error: any) => {
+      logger.log({
+        level: 'error',
+        message: `Error occurred while playing song: ${error}`,
+      });
+    });
 };
 
-export const execute = async (message: Message) => {
+export const playExistingTrack = async (message: Message) => {
+  if (!message.guild?.id) {
+    return;
+  }
+
+  const voiceChannel = message.member?.voice.channel;
+  if (!voiceChannel) {
+    return message.channel.send(
+      "I'm not gonna play for no one. Someone get into a voice channel first.",
+    );
+  }
+  if (!message?.client?.user) {
+    return;
+  }
+  const permissions = voiceChannel.permissionsFor(message.client.user);
+  if (!permissions?.has('CONNECT') || !permissions.has('SPEAK')) {
+    return message.channel.send(
+      'Give me permissions for connecting and speaking in the voice channel, then we can party.',
+    );
+  }
+  const matches = message.content.match(existingTrackPattern);
+  const existingTrackNr = parseInt(matches?.[0] ?? '-');
+  if (!matches || !isFinite(existingTrackNr)) {
+    return message.channel.send(
+      'I can only play existing track numbers, like in numbers, or new tracks that must be YouTube links.',
+    );
+  }
+  const playlist = getPlaylist(message, defaultPlaylistName);
+  if (!playlist) {
+    return;
+  }
+  const existingTrackIndex = playlist.songs.findIndex(
+    (_, i) => i === existingTrackNr - 1,
+  );
+  if (existingTrackIndex === -1) {
+    return message.channel.send(
+      `Track ${existingTrackIndex} doesn't exist on the **${defaultPlaylistName}** playlist.`,
+    );
+  }
+  const existingTrack = playlist.songs[existingTrackIndex];
+  const [previousSong, currentSong, nextSong] = dryRunTraversePlaylistByStep(
+    { ...playlist, currentSong: existingTrack },
+    1,
+  );
+  playlist.previousSong = previousSong;
+  playlist.currentSong = currentSong;
+  playlist.nextSong = nextSong;
+  setPlaylist(message, defaultPlaylistName, playlist);
+  try {
+    if (voiceChannel.joinable) {
+      const connection = await voiceChannel.join();
+      playlist.connection = connection;
+    }
+  } catch (error) {
+    logger.log({
+      level: 'error',
+      message: `Error occurred while joining the voice channel: ${error}`,
+    });
+    return message.channel.send(
+      `I can't seem to join the voice channel to play that track.`,
+    );
+  }
+  play(message, currentSong);
+  return message.channel.send(
+    `_ plays track_ ${existingTrackNr} (**${existingTrack.title}**) _with volume at_ **${existingTrack.volume}** _to the list._`,
+  );
+};
+
+export const playAndOrAddYoutubeToPlaylist = async (message: Message) => {
   if (!message.guild?.id) {
     return;
   }
@@ -342,13 +443,22 @@ export const execute = async (message: Message) => {
         songs: [song],
       });
       play(message, song);
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      logger.log({
+        level: 'error',
+        message: `Error occurred while creating a new playlist: ${error}`,
+      });
       deletePlaylist(message, defaultPlaylistName);
-      return message.channel.send(err);
+      return message.channel.send(error);
     }
   } else {
     playlist.songs.push(song);
+    if (
+      !playlist?.currentSong?.id ||
+      playlist?.currentSong?.id === songScaffold.id
+    ) {
+      play(message, song);
+    }
     const [previousSong, currentSong, nextSong] = dryRunTraversePlaylistByStep(
       playlist,
       1,
@@ -410,12 +520,12 @@ export const list = (message: Message) => {
       })();
       const volumeTag = (() => {
         if (currentSongDetails.volume > maxAllowableVolume * 0.75) {
-          return `:loud_sound: **${currentSongDetails.volume}**`;
-        }
-        if (currentSongDetails.volume > maxAllowableVolume * 0.5) {
-          return `:sound: **${currentSongDetails.volume}**`;
+          return `:loud_sound: **${currentSongDetails.volume} / ${maxAllowableVolume}**`;
         }
         if (currentSongDetails.volume > maxAllowableVolume * 0.25) {
+          return `:sound: **${currentSongDetails.volume} / ${maxAllowableVolume}**`;
+        }
+        if (currentSongDetails.volume > 0) {
           return `:speaker: **${currentSongDetails.volume}**`;
         }
         return `:mute: **${currentSongDetails.volume}**`;
@@ -487,7 +597,7 @@ export const removeSong = (message: Message) => {
   message.channel.send(
     `_removes_ **${removedSong.title}** _from the_ **${defaultPlaylistName}** _playlist and never looks back._`,
   );
-  if (updatedSongs.length === 0 || currentSong.id === removedSong.id) {
+  if (updatedSongs.length === 0 || currentSong?.id === removedSong.id) {
     playlist.connection.dispatcher.end();
   }
 };
@@ -520,25 +630,49 @@ export const loop = (message: Message, loopType?: LoopType) => {
   message.channel.send(loopOrderedMessages[nextLoopSettingIndex]);
 };
 
-export const clear = (message: Message) => {
+export const stop = (message: Message) => {
   const playlist = getPlaylist(message, defaultPlaylistName);
   if (!message?.member?.voice.channel) {
     return message.channel.send(
-      "I can't clear the playlist if there isn't a voice channel.",
+      `I can't stop the **${defaultPlaylistName}** playlist if there isn't a voice channel.`,
     );
   }
   if (!playlist) {
     return message.channel.send('_looks at the empty playlist queue blankly._');
   }
-  message.channel.send('_stops the music playing and clears the next tracks._');
-  playlist.songs = [];
-  playlist.previousSong = songScaffold;
-  playlist.currentSong = songScaffold;
-  playlist.nextSong = songScaffold;
+  playlist.stopOnFinish = true;
+  setPlaylist(message, defaultPlaylistName, playlist);
   if (!playlist?.connection) {
     return;
   }
   playlist.connection.dispatcher.end();
+};
+
+export const clear = (message: Message) => {
+  const playlist = getPlaylist(message, defaultPlaylistName);
+  if (!message?.member?.voice.channel) {
+    return message.channel.send(
+      `I can't stop and clear the **${defaultPlaylistName}** playlist if there isn't a voice channel.`,
+    );
+  }
+  if (!playlist) {
+    return message.channel.send(
+      `_struggles to find the **${defaultPlaylistName}** playlist._`,
+    );
+  }
+  playlist.songs = [];
+  playlist.previousSong = songScaffold;
+  playlist.currentSong = songScaffold;
+  playlist.nextSong = songScaffold;
+  setPlaylist(message, defaultPlaylistName, playlist);
+  if (!playlist?.connection) {
+    return;
+  }
+  playlist.connection.dispatcher.end();
+  deletePlaylist(message, defaultPlaylistName);
+  message.channel.send(
+    `_stops the music playing and clears the  **${defaultPlaylistName}** playlist._`,
+  );
 };
 
 export const setSongVolume = (message: Message) => {
@@ -573,6 +707,10 @@ export const setSongVolume = (message: Message) => {
   const indexOfCurrentSong = playlist.songs.findIndex(
     (s) => s.id === playlist.currentSong.id,
   );
+  const prevVolume = playlist.songs[indexOfCurrentSong].volume;
   playlist.songs[indexOfCurrentSong].volume = volume;
-  message.channel.send(`I've changed the volume for this song to ${volume}.`);
+  setPlaylist(message, defaultPlaylistName, playlist);
+  return message.channel.send(
+    `Volume for this song changed from ~~${prevVolume} / ${maxAllowableVolume}~~ to ${volume} / ${maxAllowableVolume}.`,
+  );
 };
