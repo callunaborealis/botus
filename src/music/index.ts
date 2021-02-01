@@ -559,9 +559,9 @@ export const list = (message: Message) => {
           return `:sound: **${currentSongDetails.volume} / ${maxAllowableVolume}**`;
         }
         if (currentSongDetails.volume > 0) {
-          return `:speaker: **${currentSongDetails.volume}**`;
+          return `:speaker: **${currentSongDetails.volume} / ${maxAllowableVolume}**`;
         }
-        return `:mute: **${currentSongDetails.volume}**`;
+        return `:mute: **${currentSongDetails.volume} / ${maxAllowableVolume}**`;
       })();
       const lines = [
         `${index + 1}. ${nowPlayingTag} ${volumeTag}`,
@@ -570,7 +570,7 @@ export const list = (message: Message) => {
       ];
       return `${eventualSongList}\n${lines.join('\n')}\n`;
     },
-    `${loopMessages[loopType]} the default playlist:\n`,
+    `${loopMessages[loopType]} the **${defaultPlaylistName}** playlist:\n`,
   );
   return message.channel.send(listOfSongsInAMessage);
 };
