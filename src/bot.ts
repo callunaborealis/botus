@@ -13,6 +13,7 @@ import {
   removeSong,
   stop,
   playExistingTrack,
+  createServerSession,
 } from './music';
 import {
   playYoutubeURLRequests,
@@ -27,6 +28,7 @@ import {
   setSongVolRequests,
   removeSongRequests,
   stopSongRequests,
+  resetPlaylistRequests,
 } from './music/constants';
 
 import { respond, interpretRequest, sendHelpDoc } from './social';
@@ -87,6 +89,11 @@ djBotus.on('message', async (message) => {
     return sendHelpDoc(message);
   }
 
+  // Music: Debug - Hard resets the server session on the spot in case of failure
+  if (interpretRequest(message, resetPlaylistRequests)) {
+    return createServerSession(message);
+  }
+
   // Music: Loop
   if (interpretRequest(message, loopTrackRequests)) {
     return loop(message, 'song');
@@ -104,6 +111,9 @@ djBotus.on('message', async (message) => {
   // Music: Volume
   if (interpretRequest(message, setSongVolRequests)) {
     return setSongVolume(message);
+  }
+  if (interpretRequest(message, removeSongRequests)) {
+    return removeSong(message);
   }
   if (interpretRequest(message, removeSongRequests)) {
     return removeSong(message);

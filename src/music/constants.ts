@@ -36,6 +36,10 @@ export const setSongVolRequests = [
 ];
 export const removeSongRequests = [/^;rm [\d]+/gim];
 export const stopSongRequests = [/^;(stop|leave|fuckoff|goaway)$/gim];
+export const resetPlaylistRequests = [
+  // Reset
+  /^;reset( (\w+)?)?$/gi,
+];
 
 export const existingTrackPattern = new RegExp(/([\d]+)/gim);
 export const playExistingTrackRequests = [

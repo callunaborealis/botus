@@ -16,6 +16,7 @@ import {
   setSongVolRequests,
   youtubeLinkPattern,
   existingTrackPattern,
+  resetPlaylistRequests,
 } from './constants';
 import { LoopType, PlaylistShape, SongShape } from './types';
 import { getNextLoopedIndex } from '../utils';
@@ -23,18 +24,16 @@ import logger from '../logger';
 
 const defaultPlaylistName = 'default';
 
-const createServerSession = (message: Message) => {
+export const createServerSession = (message: Message) => {
   const serverId = message.guild?.id;
   if (!serverId) {
     return null;
   }
   const serverSession = multiServerSession.get(serverId);
-  if (!serverSession) {
-    const voiceChannel = message.member?.voice.channel;
-    if (!voiceChannel) {
-      return null;
-    }
-    const newPlaylist: PlaylistShape = {
+
+  const generateNewPlaylist = (): PlaylistShape => {
+    const voiceChannel = message.member?.voice.channel ?? null;
+    return {
       textChannel: message.channel,
       voiceChannel: voiceChannel,
       connection: null,
@@ -46,6 +45,14 @@ const createServerSession = (message: Message) => {
       loop: 'off',
       stopOnFinish: false,
     };
+  };
+
+  if (!serverSession) {
+    const voiceChannel = message.member?.voice.channel;
+    if (!voiceChannel) {
+      return null;
+    }
+    const newPlaylist: PlaylistShape = generateNewPlaylist();
     const newServerSession = {
       playlists: {
         [defaultPlaylistName]: newPlaylist,
@@ -54,6 +61,29 @@ const createServerSession = (message: Message) => {
     multiServerSession.set(serverId, newServerSession);
     return newServerSession;
   }
+
+  // Reset playlists
+  if (message.content.match(resetPlaylistRequests[0])) {
+    const candidates = message.content.match(';reset ');
+    const playlistName = (() => {
+      if (candidates?.[0] && candidates[0] !== '') {
+        return candidates[0];
+      }
+      return defaultPlaylistName;
+    })();
+    if (serverSession.playlists[playlistName]) {
+      delete serverSession.playlists[playlistName];
+    }
+    const newServerSession = {
+      ...serverSession,
+      playlists: {
+        [defaultPlaylistName]: generateNewPlaylist(),
+      },
+    };
+    multiServerSession.set(serverId, newServerSession);
+    return newServerSession;
+  }
+
   return serverSession;
 };
 
@@ -267,7 +297,10 @@ export const play = (
     .on('finish', () => {
       const playlistOnFinish = getPlaylist(message, defaultPlaylistName);
       if (!playlistOnFinish) {
-        throw new Error('Playlist no longer exists');
+        return logger.log({
+          level: 'error',
+          message: `Playlist no longer exists.`,
+        });
       }
       if (playlistOnFinish.stopOnFinish) {
         playlistOnFinish.previousSong = songScaffold;
