@@ -13,6 +13,7 @@ import {
   removeSong,
   stop,
   playExistingTrack,
+  createServerSession,
 } from './music';
 import {
   playYoutubeURLRequests,
@@ -27,6 +28,7 @@ import {
   setSongVolRequests,
   removeSongRequests,
   stopSongRequests,
+  resetPlaylistRequests,
 } from './music/constants';
 
 import { respond, interpretRequest, sendHelpDoc } from './social';
@@ -36,14 +38,18 @@ import {
   gratitudeResponses,
   greetingRequests,
   greetingResponses,
-  howsItGoingRequests,
+  howIsItGoingRequests,
+  howAreYouRequests,
   hailRequests,
   hailResponses,
   howsItGoingResponses,
+  howAreYouResponses,
   helphelpRequests,
   helpRequests,
   hugRequests,
   hugResponses,
+  meaningOfLifeRequests,
+  meaningOfLifeResponses,
 } from './social/constants';
 
 const djBotus = new Client();
@@ -87,6 +93,11 @@ djBotus.on('message', async (message) => {
     return sendHelpDoc(message);
   }
 
+  // Music: Debug - Hard resets the server session on the spot in case of failure
+  if (interpretRequest(message, resetPlaylistRequests)) {
+    return createServerSession(message);
+  }
+
   // Music: Loop
   if (interpretRequest(message, loopTrackRequests)) {
     return loop(message, 'song');
@@ -104,6 +115,9 @@ djBotus.on('message', async (message) => {
   // Music: Volume
   if (interpretRequest(message, setSongVolRequests)) {
     return setSongVolume(message);
+  }
+  if (interpretRequest(message, removeSongRequests)) {
+    return removeSong(message);
   }
   if (interpretRequest(message, removeSongRequests)) {
     return removeSong(message);
@@ -133,30 +147,40 @@ djBotus.on('message', async (message) => {
   if (interpretRequest(message, hugRequests)) {
     return respond(message, hugResponses);
   }
-  if (interpretRequest(message, howsItGoingRequests)) {
+  if (interpretRequest(message, howIsItGoingRequests)) {
     return respond(message, howsItGoingResponses);
+  }
+  if (interpretRequest(message, howAreYouRequests)) {
+    return respond(message, howAreYouResponses);
   }
 
   if (interpretRequest(message, greetingRequests)) {
     return respond(message, greetingResponses);
   }
 
+  if (interpretRequest(message, meaningOfLifeRequests)) {
+    return respond(message, meaningOfLifeResponses);
+  }
+
   if (interpretRequest(message, gratitudeRequests)) {
     return respond(message, gratitudeResponses);
   }
 
-  const isHailed = (() => {
+  const isMentioned = (() => {
     if (message.mentions.has(userId)) {
       // Respond to mentions of it
       return true;
     }
+    if (message.content.match(/(?:(^|\s))botus(?=\W|$)/gim)) {
+      return true;
+    }
     return interpretRequest(message, hailRequests);
   })();
-  if (isHailed) {
+  if (isMentioned) {
     return respond(message, hailResponses);
   }
 
-  if (message.content.startsWith('botus')) {
+  if (message.content.match(/^botus(?=\W|$)/gim)) {
     return respond(message, defaultResponses);
   }
 });
