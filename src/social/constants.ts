@@ -65,13 +65,13 @@ export const howAreYouRequests = [
    * botus, how are ya
    * botus how are you
    */
-  /^botus[,.!?]? how (are|r) (ya|(yo)?u)( |$)/gim,
-  /how are (ya|(yo)?u)[,?!]? botus[!?]?( |$)/gim,
-  /^(are (you|ya) )?doin['g]? (alright|alrite|okay|fine)[,?!]? botus[!?]?( |$)/gim,
-  /^((you|ya) )?(alright|alrite|okay|fine)[,?!]? botus[!?]?( |$)/gim,
-  /^botus[,.!?]? (are (you|ya) )?doin['g]? (alright|alrite|oka?y?|fine)[?!]?( |$)/gim,
-  /^botus[,.!?]? (are (you|ya) )?(doin['g]? )?(alright|alrite|oka?y?|fine)[?!]?( |$)/gim,
-  /^botus[,.!?]? how're (you|ya)[?!]?( |$)/gim,
+  /^botus[,.!?]? how (are|r) (ya|(you|ya|u))( |$)/gim,
+  /how are (ya|(you|ya|u))[,?!]? botus[!?]?( |$)/gim,
+  /^(are (you|ya|u) )?doin['g]? (alright|alrite|okay|fine)[,?!]? botus[!?]?( |$)/gim,
+  /^((you|ya|u) )?(alright|alrite|okay|fine)[,?!]? botus[!?]?( |$)/gim,
+  /^botus[,.!?]? (are (you|ya|u) )?doin['g]? (alright|alrite|oka?y?|fine)[?!]?( |$)/gim,
+  /^botus[,.!?]? (are (you|ya|u) )?(doin['g]? )?(alright|alrite|oka?y?|fine)[?!]?( |$)/gim,
+  /^botus[,.!?]? how're (you|ya|u)[?!]?( |$)/gim,
 ];
 
 export const howsItGoingResponses = [
@@ -111,14 +111,14 @@ export const gratitudeRequests = [
 ];
 
 export const hugRequests = [
-  /^botus[,\.!?]? (I want|give me) (a )?hugs?( |$)/gim,
+  /^botus[,\.!?]? (I want|give me|I need|I would like|can (you|ya|u)|can you give me|can I have) (a )?hugs?( |$)/gim,
   /^botus[,\.!?]? (I'?m|I am) (glum|hopeless|miserable|sad|depressed|down|unhappy)( |$)/gim,
   /^(I'?m|I am) (glum|hopeless|miserable|sad|depressed|down|unhappy) botus[,.!]?( |$)/gim,
-  /botus[,\.!?]? ((I want|(can (yo)?u )?give me|can I have) )(a )?hugs?(,|\.)?( |$)/gim,
-  /botus[,\.!?]? I wanna hug( (yo)?u)?( |$)/gim,
-  /botus[,\.!?]? can I hug( (yo)?u)?( |$)/gim,
+  /botus[,\.!?]? I wanna hug( (you|ya|u))?( |$)/gim,
+  /botus[,\.!?]? can I hug( (you|ya|u))?( |$)/gim,
+  /botus[,\.!?]? can (you|ya|u) hug( (you|ya|u))?( |$)/gim,
   /botus[,\.!?]? can I (get|have)( a)? hug[,.!]?( |$)/gim,
-  /can I hug (yo)?u[,\.]? botus( |$)/gim,
+  /can I hug (you|ya|u)[,\.]? botus( |$)/gim,
   /(I want|give me) (a )?hugs?[,\.!?]? botus( |$)/gim,
   /^botus[,\.!?]? hug$/gim,
   // Debug
@@ -154,7 +154,7 @@ export const meaningOfLifeRequests = [
   /^botus[,\.!?]? tell (me|us|them) the meaning? of life(\?|$)/gim,
   /^botus[,\.!?]? what('| i)?s the meaning? of life(\?|$)/gim,
   /( |^)what('| i)?s the meaning? of life[,\.!?]? botus( |$)/gim,
-  /( |^)what do (you|ya) think is the meaning? of life[,\.!?]? botus( |$)/gim,
+  /( |^)what do (you|ya|u) think is the meaning? of life[,\.!?]? botus( |$)/gim,
   /( |^)tell (me|us|them) the meaning? of life[,\.!?]? botus( |$)/gim,
   /( |^)do you know what('| i)?s the meaning? of life[,\.!?]? botus( |$)/gim,
 ];
