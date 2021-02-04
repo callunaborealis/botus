@@ -151,9 +151,11 @@ export const gratitudeResponses = [
 ];
 
 export const meaningOfLifeRequests = [
+  /^botus[,\.!?]? tell (me|us|them) the meaning? of life(\?|$)/gim,
   /^botus[,\.!?]? what('| i)?s the meaning? of life(\?|$)/gim,
   /( |^)what('| i)?s the meaning? of life[,\.!?]? botus( |$)/gim,
   /( |^)what do (you|ya) think is the meaning? of life[,\.!?]? botus( |$)/gim,
+  /( |^)tell (me|us|them) the meaning? of life[,\.!?]? botus( |$)/gim,
   /( |^)do you know what('| i)?s the meaning? of life[,\.!?]? botus( |$)/gim,
 ];
 export const meaningOfLifeResponses = [
