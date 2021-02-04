@@ -479,10 +479,11 @@ export const playAndOrAddYoutubeToPlaylist = async (message: Message) => {
     } catch (error) {
       logger.log({
         level: 'error',
-        message: `Error occurred while creating a new playlist: ${error}`,
+        message: `Error occurred while creating a new playlist: ${JSON.stringify(
+          error,
+        )}`,
       });
-      deletePlaylist(message, defaultPlaylistName);
-      return message.channel.send(error);
+      return;
     }
   } else {
     playlist.songs.push(song);
