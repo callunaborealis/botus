@@ -1,9 +1,7 @@
 export const hailRequests = [
-  // greeting + name
-  /^([h]?ello|[h]?ey|hi|ay|(was)?sup|yo|o[iy]) botus/gim,
   // name + greeting
-  /^(([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?([h]?ello|[h]?ey|hi|ay|(was)?sup|yo|o[iy])/gim,
-  // name first
+  /^botus[ ]?[,?!(...)](([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?([h]?ello|[h]?ey|hi|ay|(was)?sup|yo|o[iy])( |$)/gim,
+  // greeting + name
   /^(([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[ ]?[,?!(...)]/gim,
   /^;hail$/gim,
 ];
@@ -20,21 +18,23 @@ export const helpRequests = [/^(;h)|(;help)|(botus help)/gim];
 
 export const greetingRequests = [
   // greeting + name
-  /^(([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus$/gim,
+  /^(([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus( |$)/gim,
   // name + greeting
-  /^botus (([h]?ello|[h]?ey( [h]?ey)?|hi|ay|(wa[s]{0,100})?su[p]{1,100}|yo|o[iy]))?$/gim,
+  /^botus (([h]?ello|[h]?ey( [h]?ey)?|hi|ay|(wa[s]{0,100})?su[p]{1,100}|yo|o[iy]))?( |$)/gim,
   // time of day
-  /^botus (good )?(mornin[g]?|day|afternoon|evenin[g]?|night|nite)[,.!]?$/gim,
-  /^(good )?(mornin[g]?|day|afternoon|evenin[g]?|night|nite)[,.!]? botus$/gim,
+  /^botus (good )?(mornin[g]?|day|afternoon|evenin[g]?|night|nite)[,.!]?( |$)/gim,
+  /^(good )?(mornin[g]?|day|afternoon|evenin[g]?|night|nite)[,.!]? botus( |$)/gim,
   // whats up
-  /^(([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?what[']?s[ ]?up$/gim,
+  /^(([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?what[']?s[ ]?up( |$)/gim,
   /^what[']?s[ ]?up botus/gim,
-  /^(([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?wa[s]{1,100}up$/gim,
+  /^(([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?wa[s]{1,100}up( |$)/gim,
   /^wa[s]{1,100}up botus/gim,
-  /^(([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?wh[au]t[ ]?up$/gim,
-  /^wh[au]t[ ]?up botus$/gim,
+  /^(([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?wh[au]t[ ]?up( |$)/gim,
+  /^wh[au]t[ ]?up botus( |$)/gim,
+  /^botus[,.!?]? wassup( |$)/gim,
+  /^[was]?sup botus( |$)/gim,
   // Debug
-  /;hi/i,
+  /^;hi$/i,
 ];
 export const greetingResponses = [
   () => '_barely nods._',
@@ -46,7 +46,18 @@ export const greetingResponses = [
   () => `:wave:`,
 ];
 
-export const howsItGoingRequests = [
+// Asking if the context is okay
+export const howIsItGoingRequests = [
+  /^botus[,.!?]? how(( i)|')?s it goin[g]?( |$)/gim,
+  /^botus[,.!?]? how are things?( |$)/gim,
+  /^botus[,.!?]? how(( i)|')?s things?( |$)/gim,
+  /^botus[,.!?]? what('| i)?s up( |$)/gim,
+  // Debug
+  /^;howru$/i,
+];
+
+// Asking if Botus is okay
+export const howAreYouRequests = [
   /**
    * botus how are ya
    * botus! how are ya
@@ -54,44 +65,62 @@ export const howsItGoingRequests = [
    * botus, how are ya
    * botus how are you
    */
-  /^botus[,.!?]? how are (ya|you)/gim,
-  /how are (ya|you)[,?!]? botus[!?]?$/gim,
-  /^botus[,.!?]? how[']?s it goin[g]?/gim,
-  /^botus[,.!?]? how is it goin[g]?/gim,
-  /^botus[,.!?]? wassup/gim,
-  /^[was]?sup botus/gim,
-  // Debug
-  /;howru/i,
+  /^botus[,.!?]? how (are|r) (ya|(yo)?u)( |$)/gim,
+  /how are (ya|(yo)?u)[,?!]? botus[!?]?( |$)/gim,
+  /^(are (you|ya) )?doin['g]? (alright|alrite|okay|fine)[,?!]? botus[!?]?( |$)/gim,
+  /^((you|ya) )?(alright|alrite|okay|fine)[,?!]? botus[!?]?( |$)/gim,
+  /^botus[,.!?]? (are (you|ya) )?doin['g]? (alright|alrite|oka?y?|fine)[?!]?( |$)/gim,
+  /^botus[,.!?]? (are (you|ya) )?(doin['g]? )?(alright|alrite|oka?y?|fine)[?!]?( |$)/gim,
+  /^botus[,.!?]? how're (you|ya)[?!]?( |$)/gim,
 ];
 
 export const howsItGoingResponses = [
   () => "_shrugs._ It's alright, I guess.",
+  () => "I'm doing okay, thanks for asking.",
   (username: string) => `It's going ok, ${username}.`,
-  () => 'Could be better I suppose. But alright.',
-  () => '_gives a thumbs up._',
+  () =>
+    `I was just thinking of that time that crazy captain sat me down and cut my hair... _He shivers._`,
+  (username: string) =>
+    `_smiles slightly._ Hope you are doing good too, ${username}.`,
+  () =>
+    `I was just thinking of that time that crazy shady lookin' tincan took my hair and wore it as a wig... _He shivers._`,
+  () => `Things are okay. Could be better, could be worse.`,
   () => 'Another day, another dollar, I suppose.',
 ];
 
+export const howAreYouResponses = [
+  (username: string) =>
+    `I'm alright, ${username}. Just miss Aricarus a little.`,
+  (username: string) => `I'm as good as I ever can be, ${username}.`,
+  () => '_gives a thumbs up._',
+  () => "I'm doing okay. Barely.",
+  () => 'I miss Aricarus, to be honest.',
+  () => "I have my hair on my head. So I'm just peachy.",
+  () => "_shrugs._ I'll be fine. Take care friendo.",
+];
+
 export const gratitudeRequests = [
-  /^[\w\d\s]{0,10}botus[,.!]? thank you/gim,
-  /^[\w\d\s]{0,10}botus[,.!]? thanks/gim,
-  /^[\w\d\s]{0,10}thank you[,.!]? botus/gim,
-  /^[\w\d\s]{0,10}thanks[[^,!?-]|[\w\d\s]]{0,20}? botus/gim,
-  /^[\w\d\s]{0,10}thanks for[[^,!?-]|[\w\d\s]]{0,20},? botus/i,
+  /^[\w\d\s]{0,10}botus(,|\.+|!)? thank (you|ya|u)( |$)/gim,
+  /^[\w\d\s]{0,10}botus(,|\.+|!)? thanks( |$)/gim,
+  /^[\w\d\s]{0,10}thank (you|ya|u)(,|\.+|!)? botus( |$)/gim,
+  /^[\w\d\s]{0,10}thanks(,|\.+|!)? botus( |$)/gim,
+  /^[\w\d\s]{0,10}thank (you|ya|u) for[\w\d\s]{0,20}?,? botus( |$)/i,
+  /^[\w\d\s]{0,10}thanks for[\w\d\s]{0,20}?(,|\.+)? botus( |$)/i,
   // Debug
-  /;thanks/i,
+  /^;thanks$/i,
 ];
 
 export const hugRequests = [
-  /^botus[,.!?]? (I want|give me) (a )?hugs?/gim,
-  /^botus[,.!?]? (I'?m|I am) (glum|hopeless|miserable|sad|depressed|down|unhappy)/gim,
-  /^(I'?m|I am) (glum|hopeless|miserable|sad|depressed|down|unhappy) botus[,.!]?/gim,
-  /botus ((I want|(can you )?give me|can I have) )(a )?hugs?(,|\.)?/gim,
-  /botus I wanna hug you/gim,
-  /botus can I hug you/gim,
-  /can I hug you botus/gim,
-  /(I want|give me) (a )?hugs?(,| )? botus/gim,
-  /^botus hug$/gim,
+  /^botus[,\.!?]? (I want|give me) (a )?hugs?( |$)/gim,
+  /^botus[,\.!?]? (I'?m|I am) (glum|hopeless|miserable|sad|depressed|down|unhappy)( |$)/gim,
+  /^(I'?m|I am) (glum|hopeless|miserable|sad|depressed|down|unhappy) botus[,.!]?( |$)/gim,
+  /botus[,\.!?]? ((I want|(can (yo)?u )?give me|can I have) )(a )?hugs?(,|\.)?( |$)/gim,
+  /botus[,\.!?]? I wanna hug( (yo)?u)?( |$)/gim,
+  /botus[,\.!?]? can I hug( (yo)?u)?( |$)/gim,
+  /botus[,\.!?]? can I (get|have)( a)? hug[,.!]?( |$)/gim,
+  /can I hug (yo)?u[,\.]? botus( |$)/gim,
+  /(I want|give me) (a )?hugs?[,\.!?]? botus( |$)/gim,
+  /^botus[,\.!?]? hug$/gim,
   // Debug
   /^;hug$/gim,
 ];
@@ -118,13 +147,33 @@ export const gratitudeResponses = [
   () => '_gives a small bow._',
   () => '_gives a thumbs up._',
   () => `_gives a brief wink and turns away._`,
+  () => `Yep. You're welcome.`,
+];
+
+export const meaningOfLifeRequests = [
+  /^botus[,\.!?]? what('| i)?s the meaning? of life(\?|$)/gim,
+  /( |^)what('| i)?s the meaning? of life[,\.!?]? botus( |$)/gim,
+  /( |^)what do (you|ya) think is the meaning? of life[,\.!?]? botus( |$)/gim,
+  /( |^)do you know what('| i)?s the meaning? of life[,\.!?]? botus( |$)/gim,
+];
+export const meaningOfLifeResponses = [
+  () => `...42.`,
+  () =>
+    `To me? It was fighting for what for the rights of my home... _He closes his eyes sadly._ But that was a long time ago.`,
+  () =>
+    `For me, it was about doing the right thing. Fighting for freedom and so on.`,
+  () => `Whatever you want it to be, buckaroo.`,
+  () =>
+    `I dunno. _He shrugs._ I thought I was supposed to lead Ariarcus to freedom from UA control, but now it's just bein' a third rate shitty music Discord chat bot application.`,
+  () =>
+    `Meanin' of life huh? _He lights a cigarette and exhales, shrugging._ Whatever you tell yourself that gets you out of bed in the mornin', I guess.`,
 ];
 
 // Bot is mentioned but doesn't know how to respond. Botus will behave awkwardly.
 export const defaultResponses = [
   () => '_shrugs._',
-  () => ':confused: What...?',
   () => '_flips his hair and looks away, unconcerned._',
+  () => "_squints._ I dunno, probably I'll let you know another day.",
   (username: string) => `_stares at ${username} blankly._`,
   (username: string) => `_gives a half-hearted wave to ${username}._`,
   (username: string) =>
@@ -135,8 +184,13 @@ export const defaultResponses = [
   () => `_squints and just shakes his head._`,
   () => 'Uhhh... no idea what ya want there.',
   () => 'Uhhh... okay?',
+  () => '_just looks confused._',
+  () => "_massages his head._ I can't do that...",
   () => 'Right...',
   () => 'Sure... sure...',
+  () => 'Hmph. Maybe.',
+  () => "I dunno. I can't help you there.",
+  () => '_widens his eyes and silently turns away._',
   () => '_just looks at you with a glare._',
   (username: string) =>
     `_lights a cigarette, ignoring what ${username} had said._`,
