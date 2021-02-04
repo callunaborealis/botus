@@ -191,7 +191,7 @@ export const setPlaylist = (
     ...serverSession,
     playlists: {
       ...serverSession.playlists,
-      [name]: playlist,
+      [name]: { ...playlist, isWriteLocked: false },
     },
   });
 };
@@ -277,6 +277,7 @@ export const play = (
     playlist.textChannel?.send(
       '_flips his glorious hair and leaves silently._',
     );
+    playlist.isWriteLocked = false;
     playlist.voiceChannel?.leave();
     return;
   }
@@ -284,6 +285,7 @@ export const play = (
     playlist.textChannel.send(
       "_lays back in his chair and lights a fresh cigarette._ Alright, I'm stopping. I'll be around.",
     );
+    playlist.isWriteLocked = false;
     playlist.voiceChannel?.leave();
     return;
   }
@@ -291,6 +293,7 @@ export const play = (
     playlist.textChannel.send(
       "_lays back in his chair and lights a fresh cigarette._ That's all the tracks.",
     );
+    playlist.isWriteLocked = false;
     playlist.voiceChannel?.leave();
     return;
   }
@@ -374,7 +377,18 @@ export const playExistingTrack = async (message: Message) => {
     );
   }
   const playlist = getPlaylist(message, defaultPlaylistName);
-  if (!playlist || playlist.isWriteLocked) {
+  if (!playlist) {
+    logger.log({
+      level: 'error',
+      message: `Unable to play existing track ${existingTrackNr} as the **${defaultPlaylistName}** playlist does not exist.`,
+    });
+    return;
+  }
+  if (playlist.isWriteLocked) {
+    logger.log({
+      level: 'error',
+      message: `Unable to play existing track ${existingTrackNr} as playlist is write locked.`,
+    });
     return;
   }
   playlist.isWriteLocked = true;
@@ -382,8 +396,9 @@ export const playExistingTrack = async (message: Message) => {
     (_, i) => i === existingTrackNr - 1,
   );
   if (existingTrackIndex === -1) {
+    playlist.isWriteLocked = false;
     return message.channel.send(
-      `Track ${existingTrackIndex} doesn't exist on the **${defaultPlaylistName}** playlist.`,
+      `Track ${existingTrackNr} doesn't exist on the **${defaultPlaylistName}** playlist.`,
     );
   }
   const existingTrack = playlist.songs[existingTrackIndex];
@@ -405,6 +420,7 @@ export const playExistingTrack = async (message: Message) => {
       level: 'error',
       message: `Error occurred while joining the voice channel: ${error}`,
     });
+    playlist.isWriteLocked = false;
     return message.channel.send(
       `I can't seem to join the voice channel to play that track.`,
     );
@@ -628,6 +644,7 @@ export const removeSong = (message: Message) => {
   const songNrCandidate = message.content.split(/;rm /)[1];
   const parsedSongNrCandidate = parseInt(songNrCandidate, 10);
   if (!isFinite(parsedSongNrCandidate)) {
+    playlist.isWriteLocked = false;
     return message.channel.send(
       `I don't know which song you want me to remove...`,
     );
@@ -638,6 +655,7 @@ export const removeSong = (message: Message) => {
     (_, i) => i === parsedSongNrCandidate - 1,
   );
   if (indexOfSongToBeRemoved === -1) {
+    playlist.isWriteLocked = false;
     return message.channel.send(`That song doesn't exist on the playlist.`);
   }
   const removedSong = songs[indexOfSongToBeRemoved];
@@ -653,6 +671,7 @@ export const removeSong = (message: Message) => {
   );
 
   if (updatedSongs.length === 0 || previousCurrentSong?.id === removedSong.id) {
+    playlist.isWriteLocked = false;
     playlist.connection.dispatcher.end();
   }
   const updatedPlaylist = {
@@ -761,6 +780,7 @@ export const clear = async (message: Message) => {
   }
 
   if (!playlist?.connection) {
+    playlist.isWriteLocked = false;
     logger.log({
       level: 'error',
       message: `Playlist unable to connect to a voice channel to end the current song.`,
