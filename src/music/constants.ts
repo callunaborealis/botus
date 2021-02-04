@@ -55,7 +55,7 @@ export const youtubeLinkPattern = new RegExp(
 );
 
 export const volumeBeingSetPattern = new RegExp(
-  /(vol(\.|ume))?( as| at| to| with| using)? (\d)+/i,
+  /(vol(\.|ume))?( as| at| to| with| using)? (\d)+\.?(\d)?/i,
 );
 
 export const playYoutubeURLRequests = [

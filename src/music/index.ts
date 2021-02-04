@@ -428,12 +428,11 @@ export const playAndOrAddYoutubeToPlaylist = async (message: Message) => {
 
   let maxAllowableReached = false;
   const volume = (() => {
-    const defaultVolume = 5;
     const volumeMatches = message.content.match(volumeBeingSetPattern);
     if (isArray(volumeMatches)) {
       const volumeOrder = volumeMatches[0];
       if (isString(volumeOrder)) {
-        return volumeOrder.split(' ').reduce((prevOrDefault, v) => {
+        return volumeOrder.split(' ').reduce((eventualVol, v) => {
           const candidate = parseFloat(v);
           if (isFinite(candidate) && candidate <= maxAllowableVolume) {
             return candidate;
@@ -442,11 +441,11 @@ export const playAndOrAddYoutubeToPlaylist = async (message: Message) => {
             maxAllowableReached = true;
             return maxAllowableVolume;
           }
-          return prevOrDefault;
-        }, defaultVolume);
+          return eventualVol;
+        }, maxAllowableVolume / 2);
       }
     }
-    return defaultVolume;
+    return maxAllowableVolume / 2;
   })();
 
   if (maxAllowableReached) {
