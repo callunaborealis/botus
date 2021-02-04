@@ -119,9 +119,6 @@ djBotus.on('message', async (message) => {
   if (interpretRequest(message, removeSongRequests)) {
     return removeSong(message);
   }
-  if (interpretRequest(message, removeSongRequests)) {
-    return removeSong(message);
-  }
 
   // Music: Playlist Management
   if (interpretRequest(message, playExistingTrackRequests)) {

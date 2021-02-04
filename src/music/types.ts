@@ -24,4 +24,9 @@ export interface PlaylistShape {
    * end event
    */
   stopOnFinish: boolean;
+  /**
+   * Simple write blocking signal
+   * to prevent conflicting read/writes
+   */
+  isWriteLocked: boolean;
 }

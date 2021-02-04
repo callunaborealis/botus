@@ -24,7 +24,7 @@ import logger from '../logger';
 
 const defaultPlaylistName = 'default';
 
-export const createServerSession = (message: Message) => {
+export const createServerSession = async (message: Message) => {
   const serverId = message.guild?.id;
   if (!serverId) {
     return null;
@@ -44,6 +44,7 @@ export const createServerSession = (message: Message) => {
       nextSong: songScaffold,
       loop: 'off',
       stopOnFinish: false,
+      isWriteLocked: false,
     };
   };
 
@@ -71,23 +72,23 @@ export const createServerSession = (message: Message) => {
       }
       return defaultPlaylistName;
     })();
+    await clear(message);
     if (serverSession.playlists[playlistName]) {
       delete serverSession.playlists[playlistName];
     }
     const newServerSession = {
       ...serverSession,
-      playlists: {
-        [defaultPlaylistName]: generateNewPlaylist(),
-      },
+      playlists: {},
     };
     multiServerSession.set(serverId, newServerSession);
+
     return newServerSession;
   }
 
   return serverSession;
 };
 
-const createPlaylist = (message: Message, name: string) => {
+const createPlaylist = async (message: Message, name: string) => {
   const serverId = message.guild?.id;
   if (!serverId) {
     return null;
@@ -110,10 +111,11 @@ const createPlaylist = (message: Message, name: string) => {
     nextSong: songScaffold,
     loop: 'off',
     stopOnFinish: false,
+    isWriteLocked: false,
   };
   if (!multiServerSession.has(serverId)) {
     // This will always run until multi-playlists are supported
-    const serverSession = createServerSession(message);
+    const serverSession = await createServerSession(message);
     const playlist = serverSession?.playlists[name] || null;
     return playlist;
   }
@@ -263,6 +265,9 @@ export const play = (
   if (!playlist || !song) {
     return;
   }
+
+  playlist.isWriteLocked = true; // Prevents concurrent conflict writes to the playlist
+
   if (!playlist.connection) {
     playlist.textChannel?.send(
       '_flips his glorious hair and leaves silently._',
@@ -293,6 +298,7 @@ export const play = (
         `_loads the record labelled_ **${song.title}** ` +
           `_and turns the volume to_ **${song.volume}**.`,
       );
+      playlist.isWriteLocked = false;
     })
     .on('finish', () => {
       const playlistOnFinish = getPlaylist(message, defaultPlaylistName);
@@ -302,11 +308,15 @@ export const play = (
           message: `Playlist no longer exists.`,
         });
       }
+
+      playlistOnFinish.isWriteLocked = true;
+
       if (playlistOnFinish.stopOnFinish) {
         playlistOnFinish.previousSong = songScaffold;
         playlistOnFinish.currentSong = songScaffold;
         playlistOnFinish.nextSong = songScaffold;
         playlistOnFinish.stopOnFinish = false;
+        playlistOnFinish.isWriteLocked = false;
         setPlaylist(message, defaultPlaylistName, playlistOnFinish);
         return play(message, songScaffold, 'stop');
       }
@@ -319,6 +329,7 @@ export const play = (
       playlistOnFinish.previousSong = currentSong;
       playlistOnFinish.currentSong = nextSong;
       playlistOnFinish.nextSong = nextNextSong;
+      playlistOnFinish.isWriteLocked = false;
       setPlaylist(message, defaultPlaylistName, playlistOnFinish);
       play(message, nextSong);
     })
@@ -358,9 +369,10 @@ export const playExistingTrack = async (message: Message) => {
     );
   }
   const playlist = getPlaylist(message, defaultPlaylistName);
-  if (!playlist) {
+  if (!playlist || playlist.isWriteLocked) {
     return;
   }
+  playlist.isWriteLocked = true;
   const existingTrackIndex = playlist.songs.findIndex(
     (_, i) => i === existingTrackNr - 1,
   );
@@ -392,6 +404,7 @@ export const playExistingTrack = async (message: Message) => {
       `I can't seem to join the voice channel to play that track.`,
     );
   }
+  playlist.isWriteLocked = false;
   play(message, currentSong);
   return message.channel.send(
     `_ plays track_ ${existingTrackNr} (**${existingTrack.title}**) _with volume at_ **${existingTrack.volume}** _to the list._`,
@@ -462,7 +475,7 @@ export const playAndOrAddYoutubeToPlaylist = async (message: Message) => {
   };
   const playlist = getPlaylist(message, defaultPlaylistName);
   if (!playlist) {
-    const newPlaylist = createPlaylist(message, defaultPlaylistName);
+    const newPlaylist = await createPlaylist(message, defaultPlaylistName);
     try {
       if (isNull(newPlaylist)) {
         throw new Error('No playlist found.');
@@ -476,20 +489,27 @@ export const playAndOrAddYoutubeToPlaylist = async (message: Message) => {
       });
       play(message, song);
     } catch (error) {
+      console.error(error);
       logger.log({
         level: 'error',
-        message: `Error occurred while creating a new playlist: ${JSON.stringify(
-          error,
-        )}`,
+        message: `Error occurred while creating a new playlist: ${error.message}`,
       });
       return;
     }
   } else {
+    if (playlist?.isWriteLocked) {
+      return;
+    }
+    playlist.isWriteLocked = true;
     playlist.songs.push(song);
     if (
       !playlist?.currentSong?.id ||
       playlist?.currentSong?.id === songScaffold.id
     ) {
+      if (!playlist.connection) {
+        const connection = await voiceChannel.join();
+        playlist.connection = connection;
+      }
       play(message, song);
     }
     const [previousSong, currentSong, nextSong] = dryRunTraversePlaylistByStep(
@@ -499,6 +519,7 @@ export const playAndOrAddYoutubeToPlaylist = async (message: Message) => {
     playlist.previousSong = previousSong;
     playlist.currentSong = currentSong;
     playlist.nextSong = nextSong;
+    playlist.isWriteLocked = false;
     setPlaylist(message, defaultPlaylistName, playlist);
     return message.channel.send(
       `_nods and adds_ **${song.title}** with volume at **${song.volume}** _to the list._`,
@@ -595,9 +616,10 @@ export const removeSong = (message: Message) => {
       "_looks at the empty playlist queue blankly._ There's nothing to remove.",
     );
   }
-  if (!playlist?.connection) {
+  if (!playlist?.connection || playlist.isWriteLocked) {
     return;
   }
+  playlist.isWriteLocked = true;
   const songNrCandidate = message.content.split(/;rm /)[1];
   const parsedSongNrCandidate = parseInt(songNrCandidate, 10);
   if (!isFinite(parsedSongNrCandidate)) {
@@ -625,6 +647,7 @@ export const removeSong = (message: Message) => {
     currentSong,
     nextSong,
     songs: updatedSongs,
+    isWriteLocked: false,
   };
   setPlaylist(message, defaultPlaylistName, updatedPlaylist);
   message.channel.send(
@@ -641,6 +664,9 @@ export const loop = (message: Message, loopType?: LoopType) => {
     return message.channel.send(
       "I can't set the loop as there is no playlist or loop setting to begin with.",
     );
+  }
+  if (playlist.isWriteLocked) {
+    return;
   }
 
   const nextLoopSettingIndex = (() => {
@@ -659,6 +685,7 @@ export const loop = (message: Message, loopType?: LoopType) => {
   playlist.previousSong = previousSong;
   playlist.currentSong = currentSong;
   playlist.nextSong = nextSong;
+  playlist.isWriteLocked = false;
 
   message.channel.send(loopOrderedMessages[nextLoopSettingIndex]);
 };
@@ -673,6 +700,9 @@ export const stop = (message: Message) => {
   if (!playlist) {
     return message.channel.send('_looks at the empty playlist queue blankly._');
   }
+  if (playlist.isWriteLocked) {
+    return;
+  }
   playlist.stopOnFinish = true;
   setPlaylist(message, defaultPlaylistName, playlist);
   if (!playlist?.connection) {
@@ -681,7 +711,7 @@ export const stop = (message: Message) => {
   playlist.connection.dispatcher.end();
 };
 
-export const clear = (message: Message) => {
+export const clear = async (message: Message) => {
   const playlist = getPlaylist(message, defaultPlaylistName);
   if (!message?.member?.voice.channel) {
     return message.channel.send(
@@ -693,14 +723,43 @@ export const clear = (message: Message) => {
       `_struggles to find the **${defaultPlaylistName}** playlist._`,
     );
   }
+  if (playlist.isWriteLocked) {
+    return;
+  }
+  playlist.isWriteLocked = true;
   playlist.songs = [];
   playlist.previousSong = songScaffold;
   playlist.currentSong = songScaffold;
   playlist.nextSong = songScaffold;
+  playlist.isWriteLocked = false;
   setPlaylist(message, defaultPlaylistName, playlist);
+
   if (!playlist?.connection) {
+    const voiceChannel = message.member?.voice.channel;
+    try {
+      if (voiceChannel && voiceChannel.joinable) {
+        const connection = await voiceChannel.join();
+        playlist.connection = connection;
+      }
+    } catch (error) {
+      logger.log({
+        level: 'error',
+        message: `Error occurred while joining the voice channel to stop the current song to clear the playlist: ${error.message}`,
+      });
+      return message.channel.send(
+        `I can't seem to join the voice channel to stop the song before clearing the playlist.`,
+      );
+    }
+  }
+
+  if (!playlist?.connection) {
+    logger.log({
+      level: 'error',
+      message: `Playlist unable to connect to a voice channel to end the current song.`,
+    });
     return;
   }
+
   playlist.connection.dispatcher.end();
   deletePlaylist(message, defaultPlaylistName);
   message.channel.send(
@@ -708,7 +767,7 @@ export const clear = (message: Message) => {
   );
 };
 
-export const setSongVolume = (message: Message) => {
+export const setSongVolume = async (message: Message) => {
   const playlist = getPlaylist(message, defaultPlaylistName);
   if (!playlist) {
     return message.channel.send('_looks at the empty playlist queue blankly._');
@@ -738,6 +797,24 @@ export const setSongVolume = (message: Message) => {
     return message.channel.send(
       `...Uhh I can only change the volume in terms of digits... you know, like 0 - 10... _he looks away_`,
     );
+  }
+
+  if (!playlist.connection?.dispatcher) {
+    const voiceChannel = message.member?.voice.channel;
+    try {
+      if (voiceChannel && voiceChannel.joinable) {
+        const connection = await voiceChannel.join();
+        playlist.connection = connection;
+      }
+    } catch (error) {
+      logger.log({
+        level: 'error',
+        message: `Error occurred while joining the voice channel to set the volume: ${error.message}`,
+      });
+      return message.channel.send(
+        `I can't seem to join the voice channel to set the volume of ${volume}/${maxAllowableVolume}.`,
+      );
+    }
   }
 
   playlist.connection.dispatcher.setVolumeLogarithmic(volume / 5);
