@@ -250,7 +250,12 @@ const dryRunTraversePlaylistByStep = (
   const nextNextSong =
     playlist.songs[indexOfCurrentSong + stepsToNextSong * 2] || songScaffold;
 
-  return [prevSong, playlist.songs[indexOfCurrentSong], nextSong, nextNextSong];
+  return [
+    prevSong,
+    playlist.songs[indexOfCurrentSong] || songScaffold,
+    nextSong,
+    nextNextSong,
+  ];
 };
 
 export const play = (
@@ -627,6 +632,7 @@ export const removeSong = (message: Message) => {
       `I don't know which song you want me to remove...`,
     );
   }
+  const previousCurrentSong = playlist.currentSong;
   const songs = [...playlist.songs];
   const indexOfSongToBeRemoved = songs.findIndex(
     (_, i) => i === parsedSongNrCandidate - 1,
@@ -637,25 +643,27 @@ export const removeSong = (message: Message) => {
   const removedSong = songs[indexOfSongToBeRemoved];
   const updatedSongs = [...songs];
   updatedSongs.splice(parsedSongNrCandidate - 1, 1);
-  const [previousSong, currentSong, nextSong] = dryRunTraversePlaylistByStep(
-    { ...playlist, songs: updatedSongs },
-    1,
+  const [
+    nextPreviousSong,
+    nextCurrentSong,
+    nextNextSong,
+  ] = dryRunTraversePlaylistByStep({ ...playlist, songs: updatedSongs }, 1);
+  message.channel.send(
+    `_removes_ **${removedSong.title}** _from the_ **${defaultPlaylistName}** _playlist and never looks back._`,
   );
+
+  if (updatedSongs.length === 0 || previousCurrentSong?.id === removedSong.id) {
+    playlist.connection.dispatcher.end();
+  }
   const updatedPlaylist = {
     ...playlist,
-    previousSong,
-    currentSong,
-    nextSong,
+    previousSong: nextPreviousSong,
+    currentSong: nextCurrentSong,
+    nextSong: nextNextSong,
     songs: updatedSongs,
     isWriteLocked: false,
   };
   setPlaylist(message, defaultPlaylistName, updatedPlaylist);
-  message.channel.send(
-    `_removes_ **${removedSong.title}** _from the_ **${defaultPlaylistName}** _playlist and never looks back._`,
-  );
-  if (updatedSongs.length === 0 || currentSong?.id === removedSong.id) {
-    playlist.connection.dispatcher.end();
-  }
 };
 
 export const loop = (message: Message, loopType?: LoopType) => {
