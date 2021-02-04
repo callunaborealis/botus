@@ -803,25 +803,81 @@ export const setSongVolume = async (message: Message) => {
   if (!playlist?.connection) {
     return;
   }
-  const volume: any = (() => {
-    if (message.content.match(setSongVolRequests[0])) {
-      const volumeToSetForCurrentSong: any = parseFloat(
-        message.content.split(/;v/gim)[1],
+
+  if (playlist.isWriteLocked) {
+    logger.log({
+      level: 'error',
+      message: `Unable to set song volume as write lock is on.`,
+    });
+  }
+
+  playlist.isWriteLocked = true;
+
+  const requestedSongIndex = (() => {
+    const candidates = message.content.match(/ (track|song|t|s) [\d]+/gim);
+    if (candidates && candidates[0]) {
+      const songNr = parseInt(
+        candidates[0].split(/ (track|song|t|s) /gim)[2],
+        10,
       );
-      if (isFinite(volumeToSetForCurrentSong)) {
-        return volumeToSetForCurrentSong;
+      if (isFinite(songNr)) {
+        if (playlist.songs[songNr - 1]) {
+          // Song exists in songs
+          return songNr - 1;
+        }
+        message.channel.send(
+          `_shrugs_ I couldn't find the track number ${songNr} on the playlist.`,
+        );
       }
+    }
+    return -1;
+  })();
+
+  const currentSongIndex = playlist.songs.findIndex(
+    (s) => s.id === playlist.currentSong.id,
+  );
+
+  const songIndexToSet =
+    requestedSongIndex === -1 ? currentSongIndex : requestedSongIndex;
+
+  const volume: number | '-' = (() => {
+    const volumeToSetForCurrentSong = (() => {
+      const volShortCutMentions = message.content.match(
+        /(^;v) [\d]+(\.\d+)?([ ?]|$)/gim,
+      );
+
+      if (volShortCutMentions && volShortCutMentions[0]) {
+        return parseFloat(volShortCutMentions[0].split(/(^;v) /gim)[2]);
+      }
+      const volumeMentions = message.content.match(
+        / vol(\.|ume)? ?(as|at|to|with|using)? [\d]+(\.\d+)?([ ?]|$)/gim,
+      );
+
+      if (volumeMentions && volumeMentions[0]) {
+        return parseFloat(
+          volumeMentions[0].split(
+            /vol(\.|ume)? ?(as|at|to|with|using)? /gim,
+          )[3],
+        );
+      }
+      return null;
+    })();
+
+    if (isFinite(volumeToSetForCurrentSong)) {
+      return volumeToSetForCurrentSong as number;
     }
     return '-';
   })();
 
   if (volume > maxAllowableVolume) {
+    playlist.isWriteLocked = false;
     return message.channel.send(
       `._shakes his head_ I won't play songs louder than a volume level of **${maxAllowableVolume}**.`,
     );
   }
 
   if (volume === '-') {
+    playlist.isWriteLocked = false;
     return message.channel.send(
       `...Uhh I can only change the volume in terms of digits... you know, like 0 - 10... _he looks away_`,
     );
@@ -839,20 +895,32 @@ export const setSongVolume = async (message: Message) => {
         level: 'error',
         message: `Error occurred while joining the voice channel to set the volume: ${error.message}`,
       });
+      playlist.isWriteLocked = false;
       return message.channel.send(
         `I can't seem to join the voice channel to set the volume of ${volume}/${maxAllowableVolume}.`,
       );
     }
   }
 
-  playlist.connection.dispatcher.setVolumeLogarithmic(volume / 5);
-  const indexOfCurrentSong = playlist.songs.findIndex(
-    (s) => s.id === playlist.currentSong.id,
-  );
-  const prevVolume = playlist.songs[indexOfCurrentSong].volume;
-  playlist.songs[indexOfCurrentSong].volume = volume;
+  const prevVolume = playlist.songs[songIndexToSet].volume;
+
+  if (requestedSongIndex === -1) {
+    playlist.connection.dispatcher.setVolumeLogarithmic(volume / 5);
+  }
+
+  playlist.songs[songIndexToSet].volume = volume;
   setPlaylist(message, defaultPlaylistName, playlist);
+
+  const songName = (() => {
+    if (requestedSongIndex !== -1) {
+      return `track ${requestedSongIndex + 1} (**${
+        playlist.currentSong.title
+      }**)`;
+    }
+    return `the current song`;
+  })();
+
   return message.channel.send(
-    `Volume for this song changed from ~~${prevVolume} / ${maxAllowableVolume}~~ to ${volume} / ${maxAllowableVolume}.`,
+    `Volume for ${songName} changed from ~~${prevVolume} / ${maxAllowableVolume}~~ to ${volume} / ${maxAllowableVolume}.`,
   );
 };
