@@ -13,7 +13,6 @@ import {
   loopOrder,
   loopOrderedMessages,
   volumeBeingSetPattern,
-  setSongVolRequests,
   youtubeLinkPattern,
   existingTrackPattern,
   resetPlaylistRequests,
@@ -289,6 +288,7 @@ export const play = (
     playlist.voiceChannel?.leave();
     return;
   }
+
   if (song.id === songScaffold.id) {
     playlist.textChannel.send(
       "_lays back in his chair and lights a fresh cigarette._ That's all the tracks.",
@@ -297,9 +297,17 @@ export const play = (
     playlist.voiceChannel?.leave();
     return;
   }
-
   const dispatcher = playlist.connection
-    .play(ytdl(song.url))
+    .play(ytdl(song.url, { filter: 'audioonly' }))
+    .on('debug', (info) => {
+      playlist.textChannel.send(
+        "_frowns_. That's odd, I can't play this track. Try finding another.",
+      );
+      logger.log({
+        level: 'error',
+        message: `Connection debug event triggered. ${JSON.stringify(info)}`,
+      });
+    })
     .on('start', () => {
       dispatcher.setVolumeLogarithmic(song.volume / 5);
       playlist.textChannel.send(
