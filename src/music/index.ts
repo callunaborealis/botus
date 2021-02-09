@@ -166,6 +166,7 @@ const deletePlaylist = (message: Message, name: string) => {
     return;
   }
   const playlists = serverSession.playlists;
+
   delete playlists[name];
   multiServerSession.set(serverId, {
     ...serverSession,
@@ -307,6 +308,7 @@ export const play = (
         level: 'error',
         message: `Connection debug event triggered. ${JSON.stringify(info)}`,
       });
+      stop(message);
     })
     .on('start', () => {
       dispatcher.setVolumeLogarithmic(song.volume / 5);
@@ -625,14 +627,39 @@ export const list = (message: Message) => {
   return message.channel.send(listOfSongsInAMessage);
 };
 
-export const skip = (message: Message) => {
+export const skip = async (message: Message) => {
   const playlist = getPlaylist(message, defaultPlaylistName);
   if (!message?.member?.voice.channel) {
     return message.channel.send(
       'You have to be in a voice channel to stop the music!',
     );
   }
-  if (!playlist?.connection) {
+  if (!playlist) {
+    return;
+  }
+  if (!playlist.connection?.dispatcher) {
+    const voiceChannel = message.member?.voice.channel;
+    try {
+      if (voiceChannel && voiceChannel.joinable) {
+        const connection = await voiceChannel.join();
+        playlist.connection = connection;
+      }
+    } catch (error) {
+      logger.log({
+        level: 'error',
+        message: `Error occurred while joining the voice channel to skip the current song: ${error.message}`,
+      });
+      playlist.isWriteLocked = false;
+      return message.channel.send(
+        `I can't seem to join the voice channel to skip the current song.`,
+      );
+    }
+  }
+  if (!playlist.connection?.dispatcher) {
+    logger.log({
+      level: 'error',
+      message: `Playlist has no voice channel to skip the current song.`,
+    });
     return;
   }
   playlist.connection.dispatcher.end();
@@ -680,7 +707,9 @@ export const removeSong = (message: Message) => {
 
   if (updatedSongs.length === 0 || previousCurrentSong?.id === removedSong.id) {
     playlist.isWriteLocked = false;
-    playlist.connection.dispatcher.end();
+    if (playlist.connection.dispatcher) {
+      playlist.connection.dispatcher.end();
+    }
   }
   const updatedPlaylist = {
     ...playlist,
@@ -740,7 +769,12 @@ export const stop = (message: Message) => {
   }
   playlist.stopOnFinish = true;
   setPlaylist(message, defaultPlaylistName, playlist);
-  if (!playlist?.connection) {
+  if (!playlist?.connection?.dispatcher) {
+    logger.log({
+      level: 'error',
+      message: `Playlist has no connection to stop the current song.`,
+    });
+    playlist.voiceChannel?.leave();
     return;
   }
   playlist.connection.dispatcher.end();
@@ -769,7 +803,7 @@ export const clear = async (message: Message) => {
   playlist.isWriteLocked = false;
   setPlaylist(message, defaultPlaylistName, playlist);
 
-  if (!playlist?.connection) {
+  if (!playlist.connection?.dispatcher) {
     const voiceChannel = message.member?.voice.channel;
     try {
       if (voiceChannel && voiceChannel.joinable) {
@@ -779,24 +813,25 @@ export const clear = async (message: Message) => {
     } catch (error) {
       logger.log({
         level: 'error',
-        message: `Error occurred while joining the voice channel to stop the current song to clear the playlist: ${error.message}`,
+        message: `Error occurred while joining the voice channel to set the volume: ${error.message}`,
       });
+      playlist.isWriteLocked = false;
       return message.channel.send(
-        `I can't seem to join the voice channel to stop the song before clearing the playlist.`,
+        `I can't seem to join the voice channel to clear the current song.`,
       );
     }
   }
 
-  if (!playlist?.connection) {
-    playlist.isWriteLocked = false;
-    logger.log({
-      level: 'error',
-      message: `Playlist unable to connect to a voice channel to end the current song.`,
-    });
+  if (!playlist.connection?.dispatcher) {
     return;
   }
 
   playlist.connection.dispatcher.end();
+
+  if (playlist.voiceChannel) {
+    playlist.voiceChannel?.leave();
+  }
+
   deletePlaylist(message, defaultPlaylistName);
   message.channel.send(
     `_stops the music playing and clears the  **${defaultPlaylistName}** playlist._`,
