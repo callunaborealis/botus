@@ -12,14 +12,13 @@ import {
   songScaffold,
   loopOrder,
   loopOrderedMessages,
-  volumeBeingSetPattern,
-  youtubeLinkPattern,
   existingTrackPattern,
   resetPlaylistRequests,
 } from './constants';
 import { LoopType, PlaylistShape, SongShape } from './types';
 import { getNextLoopedIndex } from '../utils';
 import logger from '../logger';
+import { getYoutubeLinkAndVolFromRequest } from './helper';
 
 const defaultPlaylistName = 'default';
 
@@ -465,40 +464,22 @@ export const playAndOrAddYoutubeToPlaylist = async (message: Message) => {
     );
   }
 
-  const youtubeLinks = message.content.match(youtubeLinkPattern);
-  if (!isArray(youtubeLinks)) {
+  const { volume, maxAllowableReached, link } = getYoutubeLinkAndVolFromRequest(
+    message.content,
+    maxAllowableVolume,
+  );
+
+  if (link === '#') {
     return message.channel.send("...I can't play _that_.");
   }
-
-  const songInfo = await ytdl.getInfo(youtubeLinks[0]);
-
-  let maxAllowableReached = false;
-  const volume = (() => {
-    const volumeMatches = message.content.match(volumeBeingSetPattern);
-    if (isArray(volumeMatches)) {
-      const volumeOrder = volumeMatches[0];
-      if (isString(volumeOrder)) {
-        return volumeOrder.split(' ').reduce((eventualVol, v) => {
-          const candidate = parseFloat(v);
-          if (isFinite(candidate) && candidate <= maxAllowableVolume) {
-            return candidate;
-          }
-          if (isFinite(candidate) && candidate > maxAllowableVolume) {
-            maxAllowableReached = true;
-            return maxAllowableVolume;
-          }
-          return eventualVol;
-        }, maxAllowableVolume / 2);
-      }
-    }
-    return maxAllowableVolume / 2;
-  })();
 
   if (maxAllowableReached) {
     message.channel.send(
       `._shakes his head_ I won't play songs louder than a level of **${maxAllowableReached}**.`,
     );
   }
+
+  const songInfo = await ytdl.getInfo(link);
 
   const song = {
     id: uuidv4(),

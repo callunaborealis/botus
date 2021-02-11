@@ -26,14 +26,14 @@ export const loopOffRequests = [/^;loop stop$/gim];
 export const loopCycleRequests = [/^;l$/gim];
 export const setSongVolRequests = [
   // Set vol for current song.
-  /(^;v) ([\d]+)/gim,
+  /(^;v) [\d]+(\.?[\d]+)?/gim,
   // Set vol for current song with track and song
   // Human friendly
   // botus set the volume to 2
-  /^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]?([\w\d\s]{0,})?( (raise|lower|change|set|update|make))( the)?( vol(\.|ume)?)( (as|at|to|with|using))? [\d]+\.?[\d]+?( |$)/gim,
+  /^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]?([\w\d\s]{0,})?( (raise|lower|change|set|update|make))( the)?( vol(\.|ume)?)( (as|at|to|with|using))? [\d]+(\.?[\d]+)?( |$)/gim,
   // Volume + Song
-  /(^;v) [\d]+\.?[\d]+? (t|s|track|song) [\d]+( |$)/gim,
-  /(^;v) (t|s|track|song) [\d]+ (vol(\.|ume) )?[\d]+\.?[\d]+?( |$)/gim,
+  /(^;v) [\d]+(\.?[\d]+)? (t|s|track|song) [\d]+( |$)/gim,
+  /(^;v) (t|s|track|song) [\d]+ (vol(\.|ume) )?[\d]+(\.?[\d]+)?( |$)/gim,
   // botus raise the volume to 3 for song 2
   /^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]?([\w\d\s]{0,})?( (raise|lower|change|set|update|make))( the)?( vol(\.|ume)?)( (as|at|to|with|using))? [\d]+(\.\d+)?(( (for|with))( (song|track))( [\d]+))([ ?]|$)/gim,
   // botus, for song 2, raise the volume to 3
@@ -55,17 +55,6 @@ export const playExistingTrackRequests = [
   /^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]? [\w\d\s]{0,}(play|add)( track| song)? ([\d]+)/gim,
   /(^;p)( track| song)? ([\d]+)/gim,
 ];
-
-/**
- * Ultimate YouTube link detector. See <https://regexr.com/3akf5>
- */
-export const youtubeLinkPattern = new RegExp(
-  /((?:https?:\/\/)?(?:(?:(?:www\.?)?youtube\.com(?:\/(?:(?:watch\?\S*?(v=[^&\s]+)\S*)|(?:v(\/\S*))|(channel\/\S+)|(?:user\/(\S+))|(?:results\?(search_query=\S+))))?)|(?:youtu\.be(\/\S*)?)))/gim,
-);
-
-export const volumeBeingSetPattern = new RegExp(
-  /(vol(\.|ume))?( as| at| to| with| using)? (\d)+\.?(\d)?/i,
-);
 
 export const playYoutubeURLRequests = [
   // hey / hi / sup / hello / yo / oi / oy (optional) botus ... play/add [youtube link] (natural language processing)
