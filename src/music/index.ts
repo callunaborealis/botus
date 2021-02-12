@@ -1,10 +1,10 @@
-import { Message } from 'discord.js';
-import isArray from 'lodash/isArray';
+import { GuildMember, Message } from 'discord.js';
+import ytdl from 'ytdl-core';
+import ytpl from 'ytpl';
+import { v4 as uuidv4 } from 'uuid';
+
 import isFinite from 'lodash/isFinite';
 import isNull from 'lodash/isNull';
-import isString from 'lodash/isString';
-import { v4 as uuidv4 } from 'uuid';
-import ytdl from 'ytdl-core';
 
 import { multiServerSession } from '../constants';
 import {
@@ -443,49 +443,21 @@ export const playExistingTrack = async (message: Message) => {
   );
 };
 
-export const playAndOrAddYoutubeToPlaylist = async (message: Message) => {
-  if (!message.guild?.id) {
-    return;
-  }
-
+const addTrackToPlaylist = async (
+  message: Message,
+  title: string,
+  url: string,
+  trackVolume: number,
+) => {
   const voiceChannel = message.member?.voice.channel;
   if (!voiceChannel) {
-    return message.channel.send(
-      "I'm not gonna play for no one. Someone get into a voice channel first.",
-    );
-  }
-  if (!message?.client?.user) {
     return;
   }
-  const permissions = voiceChannel.permissionsFor(message.client.user);
-  if (!permissions?.has('CONNECT') || !permissions.has('SPEAK')) {
-    return message.channel.send(
-      'Give me permissions for connecting and speaking in the voice channel, then we can party.',
-    );
-  }
-
-  const { volume, maxAllowableReached, link } = getYoutubeLinkAndVolFromRequest(
-    message.content,
-    maxAllowableVolume,
-  );
-
-  if (link === '#') {
-    return message.channel.send("...I can't play _that_.");
-  }
-
-  if (maxAllowableReached) {
-    message.channel.send(
-      `._shakes his head_ I won't play songs louder than a level of **${maxAllowableReached}**.`,
-    );
-  }
-
-  const songInfo = await ytdl.getInfo(link);
-
   const song = {
     id: uuidv4(),
-    title: songInfo.videoDetails.title,
-    url: songInfo.videoDetails.video_url,
-    volume,
+    title,
+    url,
+    volume: trackVolume,
   };
   const playlist = getPlaylist(message, defaultPlaylistName);
   if (!playlist) {
@@ -537,10 +509,69 @@ export const playAndOrAddYoutubeToPlaylist = async (message: Message) => {
     playlist.nextSong = nextSong;
     playlist.isWriteLocked = false;
     setPlaylist(message, defaultPlaylistName, playlist);
+  }
+};
+
+export const playAndOrAddYoutubeToPlaylist = async (message: Message) => {
+  if (!message.guild?.id) {
+    return;
+  }
+
+  const voiceChannel = message.member?.voice.channel;
+  if (!voiceChannel) {
     return message.channel.send(
-      `_nods and adds_ **${song.title}** with volume at **${song.volume}** _to the list._`,
+      "I'm not gonna play for no one. Someone get into a voice channel first.",
     );
   }
+  if (!message?.client?.user) {
+    return;
+  }
+  const permissions = voiceChannel.permissionsFor(message.client.user);
+  if (!permissions?.has('CONNECT') || !permissions.has('SPEAK')) {
+    return message.channel.send(
+      'Give me permissions for connecting and speaking in the voice channel, then we can party.',
+    );
+  }
+
+  const {
+    volume,
+    maxAllowableReached,
+    link,
+    playlistId,
+  } = getYoutubeLinkAndVolFromRequest(message.content, maxAllowableVolume);
+
+  if (link === '#') {
+    return message.channel.send("...I can't play _that_.");
+  }
+
+  if (maxAllowableReached) {
+    message.channel.send(
+      `._shakes his head_ I won't play songs louder than a level of **${maxAllowableReached}**.`,
+    );
+  }
+
+  if (playlistId !== '-') {
+    const youtubePlaylistIdPattern = new RegExp(/(list=.+)/gim);
+    try {
+      const playlistIdIsValid = ytpl.validateID(link);
+      if (playlistIdIsValid) {
+        const youtubePlaylist = await ytpl(link);
+      }
+    } catch (error) {}
+  }
+
+  const songInfo = await ytdl.getInfo(link);
+
+  addTrackToPlaylist(
+    message,
+    songInfo.videoDetails.title,
+    songInfo.videoDetails.video_url,
+    volume,
+  );
+
+  return message.channel.send(
+    `_nods and adds_ **${songInfo.videoDetails.title}** with volume at **${volume}** _to the list._`,
+  );
 };
 
 /**

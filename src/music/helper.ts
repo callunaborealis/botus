@@ -12,6 +12,10 @@ const youtubeLinkPattern = new RegExp(
   /((?:https?:\/\/)?(?:(?:(?:www\.?)?youtube\.com(?:\/(?:(?:watch\?\S*?(v=[^&\s]+)\S*)|(?:v(\/\S*))|(channel\/\S+)|(?:user\/(\S+))|(?:results\?(search_query=\S+))))?)|(?:youtu\.be(\/\S*)?)))/gim,
 );
 
+const youtubePlaylistLinkPattern = new RegExp(
+  /((?:https?:\/\/)?(?:(?:(?:www\.?)?youtube\.com)))\/(watch\?v=[\w\d]+&)?(index=[\d]+&)?(list=.+)/gim,
+);
+
 export const getYoutubeLinkAndVolFromRequest = (
   content: string,
   maxAllowableVolume: number,
@@ -22,6 +26,14 @@ export const getYoutubeLinkAndVolFromRequest = (
       return youtubeLinks[0];
     }
     return '#';
+  })();
+
+  const playlistId = (() => {
+    const youtubePlaylistLinks = content.match(youtubePlaylistLinkPattern);
+    if (isArray(youtubePlaylistLinks)) {
+      return youtubePlaylistLinks[0];
+    }
+    return '-';
   })();
 
   const { maxAllowableReached, volume } = (() => {
@@ -54,6 +66,7 @@ export const getYoutubeLinkAndVolFromRequest = (
   return {
     link,
     maxAllowableReached,
+    playlistId,
     volume,
   };
 };

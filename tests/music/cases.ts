@@ -38,31 +38,37 @@ export const expectedOutputs = {
     {
       link: 'https://www.youtube.com/watch?v=rmL1D_aWTAY&t=688s',
       maxAllowableReached: false,
+      playlistId: '-',
       volume: 2.222,
     },
     {
       link: 'https://www.youtube.com/watch?v=rmL1D_aWTAY&t=688s',
       maxAllowableReached: false,
+      playlistId: '-',
       volume: 2.2,
     },
     {
       link: 'https://www.youtube.com/watch?v=rmL1D_aWTAY&t=688s',
       maxAllowableReached: false,
+      playlistId: '-',
       volume: 2,
     },
     {
       link: 'https://www.youtube.com/watch?v=rmL1D_aWTAY&t=688s',
       maxAllowableReached: false,
+      playlistId: '-',
       volume: 2.222,
     },
     {
       link: 'https://www.youtube.com/watch?v=rmL1D_aWTAY&t=688s',
       maxAllowableReached: false,
+      playlistId: '-',
       volume: 2.2,
     },
     {
       link: 'https://www.youtube.com/watch?v=rmL1D_aWTAY&t=688s',
       maxAllowableReached: false,
+      playlistId: '-',
       volume: 2,
     },
   ],
