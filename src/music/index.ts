@@ -1,8 +1,10 @@
-import { GuildMember, Message } from 'discord.js';
+import { Message } from 'discord.js';
 import ytdl from 'ytdl-core';
 import ytpl from 'ytpl';
 import { v4 as uuidv4 } from 'uuid';
 
+import chunk from 'lodash/chunk';
+import round from 'lodash/round';
 import isFinite from 'lodash/isFinite';
 import isNull from 'lodash/isNull';
 
@@ -74,9 +76,10 @@ export const createServerSession = async (message: Message) => {
     if (serverSession.playlists[playlistName]) {
       delete serverSession.playlists[playlistName];
     }
+    const newPlaylist: PlaylistShape = generateNewPlaylist();
     const newServerSession = {
       ...serverSession,
-      playlists: {},
+      playlists: { [defaultPlaylistName]: newPlaylist },
     };
     multiServerSession.set(serverId, newServerSession);
 
@@ -480,36 +483,32 @@ const addTrackToPlaylist = async (
         level: 'error',
         message: `Error occurred while creating a new playlist: ${error.message}`,
       });
-      return;
     }
-  } else {
-    if (playlist?.isWriteLocked) {
-      return;
-    }
-    playlist.isWriteLocked = true;
-    playlist.songs.push(song);
-    setPlaylist(message, defaultPlaylistName, playlist);
-    if (
-      !playlist?.currentSong?.id ||
-      playlist?.currentSong?.id === songScaffold.id
-    ) {
-      if (!playlist.connection) {
-        const connection = await voiceChannel.join();
-        playlist.connection = connection;
-        setPlaylist(message, defaultPlaylistName, playlist);
-      }
-      play(message, song);
-    }
-    const [previousSong, currentSong, nextSong] = dryRunTraversePlaylistByStep(
-      playlist,
-      1,
-    );
-    playlist.previousSong = previousSong;
-    playlist.currentSong = currentSong;
-    playlist.nextSong = nextSong;
-    playlist.isWriteLocked = false;
-    setPlaylist(message, defaultPlaylistName, playlist);
+    return;
   }
+  playlist.isWriteLocked = true;
+  playlist.songs.push(song);
+  setPlaylist(message, defaultPlaylistName, playlist);
+  if (
+    !playlist?.currentSong?.id ||
+    playlist?.currentSong?.id === songScaffold.id
+  ) {
+    if (!playlist.connection) {
+      const connection = await voiceChannel.join();
+      playlist.connection = connection;
+      setPlaylist(message, defaultPlaylistName, playlist);
+    }
+    play(message, song);
+  }
+  const [previousSong, currentSong, nextSong] = dryRunTraversePlaylistByStep(
+    playlist,
+    1,
+  );
+  playlist.previousSong = previousSong;
+  playlist.currentSong = currentSong;
+  playlist.nextSong = nextSong;
+  playlist.isWriteLocked = false;
+  setPlaylist(message, defaultPlaylistName, playlist);
 };
 
 export const playAndOrAddYoutubeToPlaylist = async (message: Message) => {
@@ -551,18 +550,30 @@ export const playAndOrAddYoutubeToPlaylist = async (message: Message) => {
   }
 
   if (playlistId !== '-') {
-    const youtubePlaylistIdPattern = new RegExp(/(list=.+)/gim);
+    // YouTube playlist
     try {
-      const playlistIdIsValid = ytpl.validateID(link);
+      const playlistIdIsValid = ytpl.validateID(playlistId);
       if (playlistIdIsValid) {
-        const youtubePlaylist = await ytpl(link);
+        const youtubePlaylist = await ytpl(playlistId);
+        const numberOfTracks = youtubePlaylist.items.length;
+        for (const track of youtubePlaylist.items) {
+          await addTrackToPlaylist(
+            message,
+            track.title,
+            track.shortUrl,
+            volume,
+          );
+        }
+        return message.channel.send(
+          `_nods and adds_ **${numberOfTracks}** _tracks with volume at_ **${volume}** _to the list._`,
+        );
       }
     } catch (error) {}
   }
 
+  // Single track
   const songInfo = await ytdl.getInfo(link);
-
-  addTrackToPlaylist(
+  await addTrackToPlaylist(
     message,
     songInfo.videoDetails.title,
     songInfo.videoDetails.video_url,
@@ -577,10 +588,20 @@ export const playAndOrAddYoutubeToPlaylist = async (message: Message) => {
 /**
  * Shows the playlist
  */
-export const list = (message: Message) => {
+export const list = async (message: Message) => {
   const playlist = getPlaylist(message, defaultPlaylistName);
-  if (!playlist?.currentSong) {
-    return message.channel.send("Nothing's playing at the moment.");
+  if (!playlist) {
+    return message.channel.send('There is no such playlist.');
+  }
+  if (!playlist.currentSong) {
+    return message.channel.send(
+      `Nothing is playing at the moment for the **${defaultPlaylistName}** playlist.`,
+    );
+  }
+  if (playlist.songs.length === 0) {
+    return message.channel.send(
+      `There are no songs in the **${defaultPlaylistName}** playlist.`,
+    );
   }
   const currentSongId = playlist.currentSong.id;
   const nextSongId = playlist.nextSong.id;
@@ -640,6 +661,14 @@ export const list = (message: Message) => {
     },
     `${loopMessages[loopType]} the **${defaultPlaylistName}** playlist:\n`,
   );
+  // Discord limit of 2000 in body
+  if (listOfSongsInAMessage.length >= 1000) {
+    const messages = chunk(listOfSongsInAMessage, 1000);
+    for (const msg of messages) {
+      await message.channel.send(`\n${msg.join('')}`);
+    }
+    return;
+  }
   return message.channel.send(listOfSongsInAMessage);
 };
 

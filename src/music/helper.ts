@@ -13,8 +13,9 @@ const youtubeLinkPattern = new RegExp(
 );
 
 const youtubePlaylistLinkPattern = new RegExp(
-  /((?:https?:\/\/)?(?:(?:(?:www\.?)?youtube\.com)))\/(watch\?v=[\w\d]+&)?(index=[\d]+&)?(list=.+)/gim,
+  /((?:https?:\/\/)?(?:(?:(?:www\.?)?youtube\.com)))\/playlist\?(watch\?v=[\w\d]+&)?(index=[\d]+&)?(list=.+)/gim,
 );
+const youtubePlaylistPattern = new RegExp(/list=.+/gim);
 
 export const getYoutubeLinkAndVolFromRequest = (
   content: string,
@@ -31,7 +32,10 @@ export const getYoutubeLinkAndVolFromRequest = (
   const playlistId = (() => {
     const youtubePlaylistLinks = content.match(youtubePlaylistLinkPattern);
     if (isArray(youtubePlaylistLinks)) {
-      return youtubePlaylistLinks[0];
+      const playlistKV = youtubePlaylistLinks[0].match(youtubePlaylistPattern);
+      if (isArray(playlistKV)) {
+        return playlistKV[0].split(/list=/gim)[1].split(' ')[0];
+      }
     }
     return '-';
   })();

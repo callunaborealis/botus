@@ -19,6 +19,7 @@ describe('Music: Requests processing', () => {
             expectedInput.maxAllowableVolume,
           );
           expect(actual.link).to.equal(expected.link);
+          expect(actual.playlistId).to.equal(expected.playlistId);
           expect(actual.maxAllowableReached).to.equal(
             expected.maxAllowableReached,
           );
