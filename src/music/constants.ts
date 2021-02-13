@@ -24,7 +24,7 @@ export const songScaffold: SongShape = {
 export const joinVCRequests = [/^;(join|j)$/gim];
 export const loopTrackRequests = [/^;(loop track|ls|lt|loop song)$/gim];
 export const loopPlaylistRequests = [/^;(lq|loop queue|lp)$/gim];
-export const loopOffRequests = [/^;loop stop$/gim];
+export const loopOffRequests = [/^;(loop stop|loopstop|loop off|loopoff)$/gim];
 export const loopCycleRequests = [/^;l$/gim];
 export const setSongVolRequests = [
   // Set vol for current song.
@@ -45,7 +45,10 @@ export const setSongVolRequests = [
   /(^;v)( t| s| track| song)? ([\d]+)( vol(\.|ume))?[\d]+(\.\d+)?/gim,
   /(^;v)( vol(\.|ume))?[\d]+(\.\d+)?( track| song | t| s)? ([\d]+)/gim,
 ];
-export const removeSongRequests = [/^;rm [\d]+/gim];
+export const removeSongRequests = [
+  /^;rm [\d]+/gim,
+  /(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]?([\w\d\s]{0,})? (remove|take away|delete|throw|get rid of|discard|take out|take away) (track|song) [\d]+( |$)/gim,
+];
 export const stopSongRequests = [/^;(stop|fuckoff|goaway)$/gim];
 export const disconnectVCRequests = [
   // For now disconnect is a alias for stop
@@ -53,7 +56,7 @@ export const disconnectVCRequests = [
 ];
 export const resetPlaylistRequests = [
   // Reset
-  /^;(forcereset)( (\w+)?)?$/gi,
+  /^;(forcereset|hardreset)( (\w+)?)?$/gi,
 ];
 
 export const existingTrackPattern = new RegExp(/([\d]+)/gim);
@@ -70,9 +73,11 @@ export const playYoutubeURLRequests = [
 ];
 
 export const listRequests = [
-  /^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]? (what[']?s playin[g]?|queue|(play)?list)/gim,
+  /^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]? (what[']?s playin[g]?|queue|(play)?list)( |$)/gim,
+  /^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]? show(( (pg?|page))?( [\d]+))( |$)/gim,
+  /^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]? show( (all|all that is|all that'?s|everything))( |$)/gim,
   // Shortcut
-  /^;(q|queue|(play)?list)/gim,
+  /^;(q|queue|(play)?list)(( (pg?|page))?( [\d]+)| ((everything|all)))?( |$)/gim,
 ];
 
 export const skipRequests = [

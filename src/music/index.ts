@@ -3,7 +3,6 @@ import ytdl from 'ytdl-core';
 import ytpl from 'ytpl';
 import { v4 as uuidv4 } from 'uuid';
 
-import chunk from 'lodash/chunk';
 import isFinite from 'lodash/isFinite';
 import isNull from 'lodash/isNull';
 
@@ -15,6 +14,8 @@ import {
   loopOrderedMessages,
   existingTrackPattern,
   resetPlaylistRequests,
+  removeSongRequests,
+  listRequests,
 } from './constants';
 import { LoopType, PlaylistShape, SongShape } from './types';
 import { getNextLoopedIndex } from '../utils';
@@ -22,6 +23,18 @@ import logger from '../logger';
 import { getYoutubeLinkAndVolFromRequest } from './helper';
 
 const defaultPlaylistName = 'default';
+
+const reactWithEmoji = {
+  received: (message: Message) => {
+    message.react('👌');
+  },
+  failed: (message: Message) => {
+    message.react('⛔');
+  },
+  succeeded: (message: Message) => {
+    message.react('✅');
+  },
+};
 
 export const createServerSession = async (message: Message) => {
   const serverId = message.guild?.id;
@@ -82,7 +95,7 @@ export const createServerSession = async (message: Message) => {
       playlists: { [defaultPlaylistName]: newPlaylist },
     };
     multiServerSession.set(serverId, newServerSession);
-    message.react('👌');
+    reactWithEmoji.succeeded(message);
     return newServerSession;
   }
   return serverSession;
@@ -300,12 +313,13 @@ export const displayDebugValues = (message: Message) => {
     level: 'error',
     message: `Debug Values: ${debugMessage.join('\n')}`,
   });
-  message.react('👌');
+  reactWithEmoji.succeeded(message);
   return;
 };
 
 export const play = (message: Message, song: SongShape) => {
   if (!message.guild?.id) {
+    reactWithEmoji.failed(message);
     logger.log({
       level: 'error',
       message: `No guild ID found while attempting to play a song.`,
@@ -314,6 +328,7 @@ export const play = (message: Message, song: SongShape) => {
   }
   const playlist = getPlaylist(message, defaultPlaylistName);
   if (!playlist || !song) {
+    reactWithEmoji.failed(message);
     logger.log({
       level: 'error',
       message: `No playlist or song found while attempting to play a song.`,
@@ -353,6 +368,7 @@ export const play = (message: Message, song: SongShape) => {
         level: 'error',
         message: `Connection debug event triggered. ${JSON.stringify(info)}`,
       });
+      reactWithEmoji.failed(message);
       stop(message);
     })
     .on('start', () => {
@@ -369,6 +385,7 @@ export const play = (message: Message, song: SongShape) => {
       playlist.previousSong = previousSong;
       playlist.currentSong = currentSong;
       playlist.nextSong = nextSong;
+      reactWithEmoji.succeeded(message);
       setPlaylist(message, defaultPlaylistName, playlist);
     })
     .on('finish', () => {
@@ -419,17 +436,19 @@ export const play = (message: Message, song: SongShape) => {
 };
 
 export const playExistingTrack = async (message: Message) => {
+  reactWithEmoji.received(message);
   if (!message.guild?.id) {
     logger.log({
       level: 'error',
       message: `No guild ID found while attempting to play an existing track.`,
     });
-    message.react('😔');
+    reactWithEmoji.failed(message);
     return;
   }
 
   const voiceChannel = message.member?.voice.channel;
   if (!voiceChannel) {
+    reactWithEmoji.failed(message);
     return message.channel.send(
       "I'm not gonna play for no one. Someone get into a voice channel first.",
     );
@@ -439,11 +458,12 @@ export const playExistingTrack = async (message: Message) => {
       level: 'error',
       message: `No user found while attempting to play an existing track.`,
     });
-    message.react('😔');
+    reactWithEmoji.failed(message);
     return;
   }
   const permissions = voiceChannel.permissionsFor(message.client.user);
   if (!permissions?.has('CONNECT') || !permissions.has('SPEAK')) {
+    reactWithEmoji.failed(message);
     return message.channel.send(
       'Give me permissions for connecting and speaking in the voice channel, then we can party.',
     );
@@ -451,17 +471,18 @@ export const playExistingTrack = async (message: Message) => {
   const matches = message.content.match(existingTrackPattern);
   const existingTrackNr = parseInt(matches?.[0] ?? '-');
   if (!matches || !isFinite(existingTrackNr)) {
+    reactWithEmoji.failed(message);
     return message.channel.send(
       'I can only play existing track numbers, like in numbers, or new tracks that must be YouTube links.',
     );
   }
   const playlist = getPlaylist(message, defaultPlaylistName);
   if (!playlist) {
+    reactWithEmoji.failed(message);
     logger.log({
       level: 'error',
       message: `Unable to play existing track ${existingTrackNr} as the **${defaultPlaylistName}** playlist does not exist.`,
     });
-    message.react('😔');
     return;
   }
   if (playlist.isWriteLocked) {
@@ -477,6 +498,7 @@ export const playExistingTrack = async (message: Message) => {
     (_, i) => i === existingTrackNr - 1,
   );
   if (existingTrackIndex === -1) {
+    reactWithEmoji.failed(message);
     playlist.isWriteLocked = false;
     setPlaylist(message, defaultPlaylistName, playlist);
     return message.channel.send(
@@ -499,7 +521,7 @@ export const playExistingTrack = async (message: Message) => {
     });
     playlist.isWriteLocked = false;
     setPlaylist(message, defaultPlaylistName, playlist);
-    message.react('😔');
+    reactWithEmoji.failed(message);
     return message.channel.send(
       `I can't seem to join the voice channel to play that track.`,
     );
@@ -517,6 +539,7 @@ const addTrackToPlaylist = async (
 ) => {
   const voiceChannel = message.member?.voice.channel;
   if (!voiceChannel) {
+    reactWithEmoji.failed(message);
     logger.log({
       level: 'error',
       message: `No voice channel while adding track to playlist.- ${title}`,
@@ -549,6 +572,7 @@ const addTrackToPlaylist = async (
       });
       play(message, song);
     } catch (error) {
+      reactWithEmoji.failed(message);
       logger.log({
         level: 'error',
         message: `Error occurred while creating a new playlist: ${error.message}`,
@@ -582,31 +606,34 @@ const addTrackToPlaylist = async (
 };
 
 export const playAndOrAddYoutubeToPlaylist = async (message: Message) => {
+  reactWithEmoji.received(message);
   if (!message.guild?.id) {
+    reactWithEmoji.failed(message);
     logger.log({
       level: 'error',
       message: `No guild ID found while attempting to play and or add an existing YouTube link.`,
     });
-    message.react('😔');
     return;
   }
 
   const voiceChannel = message.member?.voice.channel;
   if (!voiceChannel) {
+    reactWithEmoji.failed(message);
     return message.channel.send(
       "I'm not gonna play for no one. Someone get into a voice channel first.",
     );
   }
   if (!message?.client?.user) {
+    reactWithEmoji.failed(message);
     logger.log({
       level: 'error',
       message: `No user found while attempting to play and or add an existing YouTube link.`,
     });
-    message.react('😔');
     return;
   }
   const permissions = voiceChannel.permissionsFor(message.client.user);
   if (!permissions?.has('CONNECT') || !permissions.has('SPEAK')) {
+    reactWithEmoji.failed(message);
     return message.channel.send(
       'Give me permissions for connecting and speaking in the voice channel, then we can party.',
     );
@@ -620,6 +647,7 @@ export const playAndOrAddYoutubeToPlaylist = async (message: Message) => {
   } = getYoutubeLinkAndVolFromRequest(message.content, maxAllowableVolume);
 
   if (link === '#') {
+    reactWithEmoji.failed(message);
     return message.channel.send("...I can't play _that_.");
   }
 
@@ -644,7 +672,7 @@ export const playAndOrAddYoutubeToPlaylist = async (message: Message) => {
             volume,
           );
         }
-        message.react('👌');
+        reactWithEmoji.succeeded(message);
         return message.channel.send(
           `_nods and adds_ **${numberOfTracks}** _tracks with volume at_ **${volume}** _to the list._`,
         );
@@ -660,13 +688,14 @@ export const playAndOrAddYoutubeToPlaylist = async (message: Message) => {
     songInfo.videoDetails.video_url,
     volume,
   );
-  message.react('👌');
+  reactWithEmoji.succeeded(message);
   return message.channel.send(
     `_nods and adds_ **${songInfo.videoDetails.title}** with volume at **${volume}** _to the list._`,
   );
 };
 
 export const joinVoiceChannel = async (message: Message) => {
+  reactWithEmoji.received(message);
   let playlist = getPlaylist(message, defaultPlaylistName);
   if (!playlist) {
     playlist = await createPlaylist(
@@ -676,11 +705,11 @@ export const joinVoiceChannel = async (message: Message) => {
     );
   }
   if (!playlist) {
+    reactWithEmoji.failed(message);
     logger.log({
       level: 'error',
       message: `No playlist created even after attempting create one. - ${defaultPlaylistName}`,
     });
-    message.react('😔');
     return;
   }
   const voiceChannel = message.member?.voice.channel;
@@ -697,7 +726,7 @@ export const joinVoiceChannel = async (message: Message) => {
       throw new Error("There isn't a playlist connection.");
     }
     setPlaylist(message, defaultPlaylistName, playlist);
-    message.react('👌');
+    reactWithEmoji.succeeded(message);
   } catch (error) {
     logger.log({
       level: 'error',
@@ -705,15 +734,16 @@ export const joinVoiceChannel = async (message: Message) => {
     });
     playlist.isWriteLocked = false;
     setPlaylist(message, defaultPlaylistName, playlist);
-    message.react('😔');
+    reactWithEmoji.failed(message);
     return message.channel.send(error.message);
   }
 };
 
 export const disconnectVoiceChannel = async (message: Message) => {
+  reactWithEmoji.received(message);
   const playlist = getPlaylist(message, defaultPlaylistName);
   if (!playlist) {
-    message.react('😔');
+    reactWithEmoji.failed(message);
     return message.channel.send('There is no such playlist.');
   }
   playlist.disconnectOnFinish = true;
@@ -747,28 +777,30 @@ export const list = async (message: Message) => {
     off: 'Now playing',
     song: `Just playing one song from`,
   };
-  const listOfSongsInAMessage = playlist.songs.reduce(
+
+  const trackChunkedPlaylist = playlist.songs.reduce(
     (
-      eventualSongList: any,
-      currentSongDetails,
+      eventualTrackList: { currentTrackIndex: number; tracks: string[] },
+      currentTrackOnList,
       index: number,
       songsList: SongShape[],
     ) => {
+      reactWithEmoji.received(message);
       const nowPlayingTag = (() => {
         if (
-          currentSongDetails.id === currentSongId &&
-          currentSongDetails.id === nextSongId &&
+          currentTrackOnList.id === currentSongId &&
+          currentTrackOnList.id === nextSongId &&
           playlist.loop !== 'off'
         ) {
           return '**:arrow_forward: :repeat_one: `Looping this song`** |';
         }
-        if (currentSongDetails.id === currentSongId) {
+        if (currentTrackOnList.id === currentSongId) {
           if (index === songsList.length - 1 && loopType === 'off') {
             return '**:arrow_forward: :eject: `Now playing (last song)`** |';
           }
           return '**:arrow_forward: `Now playing`**';
         }
-        if (currentSongDetails.id === nextSongId) {
+        if (currentTrackOnList.id === nextSongId) {
           if (index === songsList.length - 1 && loopType === 'off') {
             return '**:track_next: :eject: `Up next (last song)`** |';
           }
@@ -776,46 +808,169 @@ export const list = async (message: Message) => {
         }
         return '';
       })();
+
       const volumeTag = (() => {
-        if (currentSongDetails.volume > maxAllowableVolume * 0.75) {
-          return `:loud_sound: **${currentSongDetails.volume} / ${maxAllowableVolume}**`;
+        if (currentTrackOnList.volume > maxAllowableVolume * 0.75) {
+          return `:loud_sound: **${currentTrackOnList.volume} / ${maxAllowableVolume}**`;
         }
-        if (currentSongDetails.volume > maxAllowableVolume * 0.25) {
-          return `:sound: **${currentSongDetails.volume} / ${maxAllowableVolume}**`;
+        if (currentTrackOnList.volume > maxAllowableVolume * 0.25) {
+          return `:sound: **${currentTrackOnList.volume} / ${maxAllowableVolume}**`;
         }
-        if (currentSongDetails.volume > 0) {
-          return `:speaker: **${currentSongDetails.volume} / ${maxAllowableVolume}**`;
+        if (currentTrackOnList.volume > 0) {
+          return `:speaker: **${currentTrackOnList.volume} / ${maxAllowableVolume}**`;
         }
-        return `:mute: **${currentSongDetails.volume} / ${maxAllowableVolume}**`;
+        return `:mute: **${currentTrackOnList.volume} / ${maxAllowableVolume}**`;
       })();
-      const lines = [
+      const trackDetail = [
         `${index + 1}. ${nowPlayingTag} ${volumeTag}`,
-        `${currentSongDetails.title}`,
-        `<${currentSongDetails.url}>`,
-      ];
-      return `${eventualSongList}\n${lines.join('\n')}\n`;
+        `${currentTrackOnList.title}`,
+        `<${currentTrackOnList.url}>`,
+      ].join('\n');
+      return {
+        currentTrackIndex:
+          currentTrackOnList.id === currentSongId
+            ? index
+            : eventualTrackList.currentTrackIndex,
+        tracks: [...eventualTrackList.tracks, trackDetail],
+      };
     },
-    `${loopMessages[loopType]} the **${defaultPlaylistName}** playlist:\n`,
+    { currentTrackIndex: 0, tracks: [] },
   );
+
   // Discord limit of 2000 in body
-  if (listOfSongsInAMessage.length >= 1000) {
-    const messages = chunk(listOfSongsInAMessage, 1000);
-    for (const msg of messages) {
-      await message.channel.send(`\n${msg.join('')}`);
+  const discordMessageCharLimit = 1990;
+
+  const fullPlaylistFlattened = [
+    `${loopMessages[loopType]} the **${defaultPlaylistName}** playlist:`,
+    '',
+    ...trackChunkedPlaylist.tracks,
+    '',
+  ].join('\n');
+  if (fullPlaylistFlattened.length < discordMessageCharLimit) {
+    return message.channel.send(fullPlaylistFlattened);
+  }
+
+  const processPageHeader = (i: number, pagesLength: number) => {
+    return `Showing **${defaultPlaylistName}** playlist. Current page: ${
+      i + 1
+    }/${pagesLength}.\nTo move to another page within the playlist, send \`;q {any number between 1 to ${pagesLength}}\`.`;
+  };
+  const processPageFooter = (i: number, pagesLength: number) => {
+    return `Current page: ${
+      i + 1
+    }/${pagesLength}.\nTo move to another page within the **${defaultPlaylistName}** playlist, send \`;q {any number between 1 to ${pagesLength}}\`.\n`;
+  };
+
+  const additionalContentLen =
+    processPageHeader(1000, 1000).length + processPageFooter(1000, 1000).length;
+
+  const { currentPageIndex, pages } = trackChunkedPlaylist.tracks.reduce(
+    (eventualPagedData, currentChunk, currentChunkIndex) => {
+      const currentPages = eventualPagedData.pages;
+      if (currentPages.length === 0) {
+        return { ...eventualPagedData, pages: [currentChunk] };
+      }
+      const currLastPageIndex = currentPages.length - 1;
+      const currentPage = currentPages[currLastPageIndex];
+      const propsectiveLen = currentPage.length + currentChunk.length;
+      if (propsectiveLen < discordMessageCharLimit - additionalContentLen) {
+        const remainderPages = [...currentPages];
+        remainderPages.splice(currLastPageIndex, 1);
+        return {
+          ...eventualPagedData,
+          currentPageIndex:
+            currentChunkIndex === trackChunkedPlaylist.currentTrackIndex
+              ? currLastPageIndex
+              : eventualPagedData.currentPageIndex,
+          // Append to existing last section
+          pages: [...remainderPages, `${currentPage}\n${currentChunk}`],
+        };
+      }
+      // Add section
+      return {
+        ...eventualPagedData,
+        currentPageIndex:
+          currentChunkIndex === trackChunkedPlaylist.currentTrackIndex
+            ? currLastPageIndex
+            : eventualPagedData.currentPageIndex,
+        pages: [...currentPages, currentChunk],
+      };
+    },
+    { pages: [] as string[], currentPageIndex: 0 },
+  );
+  let actualCurrentPageIndex = 0;
+
+  const pageIndexRequested = (() => {
+    const nlpCandidates = message.content.match(/ (pg?|page) [\d]+/gim);
+    const queryCandidates = message.content.match(/^;q [\d]+$/gim);
+    if (nlpCandidates && nlpCandidates[0]) {
+      const innerPageNrCands = nlpCandidates[0].split(/ (pg?|page) /);
+      const pageRequested = parseInt(innerPageNrCands[2], 10);
+      if (isFinite(pageRequested)) {
+        return pageRequested - 1;
+      }
+      message.channel.send(
+        "That page you requested doesn't exist. I'll show the first page or page with the current track instead.",
+      );
     }
+    if (queryCandidates && queryCandidates[0]) {
+      const innerPageNrCands = queryCandidates[0].split(';q ');
+      const pageRequested = parseInt(innerPageNrCands[1], 10);
+      if (isFinite(pageRequested)) {
+        return pageRequested - 1;
+      }
+      message.channel.send(
+        "That page you requested doesn't exist. I'll show the first page or page with the current track instead.",
+      );
+    }
+    return currentPageIndex;
+  })();
+
+  const matchForAll = message.content.match(/(everything|all)/gim);
+  const matchForAllNLP = message.content.match(listRequests[2]);
+  if (
+    (matchForAll && matchForAll[0]) ||
+    (matchForAllNLP && matchForAllNLP[0])
+  ) {
+    for (const page of pages) {
+      await message.channel.send(
+        `${processPageHeader(
+          actualCurrentPageIndex,
+          pages.length,
+        )}\n\n${page}\n\n${processPageFooter(
+          actualCurrentPageIndex,
+          pages.length,
+        )}\n`,
+      );
+      actualCurrentPageIndex = actualCurrentPageIndex + 1;
+    }
+    reactWithEmoji.succeeded(message);
     return;
   }
-  return message.channel.send(listOfSongsInAMessage);
+
+  if (pages[pageIndexRequested]) {
+    await message.channel.send(
+      `${processPageHeader(pageIndexRequested, pages.length)}\n\n${
+        pages[pageIndexRequested]
+      }\n\n${processPageFooter(pageIndexRequested, pages.length)}\n`,
+    );
+  }
+
+  reactWithEmoji.succeeded(message);
+  return;
 };
 
 export const skip = async (message: Message) => {
+  reactWithEmoji.received(message);
   const playlist = getPlaylist(message, defaultPlaylistName);
   if (!message?.member?.voice.channel) {
+    reactWithEmoji.failed(message);
     return message.channel.send(
       'You have to be in a voice channel to stop the music!',
     );
   }
   if (!playlist) {
+    reactWithEmoji.failed(message);
     return message.channel.send(
       "I can't skip if there isn't a playlist to skip songs with.",
     );
@@ -846,25 +1001,27 @@ export const skip = async (message: Message) => {
       });
       playlist.isWriteLocked = false;
       setPlaylist(message, defaultPlaylistName, playlist);
-      message.react('😔');
+      reactWithEmoji.failed(message);
       return message.channel.send(
         `I can't seem to join the voice channel to skip the current song.`,
       );
     }
   }
-  message.react('👌');
+  reactWithEmoji.succeeded(message);
   playlist.connection.dispatcher.end();
 };
 
 export const removeSong = (message: Message) => {
+  reactWithEmoji.received(message);
   const playlist = getPlaylist(message, defaultPlaylistName);
   if (!playlist) {
+    reactWithEmoji.failed(message);
     return message.channel.send(
       "_looks at the empty playlist queue blankly._ There's nothing to remove.",
     );
   }
   if (!playlist.connection) {
-    message.react('😔');
+    reactWithEmoji.failed(message);
     logger.log({
       level: 'error',
       message: `No connection.`,
@@ -881,12 +1038,23 @@ export const removeSong = (message: Message) => {
   }
   playlist.isWriteLocked = true;
   setPlaylist(message, defaultPlaylistName, playlist);
-  const songNrCandidate = message.content.split(/;rm /)[1];
+  const songNrCandidate = (() => {
+    const trackNrMentions = message.content.match(/(track|song) [\d]+/gim);
+    if (trackNrMentions && trackNrMentions[0]) {
+      const possibleTrackNrs = trackNrMentions[0].split(/(track|song) /gim);
+      return possibleTrackNrs?.[2] ?? '-';
+    }
+    return message.content.split(/;rm /)[1];
+  })();
   const parsedSongNrCandidate = parseInt(songNrCandidate, 10);
   if (!isFinite(parsedSongNrCandidate)) {
     playlist.isWriteLocked = false;
+    reactWithEmoji.failed(message);
+    logger.log({
+      level: 'error',
+      message: `Invalid song number candidate: "${songNrCandidate}"`,
+    });
     setPlaylist(message, defaultPlaylistName, playlist);
-    message.react('😕');
     return;
   }
   const previousCurrentSong = playlist.currentSong;
@@ -895,13 +1063,13 @@ export const removeSong = (message: Message) => {
     (_, i) => i === parsedSongNrCandidate - 1,
   );
   if (indexOfSongToBeRemoved === -1) {
+    reactWithEmoji.failed(message);
     playlist.isWriteLocked = false;
     setPlaylist(message, defaultPlaylistName, playlist);
     logger.log({
       level: 'error',
       message: `Tried to remove a track that doesn't exist on the playlist. - ${indexOfSongToBeRemoved}`,
     });
-    message.react('😕');
     return;
   }
   const removedSong = songs[indexOfSongToBeRemoved];
@@ -912,11 +1080,6 @@ export const removeSong = (message: Message) => {
     nextCurrentSong,
     nextNextSong,
   ] = dryRunTraversePlaylistByStep({ ...playlist, songs: updatedSongs }, 1);
-
-  message.react('👌');
-  message.channel.send(
-    `_removes_ **${removedSong.title}** _from the_ **${defaultPlaylistName}** _playlist and never looks back._`,
-  );
 
   if (updatedSongs.length === 0 || previousCurrentSong?.id === removedSong.id) {
     playlist.isWriteLocked = false;
@@ -933,17 +1096,22 @@ export const removeSong = (message: Message) => {
     songs: updatedSongs,
     isWriteLocked: false,
   };
+  reactWithEmoji.succeeded(message);
   setPlaylist(message, defaultPlaylistName, updatedPlaylist);
+  message.channel.send(
+    `_removes_ **${removedSong.title}** _from the_ **${defaultPlaylistName}** _playlist and never looks back._`,
+  );
 };
 
 export const loop = (message: Message, loopType?: LoopType) => {
+  reactWithEmoji.received(message);
   const playlist = getPlaylist(message, defaultPlaylistName);
   if (!playlist?.loop) {
+    reactWithEmoji.failed(message);
     logger.log({
       level: 'error',
       message: `Can't set the loop as there is no playlist or loop setting to begin with.`,
     });
-    message.react('😔');
     return;
   }
   if (playlist.isWriteLocked) {
@@ -973,23 +1141,24 @@ export const loop = (message: Message, loopType?: LoopType) => {
   playlist.nextSong = nextSong;
   playlist.isWriteLocked = false;
   setPlaylist(message, defaultPlaylistName, playlist);
-  message.react('👌');
+  reactWithEmoji.succeeded(message);
   message.channel.send(loopOrderedMessages[nextLoopSettingIndex]);
 };
 
 export const stop = (message: Message) => {
   const playlist = getPlaylist(message, defaultPlaylistName);
   if (!message?.member?.voice.channel) {
+    reactWithEmoji.failed(message);
     return message.channel.send(
       `I can't stop the **${defaultPlaylistName}** playlist if there isn't a voice channel.`,
     );
   }
   if (!playlist) {
+    reactWithEmoji.failed(message);
     logger.log({
       level: 'error',
       message: `Playlist not found while stopping. - ${defaultPlaylistName}`,
     });
-    message.react('😔');
     return;
   }
   if (playlist.isWriteLocked) {
@@ -1005,49 +1174,53 @@ export const stop = (message: Message) => {
   playlist.stopOnFinish = true;
   setPlaylist(message, defaultPlaylistName, playlist);
   if (!playlist?.connection) {
+    reactWithEmoji.failed(message);
     logger.log({
       level: 'error',
       message: `Playlist has no connection to stop the current song.`,
     });
-    message.react('😔');
     return;
   }
   if (!playlist?.connection.dispatcher) {
     if (!playlist.disconnectOnFinish) {
+      reactWithEmoji.failed(message);
       logger.log({
         level: 'error',
         message: `Playlist has no connection dispatcher to stop the current song.`,
       });
-      message.react('😔');
       return;
     }
-    if (playlist.voiceChannel) {
-      playlist.voiceChannel?.leave();
-    } else {
+    if (!playlist.voiceChannel) {
+      reactWithEmoji.failed(message);
       logger.log({
         level: 'error',
         message: `Unable to leave voice channel as no voice channel and no connection dispatcher even when requested to disconnect on finish.`,
       });
-      message.react('😔');
+      return;
     }
+    playlist.voiceChannel?.leave();
+    reactWithEmoji.succeeded(message);
     return;
   }
+  reactWithEmoji.succeeded(message);
   playlist.connection.dispatcher.end();
 };
 
 export const clear = async (message: Message) => {
+  reactWithEmoji.received(message);
   const playlist = getPlaylist(message, defaultPlaylistName);
   if (!message?.member?.voice.channel) {
+    reactWithEmoji.failed(message);
     return message.channel.send(
       `I can't stop and clear the **${defaultPlaylistName}** playlist if there isn't a voice channel.`,
     );
   }
   if (!playlist) {
+    reactWithEmoji.failed(message);
     logger.log({
       level: 'error',
       message: `Playlist not found while clearing. - ${defaultPlaylistName}`,
     });
-    message.react('😔');
     return;
   }
   if (playlist.isWriteLocked) {
@@ -1090,7 +1263,7 @@ export const clear = async (message: Message) => {
       });
       playlist.isWriteLocked = false;
       setPlaylist(message, defaultPlaylistName, playlist);
-      message.react('😔');
+      reactWithEmoji.failed(message);
       return;
     }
   }
@@ -1114,16 +1287,18 @@ export const clear = async (message: Message) => {
   }
 
   deletePlaylist(message, defaultPlaylistName);
+  reactWithEmoji.succeeded(message);
 };
 
 export const setSongVolume = async (message: Message) => {
+  reactWithEmoji.received(message);
   const playlist = getPlaylist(message, defaultPlaylistName);
   if (!playlist) {
+    reactWithEmoji.failed(message);
     logger.log({
       level: 'error',
       message: `Playlist not found while setting track volume. - ${defaultPlaylistName}`,
     });
-    message.react('😔');
     return;
   }
 
@@ -1133,7 +1308,7 @@ export const setSongVolume = async (message: Message) => {
       message: `Unable to set song volume as write lock is on.`,
     });
     message.channel.send(
-      "_raises his hand up in exasperation._ I'll set you volume in good time. Hold that thought for a second.",
+      "_raises his hand up in exasperation._ I'll set your volume in good time. Hold that thought for a second.",
     );
     return;
   }
@@ -1208,7 +1383,7 @@ export const setSongVolume = async (message: Message) => {
   if (volume === '-') {
     playlist.isWriteLocked = false;
     setPlaylist(message, defaultPlaylistName, playlist);
-    message.react('😔');
+    reactWithEmoji.failed(message);
     return;
   }
 
@@ -1237,17 +1412,17 @@ export const setSongVolume = async (message: Message) => {
       });
       playlist.isWriteLocked = false;
       setPlaylist(message, defaultPlaylistName, playlist);
-      message.react('😔');
+      reactWithEmoji.failed(message);
       return;
     }
   }
 
   if (!playlist.songs[songIndexToSet]) {
+    reactWithEmoji.failed(message);
     logger.log({
       level: 'error',
       message: `Unable to find song to set current volume.`,
     });
-    message.react('😔');
     return;
   }
 
@@ -1255,11 +1430,11 @@ export const setSongVolume = async (message: Message) => {
 
   if (requestedSongIndex === -1) {
     if (!playlist.connection.dispatcher) {
+      reactWithEmoji.failed(message);
       logger.log({
         level: 'error',
         message: `Unable to find dispatcher to set volume of current track.`,
       });
-      message.react('😔');
       return;
     }
     playlist.connection.dispatcher.setVolumeLogarithmic(volume / 5);
@@ -1267,6 +1442,7 @@ export const setSongVolume = async (message: Message) => {
 
   playlist.songs[songIndexToSet].volume = volume;
   setPlaylist(message, defaultPlaylistName, playlist);
+  reactWithEmoji.succeeded(message);
 
   const songName = (() => {
     if (requestedSongIndex !== -1) {
