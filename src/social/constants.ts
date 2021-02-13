@@ -14,7 +14,7 @@ export const hailResponses = [
 ];
 
 export const helphelpRequests = [/^(;help[ ]?help)|(botus help[ ]?help)/gim];
-export const helpRequests = [/^(;h)|(;help)|(botus help)/gim];
+export const helpRequests = [/^((;h( |$))|(;help( |$))|(botus help( |$)))/gim];
 
 export const greetingRequests = [
   // greeting + name

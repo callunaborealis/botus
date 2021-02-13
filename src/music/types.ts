@@ -25,6 +25,11 @@ export interface PlaylistShape {
    */
   stopOnFinish: boolean;
   /**
+   * Indicates to disconnect bot on dispatcher
+   * end event
+   */
+  disconnectOnFinish: boolean;
+  /**
    * Simple write blocking signal
    * to prevent conflicting read/writes
    */
