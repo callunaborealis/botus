@@ -14,10 +14,15 @@ import {
   stop,
   playExistingTrack,
   createServerSession,
+  joinVoiceChannel,
+  disconnectVoiceChannel,
+  displayDebugValues,
 } from './music';
 import {
   playYoutubeURLRequests,
   playExistingTrackRequests,
+  joinVCRequests,
+  disconnectVCRequests,
   clearRequests,
   listRequests,
   skipRequests,
@@ -97,6 +102,9 @@ djBotus.on('message', async (message) => {
   if (interpretRequest(message, resetPlaylistRequests)) {
     return createServerSession(message);
   }
+  if (interpretRequest(message, [/^;debug$/gim])) {
+    return displayDebugValues(message);
+  }
 
   // Music: Loop
   if (interpretRequest(message, loopTrackRequests)) {
@@ -126,6 +134,12 @@ djBotus.on('message', async (message) => {
   }
   if (interpretRequest(message, playYoutubeURLRequests)) {
     return playAndOrAddYoutubeToPlaylist(message);
+  }
+  if (interpretRequest(message, joinVCRequests)) {
+    return joinVoiceChannel(message);
+  }
+  if (interpretRequest(message, disconnectVCRequests)) {
+    return disconnectVoiceChannel(message);
   }
   if (interpretRequest(message, listRequests)) {
     return list(message);

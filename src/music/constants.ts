@@ -20,6 +20,8 @@ export const songScaffold: SongShape = {
   volume: 0,
 };
 
+// Makes the bot join your voice channel.
+export const joinVCRequests = [/^;(join|j)$/gim];
 export const loopTrackRequests = [/^;(loop track|ls|lt|loop song)$/gim];
 export const loopPlaylistRequests = [/^;(lq|loop queue|lp)$/gim];
 export const loopOffRequests = [/^;loop stop$/gim];
@@ -44,10 +46,14 @@ export const setSongVolRequests = [
   /(^;v)( vol(\.|ume))?[\d]+(\.\d+)?( track| song | t| s)? ([\d]+)/gim,
 ];
 export const removeSongRequests = [/^;rm [\d]+/gim];
-export const stopSongRequests = [/^;(stop|leave|fuckoff|goaway)$/gim];
+export const stopSongRequests = [/^;(stop|fuckoff|goaway)$/gim];
+export const disconnectVCRequests = [
+  // For now disconnect is a alias for stop
+  /^;(dc|leave|reset)( (\w+)?)?$/gi,
+];
 export const resetPlaylistRequests = [
   // Reset
-  /^;reset( (\w+)?)?$/gi,
+  /^;(forcereset)( (\w+)?)?$/gi,
 ];
 
 export const existingTrackPattern = new RegExp(/([\d]+)/gim);
