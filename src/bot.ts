@@ -1,8 +1,10 @@
 import { Client } from 'discord.js';
 
 import { DISCORD_APP_BOT_TOKEN } from './environment';
-// import { initialiseDatabase } from './db';
 import logger from './logger';
+
+import { respondWithDiceResult } from './ttrpg';
+import { rollDiceRequests } from './ttrpg/constants';
 import {
   playAndOrAddYoutubeToPlaylist,
   skip,
@@ -88,6 +90,11 @@ djBotus.on('message', async (message) => {
       level: 'info',
       message: `${message.author.tag} | ${message.author.id} | ${message.content}`,
     });
+  }
+
+  // TTRPG
+  if (interpretRequest(message, rollDiceRequests)) {
+    return respondWithDiceResult(message);
   }
 
   // Help
