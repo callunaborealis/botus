@@ -22,10 +22,12 @@ export const songScaffold: SongShape = {
 
 // Makes the bot join your voice channel.
 export const joinVCRequests = [/^;(join|j)$/gim];
-export const loopTrackRequests = [/^;(loop track|ls|lt|loop song)$/gim];
+export const loopTrackRequests = [
+  /^;(loop ?track|ls|lt|loop ?song|repeat)$/gim,
+];
 export const loopPlaylistRequests = [/^;(lq|loop queue|lp)$/gim];
-export const loopOffRequests = [/^;(loop stop|loopstop|loop off|loopoff)$/gim];
-export const loopCycleRequests = [/^;l$/gim];
+export const loopOffRequests = [/^;(loop ?stop|loop ?off)$/gim];
+export const loopCycleRequests = [/^;(l|loop)$/gim];
 export const setSongVolRequests = [
   // Set vol for current song.
   /(^;v) [\d]+(\.?[\d]+)?/gim,
@@ -49,10 +51,9 @@ export const removeSongRequests = [
   /^;rm [\d]+/gim,
   /(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]?([\w\d\s]{0,})? (remove|take away|delete|throw|get rid of|discard|take out|take away) (track|song) [\d]+( |$)/gim,
 ];
-export const stopSongRequests = [/^;(stop|fuckoff|goaway)$/gim];
+export const stopSongRequests = [/^;(stop|enough|halt)$/gim];
 export const disconnectVCRequests = [
-  // For now disconnect is a alias for stop
-  /^;(dc|leave|reset)( (\w+)?)?$/gi,
+  /^;(dc|fuck ?off|go ?away|get ?out|kick|leave|reset|bye)( (\w+)?)?$/gi,
 ];
 export const resetPlaylistRequests = [
   // Reset
@@ -62,7 +63,9 @@ export const resetPlaylistRequests = [
 export const existingTrackPattern = new RegExp(/([\d]+)/gim);
 export const playExistingTrackRequests = [
   /^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]? [\w\d\s]{0,}(play|add)( track| song)? ([\d]+)/gim,
-  /(^;p)( track| song)? ([\d]+)/gim,
+  /^;(p|play|add)( track| song)? ([\d]+)/gim,
+  // Ensure that it doesn't conflict with list
+  /^;(q|queue) (track|song) ([\d]+)/gim,
 ];
 
 export const playYoutubeURLRequests = [
