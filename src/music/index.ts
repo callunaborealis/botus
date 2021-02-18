@@ -14,7 +14,6 @@ import {
   loopOrderedMessages,
   existingTrackPattern,
   resetPlaylistRequests,
-  removeSongRequests,
   listRequests,
 } from './constants';
 import { LoopType, PlaylistShape, SongShape } from './types';
@@ -78,7 +77,7 @@ export const createServerSession = async (message: Message) => {
 
   // Reset playlists
   if (message.content.match(resetPlaylistRequests[0])) {
-    const candidates = message.content.split(/;(forcereset) /gim);
+    const candidates = message.content.split(/;(forcereset|hardreset) /gim);
     const playlistName = (() => {
       if (candidates?.[0] && candidates[0] !== '') {
         return candidates[0];
