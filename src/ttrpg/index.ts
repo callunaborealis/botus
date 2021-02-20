@@ -1,4 +1,4 @@
-import { Message } from 'discord.js';
+import { Message, MessageEmbed } from 'discord.js';
 
 const rollDie = (minDieValue: number, maxDieValue: number): number => {
   const dieVal =
@@ -29,7 +29,7 @@ const rollMultipleDice = (
   return result;
 };
 
-const getDiceFormat = (candidate: string): string => {
+export const getDiceFormat = (candidate: string): string => {
   const a = candidate.split('+')[0].split('d');
   const b = candidate.split('+');
   // 2 => 0d0+2
@@ -76,8 +76,18 @@ export const respondWithDiceResult = (message: Message) => {
   }
   const rollFormat = getDiceFormat(matches[0]);
   const dices = rollMultipleDice(rollFormat);
-  const response = `_rolls the dice and dumps it on the table._ **${dices.values.join(
-    ' , ',
-  )}** = **${dices.total}**`;
-  return message.channel.send(response);
+  const values = dices.values.map((v) => {
+    if (v.toString().split('+').length > 1) {
+      return `${v}`;
+    }
+    return `[  ${v} ]`;
+  });
+  const embed = new MessageEmbed()
+    .setColor('#0099ff')
+    .setTitle(`Rolling ${rollFormat}`)
+    .addFields(
+      { name: 'Total', value: dices.total },
+      { name: 'Values', value: values.join(' ') },
+    );
+  return message.channel.send(embed);
 };
