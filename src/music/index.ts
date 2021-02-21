@@ -25,13 +25,28 @@ const defaultPlaylistName = 'default';
 
 const reactWithEmoji = {
   received: (message: Message) => {
-    message.react('👌');
+    try {
+      message.reactions.removeAll();
+      message.react('👌');
+    } catch (error) {
+      console.error(error);
+    }
   },
   failed: (message: Message) => {
-    message.react('⛔');
+    try {
+      message.reactions.removeAll();
+      message.react('⚠️');
+    } catch (error) {
+      console.error(error);
+    }
   },
   succeeded: (message: Message) => {
-    message.react('✅');
+    try {
+      message.reactions.removeAll();
+      message.react('✅');
+    } catch (error) {
+      console.error(error);
+    }
   },
 };
 
@@ -1197,8 +1212,8 @@ export const stop = (message: Message) => {
       });
       return;
     }
-    playlist.voiceChannel?.leave();
     reactWithEmoji.succeeded(message);
+    playlist.voiceChannel?.leave();
     return;
   }
   reactWithEmoji.succeeded(message);
@@ -1284,9 +1299,8 @@ export const clear = async (message: Message) => {
       message: `No voice channel found found even after attempting to join one in order to clear the playlist.`,
     });
   }
-
-  deletePlaylist(message, defaultPlaylistName);
   reactWithEmoji.succeeded(message);
+  deletePlaylist(message, defaultPlaylistName);
 };
 
 export const setSongVolume = async (message: Message) => {
