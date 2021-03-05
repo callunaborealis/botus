@@ -68,11 +68,11 @@ export const getDiceFormat = (candidate: string): string => {
 
 export const respondWithDiceResult = (message: Message) => {
   if (!message?.content) {
-    return message.channel.send('Nothing');
+    return;
   }
   const matches = message.content.match(/\d+ ?d ?\d+( ?\+\d+)?/gim);
   if (!matches) {
-    return message.channel.send('Nothing');
+    return;
   }
   const rollFormat = getDiceFormat(matches[0]);
   const dices = rollMultipleDice(rollFormat);
