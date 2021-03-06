@@ -1,9 +1,30 @@
 export const hailRequests = [
   // name + greeting
-  /^botus[\s]?[,?!(...)]?(([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?([h]?ello|[h]?ey|hi|ay|(was)?sup|yo|o[iy])( |$)/gim,
+  /^botus[\s]?[,?!(\.\.\.)]?(h?ello|[h]?ey([h]?ey)?|hi|ay|(wa[s]{0,100})?su[p]{1,100}|yo|o[iy])?( |$)/gim,
   // greeting + name
-  /^(([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[\s]?[,?!(...)]?/gim,
+  /^(([h]?ello|[h]?ey( [h]?ey)?|hi|ay|(wa[s]{0,100})?su[p]{1,100}|yo|o[iy]) )?botus[\s]?[,?!(\.\.\.)]?/gim,
   /^;hail$/gim,
+];
+
+/**
+ * /(?: |[,?!] ?|[\.]{2,} ?)/gim
+ */
+export const botNameContentSeparator = '(?: |[,?!] ?|[\\.]{2,} ?)';
+export const listOfGreetingsToBot = [
+  // ello, hello
+  'h?ello',
+  // allo, hallo
+  'h?allo',
+  // hey, ey, ey ey, hey hey, eyey, heyhey
+  'h?ey(?: ?h?ey)?',
+  'hi',
+  // ay, aye
+  'aye?',
+  // wassssssuppppppppppppp or wassup or wasup or sup
+  '(?:wa)?[s]{1,100}?u[p]{1,100}',
+  'yo',
+  // oy, oi
+  'o[iy]',
 ];
 
 export const hailResponses = [

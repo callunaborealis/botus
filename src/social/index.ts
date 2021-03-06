@@ -2,6 +2,86 @@ import { Message } from 'discord.js';
 
 import isArray from 'lodash/isArray';
 import random from 'lodash/random';
+import { ExtractedMsgBotRequestDetails, MsgBotRequestStyle } from './types';
+import { botNameContentSeparator, listOfGreetingsToBot } from './constants';
+
+export const extractRequestDetailsForBot = (
+  messageContent: Message['content'],
+): ExtractedMsgBotRequestDetails => {
+  const botPrefix = ';';
+  /**
+   * /^(?=;)(?:[\w\S]){1,}/gim;
+   */
+  const prefixPatternParts = ['^', `(?:${botPrefix})`];
+  const prefixHailPattern = new RegExp(
+    [...prefixPatternParts, `([\\w\\S]){1,}`].join(''),
+    'gim',
+  );
+  const analysedListForPrefix = messageContent.split(prefixHailPattern);
+  if (analysedListForPrefix.length === 3) {
+    return {
+      greeting: '',
+      style: MsgBotRequestStyle.Prefix,
+      requestStr: analysedListForPrefix[1],
+    };
+  }
+
+  const botName = 'botus';
+
+  const nameThenOptionalGreetingPattern = new RegExp(
+    [
+      '^',
+      botName,
+      botNameContentSeparator,
+      '(',
+      listOfGreetingsToBot.join('|'),
+      ')',
+      botNameContentSeparator,
+    ].join(''),
+    'gim',
+  );
+  const optionalGreetingThenNamePattern = new RegExp(
+    [
+      '^',
+      '(',
+      listOfGreetingsToBot.join('|'),
+      ')',
+      botNameContentSeparator,
+      botName,
+      botNameContentSeparator,
+    ].join(''),
+    'gim',
+  );
+
+  const analysisForNameThenOptGreetPattern = messageContent.split(
+    nameThenOptionalGreetingPattern,
+  );
+
+  if (analysisForNameThenOptGreetPattern.length === 3) {
+    return {
+      style: MsgBotRequestStyle.Natural,
+      greeting: analysisForNameThenOptGreetPattern[1],
+      requestStr: analysisForNameThenOptGreetPattern[2],
+    };
+  }
+
+  const analysisForOptGreetThenNamePattern = messageContent.split(
+    optionalGreetingThenNamePattern,
+  );
+
+  if (analysisForOptGreetThenNamePattern.length === 3) {
+    return {
+      style: MsgBotRequestStyle.Natural,
+      requestStr: analysisForOptGreetThenNamePattern[2],
+      greeting: analysisForOptGreetThenNamePattern[1],
+    };
+  }
+  return {
+    greeting: '',
+    style: MsgBotRequestStyle.NotARequest,
+    requestStr: '',
+  };
+};
 
 export const interpretRequest = (message: Message, listOfMatches: RegExp[]) => {
   let matched = false;
