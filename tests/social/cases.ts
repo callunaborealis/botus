@@ -2,6 +2,21 @@ import {
   ExtractedMsgBotRequestDetails,
   MsgBotRequestStyle,
 } from '../../src/social/types';
+import {
+  joinPrefixCommands,
+  loopCyclePrefixCommands,
+  loopPlaylistPrefixCommands,
+  loopOffPrefixCommands,
+  loopTrackPrefixCommands,
+  setSongVolPrefixCommands,
+  removeSongPrefixCommands,
+  clearPrefixCommands,
+  skipPrefixCommands,
+  listPrefixCommands,
+  resetPlaylistPrefixCommands,
+  disconnectVCPrefixCommands,
+  stopSongPrefixCommands,
+} from '../../src/music/constants';
 
 const greetingsBotWillRecognise = [
   // 'h?ello',
@@ -49,32 +64,56 @@ interface TestCaseIOShape {
   output: ExtractedMsgBotRequestDetails;
 }
 
+const naturalRequests = ['raise the volume'];
+const prefixCommands = [
+  ...joinPrefixCommands,
+  ...loopPlaylistPrefixCommands,
+  ...loopOffPrefixCommands,
+  ...loopCyclePrefixCommands,
+  ...loopTrackPrefixCommands,
+  ...setSongVolPrefixCommands,
+  ...removeSongPrefixCommands,
+  ...stopSongPrefixCommands,
+  ...disconnectVCPrefixCommands,
+  ...resetPlaylistPrefixCommands,
+  ...listPrefixCommands,
+  ...skipPrefixCommands,
+  ...clearPrefixCommands,
+];
+
 export const expectations = {
   extractRequestDetailsForBot: [
     ...greetingsBotWillRecognise.reduce((acc, greeting) => {
       return separatorsBotWillCheckFor.reduce((acc2, separator) => {
-        return [
-          ...acc2,
-          {
-            input: {
-              messageContent: `${greeting}${separator}botus${separator}raise the volume`,
+        return naturalRequests.reduce((acc3, naturalRequest) => {
+          return [
+            ...acc3,
+            {
+              input: {
+                messageContent: `${greeting}${separator}botus${separator}${naturalRequest}`,
+              },
+              output: {
+                greeting,
+                style: MsgBotRequestStyle.Natural,
+                requestStr: naturalRequest,
+              },
             },
-            output: {
-              greeting,
-              style: MsgBotRequestStyle.Natural,
-              requestStr: 'raise the volume',
-            },
-          },
-        ];
+          ];
+        }, acc2);
       }, acc);
     }, [] as TestCaseIOShape[]),
-    {
-      input: { messageContent: ';v' },
-      output: {
-        greeting: '',
-        style: MsgBotRequestStyle.Prefix,
-        requestStr: 'v',
-      },
-    },
+    ...prefixCommands.reduce((acc, prefixCommand) => {
+      return [
+        ...acc,
+        {
+          input: { messageContent: `;${prefixCommand}` },
+          output: {
+            greeting: '',
+            style: MsgBotRequestStyle.Prefix,
+            requestStr: prefixCommand,
+          },
+        },
+      ];
+    }, [] as TestCaseIOShape[]),
   ],
 };

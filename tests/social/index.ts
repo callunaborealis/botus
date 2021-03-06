@@ -10,7 +10,9 @@ describe('Social: Requests processing', () => {
         wasGreeted
           ? `it was greeted with "${expected.output.greeting}"`
           : 'it was not greeted'
-      } and extract "${expected.output.requestStr}" from the message`, () => {
+      } and knows it was asked regarding "${
+        expected.output.requestStr
+      }" from the message`, () => {
         const { greeting, requestStr, style } = extractRequestDetailsForBot(
           expected.input.messageContent,
         );

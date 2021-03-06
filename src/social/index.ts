@@ -10,11 +10,10 @@ export const extractRequestDetailsForBot = (
 ): ExtractedMsgBotRequestDetails => {
   const botPrefix = ';';
   /**
-   * /^(?=;)(?:[\w\S]){1,}/gim;
+   * /^(?:;)([\\w]{1,})/gim;
    */
-  const prefixPatternParts = ['^', `(?:${botPrefix})`];
   const prefixHailPattern = new RegExp(
-    [...prefixPatternParts, `([\\w\\S]){1,}`].join(''),
+    ['^', `(?:${botPrefix})`, `([\\w\\s\\d]+)$`].join(''),
     'gim',
   );
   const analysedListForPrefix = messageContent.split(prefixHailPattern);
