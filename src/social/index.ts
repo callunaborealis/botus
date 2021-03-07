@@ -115,7 +115,7 @@ export const confirmRequestType = (
   let matched = false;
   for (let i = 0; i < listOfMatches.length; i++) {
     const pattern = listOfMatches[i];
-    const matches = messageContent.split(pattern);
+    const matches = messageContent.match(pattern);
     if (isArray(matches) && matches.length > 0) {
       matched = true;
       break;
