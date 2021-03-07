@@ -7,6 +7,7 @@ import isFinite from 'lodash/isFinite';
 import isNull from 'lodash/isNull';
 
 import { multiServerSession } from '../constants';
+import { reactWithEmoji } from '../social';
 import {
   maxAllowableVolume,
   songScaffold,
@@ -22,33 +23,6 @@ import logger from '../logger';
 import { getYoutubeLinkAndVolFromRequest } from './helper';
 
 const defaultPlaylistName = 'default';
-
-const reactWithEmoji = {
-  received: (message: Message) => {
-    try {
-      message.reactions.removeAll();
-      message.react('👌');
-    } catch (error) {
-      console.error(error);
-    }
-  },
-  failed: (message: Message) => {
-    try {
-      message.reactions.removeAll();
-      message.react('⚠️');
-    } catch (error) {
-      console.error(error);
-    }
-  },
-  succeeded: (message: Message) => {
-    try {
-      message.reactions.removeAll();
-      message.react('✅');
-    } catch (error) {
-      console.error(error);
-    }
-  },
-};
 
 export const createServerSession = async (message: Message) => {
   const serverId = message.guild?.id;

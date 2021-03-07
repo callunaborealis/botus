@@ -335,3 +335,30 @@ export const sendHelpDoc = (message: Message) => {
   message.channel.send(musicHelpEmbed);
   return;
 };
+
+export const reactWithEmoji = {
+  received: (message: Message) => {
+    try {
+      message.reactions.removeAll();
+      message.react('👌');
+    } catch (error) {
+      console.error(error);
+    }
+  },
+  failed: (message: Message) => {
+    try {
+      message.reactions.removeAll();
+      message.react('⚠️');
+    } catch (error) {
+      console.error(error);
+    }
+  },
+  succeeded: (message: Message) => {
+    try {
+      message.reactions.removeAll();
+      message.react('✅');
+    } catch (error) {
+      console.error(error);
+    }
+  },
+};
