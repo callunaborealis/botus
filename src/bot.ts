@@ -38,7 +38,12 @@ import {
   resetPlaylistRequests,
 } from './music/constants';
 
-import { respond, interpretRequest, sendHelpDoc } from './social';
+import {
+  respond,
+  interpretRequest,
+  sendHelpDoc,
+  extractRequestDetailsForBot,
+} from './social';
 import {
   defaultResponses,
   gratitudeRequests,
@@ -58,6 +63,7 @@ import {
   meaningOfLifeRequests,
   meaningOfLifeResponses,
 } from './social/constants';
+import { MsgBotRequestStyle } from './social/types';
 
 const djBotus = new Client();
 
@@ -85,10 +91,20 @@ djBotus.on('message', async (message) => {
     return false;
   }
 
-  if (message.content.match(/^;/) || message.mentions.has(userId)) {
+  const requestDetails = extractRequestDetailsForBot(message.content);
+
+  const messageContent = (() => {
+    if (message.mentions.has(userId)) {
+      // Respond to mentions of it
+      return message.content;
+    }
+    return requestDetails.requestStr;
+  })();
+
+  if (requestDetails.style !== MsgBotRequestStyle.NotARequest) {
     logger.log({
       level: 'info',
-      message: `${message.author.tag} | ${message.author.id} | ${message.content}`,
+      message: `${message.author.tag} | ${message.author.id} | ${message.content} | ${requestDetails.requestStr}`,
     });
   }
 

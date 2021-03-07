@@ -108,16 +108,30 @@ export const resetPlaylistRequests = [
 ];
 
 export const existingTrackPattern = new RegExp(/([\d]+)/gim);
+export const playExistingTrackOptTrackPrefixCommands = ['p', 'play', 'add'];
+export const playExistingTrackMandTrackPrefixCommands = ['q', 'queue'];
+const trackPrefixTerms = ['track', 'song'];
 export const playExistingTrackPrefixCommands = [
   /**
    * /^;(p|play|add)( track| song)? ([\d]+)/gim,
    */
-  '(?:p|play|add)(?: (?:track|song))? ([\\d]+)',
+  [
+    `(?:${playExistingTrackOptTrackPrefixCommands.join('|')})`,
+    `(?: ${trackPrefixTerms.join('|')})?`,
+    ' ',
+    '([\\d]+)',
+  ],
   /**
    * Ensure that it doesn't conflict with list
    * /^;(q|queue) (track|song) ([\d]+)/gim,
    */
-  '(?:q|queue) (?:track|song) ([\\d]+)',
+  [
+    playExistingTrackMandTrackPrefixCommands.join('|'),
+    ' ',
+    `(?:${trackPrefixTerms.join('|')})`,
+    ' ',
+    '([\\d]+)',
+  ],
 ];
 export const playExistingTrackRequests = [
   /^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]? [\w\d\s]{0,}(play|add)( track| song)? ([\d]+)/gim,
@@ -126,6 +140,7 @@ export const playExistingTrackRequests = [
   /^;(q|queue) (track|song) ([\d]+)/gim,
 ];
 
+export const playYoutubeLinkPrefixCommands = ['q', 'queue', 'p', 'play', 'add'];
 export const playYoutubeURLRequests = [
   // hey / hi / sup / hello / yo / oi / oy (optional) botus ... play/add [youtube link] (natural language processing)
   /^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]? [\w\d\s]{0,}(queue|play|add) ((?:https?:\/\/)?(?:(?:(?:www\.?)?youtube\.com(?:\/(?:(?:watch\?\S*?(v=[^&\s]+)\S*)|(?:v(\/\S*))|(channel\/\S+)|(?:user\/(\S+))|(?:results\?(search_query=\S+))))?)|(?:youtu\.be(\/\S*)?)))/gim,

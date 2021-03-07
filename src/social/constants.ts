@@ -35,6 +35,10 @@ export const hailResponses = [
 ];
 
 export const helphelpRequests = [/^(;help[\s]?help)|(botus help[\s]?help)/gim];
+export const helpHelpRequests2 = ['help help', 'helphelp'];
+export const helpPrefixCommands = ['h', 'help'];
+export const helpTypes = ['', 'music'];
+export const helpNaturalRequests = ['help'];
 export const helpRequests = [/^((;h( |$))|(;help( |$))|(botus help( |$)))/gim];
 
 export const greetingRequests = [
@@ -68,6 +72,17 @@ export const greetingResponses = [
 ];
 
 // Asking if the context is okay
+export const howsItGoingPrefixCommands = ['howru'];
+export const howIsVariants = ['how is', "how's", 'hows'];
+export const howAreVariants = ["how're", 'how r', 'how are'];
+export const whatIsVariants = ['what is', "what's", 'whats'];
+export const howsItGoingNaturalRequests = [
+  // How is it going
+  "how(?:(?: i)|')?s it goin[g']?",
+  // How is/are things
+  `(?:${[...howIsVariants, ...howAreVariants].join('|')}) things?`,
+  `(?:${whatIsVariants.join('|')}) up`,
+];
 export const howIsItGoingRequests = [
   /^botus[,.!?]? how(( i)|')?s it goin[g]?( |$)/gim,
   /^botus[,.!?]? how are things?( |$)/gim,
