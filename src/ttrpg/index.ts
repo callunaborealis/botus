@@ -1,4 +1,13 @@
 import { Message, MessageEmbed } from 'discord.js';
+import isFinite from 'lodash/isFinite';
+import { reactWithEmoji } from '../social';
+
+import {
+  dieComponentParts,
+  optionalOperatorParts,
+  operatorComponentParts,
+} from './constants';
+import { DieComponentFormat, OperatorFormat } from './types';
 
 const rollDie = (minDieValue: number, maxDieValue: number): number => {
   const dieVal =
@@ -7,87 +16,139 @@ const rollDie = (minDieValue: number, maxDieValue: number): number => {
 };
 
 /**
- * @param {string} diceFormat, e.g. {numberOfDice}d${maxDieValue}+{constantValue}
+ * @param {string} diceFormat, e.g. {numberOfDice}d${maxDieValue}
  */
 const rollMultipleDice = (
   diceFormat: string,
-): { total: number; values: (string | number)[] } => {
-  const dice = diceFormat.split('+');
-  const diceVar = dice[0].split('d');
-  const diceConst = dice[1] === '' ? 0 : parseInt(dice[1], 10);
-  const [numberOfDice, maxDieValue] = diceVar.map((v) => parseInt(v, 10));
-  const values = [...new Array(numberOfDice)].map(() =>
-    rollDie(1, maxDieValue),
-  );
-  const additional = diceConst > 0 ? [`+${diceConst}`] : [];
+): { total: number; values: number[] } => {
+  const [rolls, d] = diceFormat.split('d').map((v) => parseInt(v, 10));
+  const values = [...new Array(rolls)].map(() => rollDie(1, d));
   const result = {
-    total: [...values].reduce((prevVal, currValue) => {
+    total: values.reduce((prevVal, currValue) => {
       return prevVal + currValue;
-    }, diceConst),
-    values: [...values, ...additional],
+    }, 0),
+    values,
   };
   return result;
 };
 
-export const getDiceFormat = (candidate: string): string => {
-  const a = candidate.split('+')[0].split('d');
-  const b = candidate.split('+');
-  // 2 => 0d0+2
-  if (
-    a.length === 1 &&
-    b.length === 1 &&
-    parseInt(a[0], 10) > 0 &&
-    parseInt(b[1], 10) > 0
-  ) {
-    return `0d1+${candidate}`;
+export const interpretDiceRollRequest = (
+  messageContent: string,
+): DieComponentFormat<'die' | 'const' | 'operator'>[] => {
+  const operatorPattern = new RegExp(operatorComponentParts.join(''), 'gim');
+  const dieComponentPattern = new RegExp(dieComponentParts.join(''), 'gim');
+  const diceComponents = messageContent.split(operatorPattern);
+  const eventual: DieComponentFormat<'die' | 'const' | 'operator'>[] = [];
+  let invalidDice = false;
+  for (let i = 0; i < diceComponents.length; i++) {
+    const diceComponent = diceComponents[i];
+    // 1d5 -> [ '', '1', '5', undefined, '' ]
+    // 12 -> [ '', undefined, undefined, 12, '' ]
+    // + -> ['+']
+    const parts = diceComponent.split(dieComponentPattern);
+    if (
+      parts.length === 1 &&
+      optionalOperatorParts.includes(parts[0] as OperatorFormat)
+    ) {
+      eventual.push({
+        type: 'operator',
+        attributes: {
+          value: parts[0] as OperatorFormat,
+        },
+      });
+    }
+    if (parts.length !== 5 && parts.length !== 1) {
+      invalidDice = true;
+      break;
+    }
+    const candidates = {
+      d: parseInt(parts[1]),
+      rolls: parseInt(parts[2]),
+      const: parseInt(parts[3]),
+    };
+    if (isFinite(candidates.d) && isFinite(candidates.rolls)) {
+      eventual.push({
+        type: 'die',
+        attributes: {
+          d: parseInt(parts[2]),
+          rolls: parseInt(parts[1]),
+        },
+      });
+    } else if (isFinite(candidates.const)) {
+      eventual.push({
+        type: 'const',
+        attributes: {
+          value: parseInt(parts[3]),
+        },
+      });
+    }
   }
-  // 1+3 => 0d0+4
-  if (a.length === 1) {
-    return `0d1+${b.reduce((prev, curr) => {
-      if (parseInt(curr, 10) > 0) {
-        return prev + parseInt(curr, 10);
-      }
-      return prev;
-    }, 0)}`;
-  }
-  // 2d4 => 2d4+0
-  if (b.length === 1 && parseInt(a[0], 10) > 0 && parseInt(a[1], 10) > 0) {
-    return `${a[0]}d${a[1]}+0`;
-  }
-  // 2d5+2 => 2d5+2
-  if (
-    parseInt(a[0], 10) > 0 &&
-    parseInt(a[1], 10) > 0 &&
-    parseInt(b[1], 10) > 0
-  ) {
-    return `${a[0]}d${a[1]}+${b[1]}`;
-  }
-  // '' => 0d0+0
-  return '0d1+0';
+
+  return invalidDice ? [] : eventual;
 };
 
-export const respondWithDiceResult = (message: Message) => {
-  if (!message?.content) {
-    return;
-  }
-  const matches = message.content.match(/\d+ ?d ?\d+( ?\+\d+)?/gim);
-  if (!matches) {
-    return;
-  }
-  const rollFormat = getDiceFormat(matches[0]);
-  const dices = rollMultipleDice(rollFormat);
-  const values = dices.values.map((v) => {
-    if (v.toString().split('+').length > 1) {
-      return `${v}`;
+const operateOnValues = (operator: OperatorFormat, values: number[]) => {
+  return values.reduce((ev, value) => {
+    if (operator === '+') {
+      return ev + value;
     }
-    return `[  ${v} ]`;
+    if (operator === '-') {
+      return ev - value;
+    }
+    if (operator === 'x' || operator === '*') {
+      return ev * value;
+    }
+    if (operator === '/') {
+      return Math.floor(ev / value);
+    }
+    return ev;
+  }, 0);
+};
+
+export const respondWithDiceResult = (message: Message, requestStr: string) => {
+  const diceComponents: DieComponentFormat<
+    'die' | 'const' | 'operator'
+  >[] = interpretDiceRollRequest(requestStr);
+
+  if (diceComponents.length === 0) {
+    return reactWithEmoji.failed(message);
+  }
+
+  let currentOperator: OperatorFormat = '+';
+  let totalValue = 0;
+  const values = diceComponents.map((diceComponent) => {
+    switch (diceComponent.type) {
+      case 'const': {
+        const modifier = (diceComponent as DieComponentFormat<'const'>)
+          .attributes.value;
+        totalValue = operateOnValues(currentOperator, [totalValue, modifier]);
+        return `(**${modifier}**)`;
+      }
+      case 'die': {
+        const {
+          rolls,
+          d,
+        } = (diceComponent as DieComponentFormat<'die'>).attributes;
+        const dice = rollMultipleDice(`${rolls}d${d}`);
+        totalValue = operateOnValues(currentOperator, [totalValue, dice.total]);
+        return `( ${dice.values.map((val) => `**[ ${val} ]**`).join(' + ')} : ${
+          dice.total
+        } )`;
+      }
+      default: {
+        const operator = (diceComponent as DieComponentFormat<'operator'>)
+          .attributes.value;
+        currentOperator = operator;
+        return ` ${operator} `;
+      }
+    }
   });
   const embed = new MessageEmbed()
     .setColor('#0099ff')
-    .setTitle(`Rolling ${rollFormat}`)
+    .setTitle(`Rolling ${requestStr}`)
     .addFields(
-      { name: 'Total', value: dices.total },
-      { name: 'Values', value: values.join(' ') },
+      { name: 'Total', value: totalValue },
+      { name: 'Values', value: values.join('') },
     );
   return message.channel.send(embed);
 };

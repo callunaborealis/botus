@@ -4,7 +4,7 @@ import { DISCORD_APP_BOT_TOKEN } from './environment';
 import logger from './logger';
 
 import { respondWithDiceResult } from './ttrpg';
-import { rollDiceRequests } from './ttrpg/constants';
+import { rollDicePrefixPatterns } from './ttrpg/constants';
 import {
   playAndOrAddYoutubeToPlaylist,
   skip,
@@ -43,6 +43,7 @@ import {
   interpretRequest,
   sendHelpDoc,
   extractRequestDetailsForBot,
+  confirmRequestType,
 } from './social';
 import {
   defaultResponses,
@@ -109,8 +110,10 @@ djBotus.on('message', async (message) => {
   }
 
   // TTRPG
-  if (interpretRequest(message, rollDiceRequests)) {
-    return respondWithDiceResult(message);
+  if (confirmRequestType(messageContent, rollDicePrefixPatterns)) {
+    // roll 2d4 -> ['', '2d4', '2', '4', undefined, undefined, undefined, undefined, undefined, '']
+    const rollSplit = messageContent.split(rollDicePrefixPatterns[0]);
+    return respondWithDiceResult(message, rollSplit[1]);
   }
 
   // Help

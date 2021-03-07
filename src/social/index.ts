@@ -108,13 +108,20 @@ export const extractRequestDetailsForBot = (
   };
 };
 
-export const interpretMessageContent = <
-  InterpretationShape extends Record<string, any>
->(
+export const confirmRequestType = (
   messageContent: string,
-  interpretation: InterpretationShape,
-): InterpretationShape => {
-  return {} as InterpretationShape;
+  listOfMatches: RegExp[],
+) => {
+  let matched = false;
+  for (let i = 0; i < listOfMatches.length; i++) {
+    const pattern = listOfMatches[i];
+    const matches = messageContent.split(pattern);
+    if (isArray(matches) && matches.length > 0) {
+      matched = true;
+      break;
+    }
+  }
+  return matched;
 };
 
 export const interpretRequest = (message: Message, listOfMatches: RegExp[]) => {
