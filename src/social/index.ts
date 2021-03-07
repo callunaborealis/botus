@@ -32,7 +32,14 @@ export const extractRequestDetailsForBot = (
    * /^(?:;)([\\w]{1,})/gim;
    */
   const prefixHailPattern = new RegExp(
-    ['^', `(?:${botPrefix})`, `([\\w\\s\\d]+)$`].join(''),
+    [
+      '^',
+      `(?:${botPrefix})`,
+      `([\\w\\s\\d${`!@#$%^&*()_+-=[]{};\':"\\|,.<>/?`
+        .split('')
+        .map((v) => `\\${v}`)
+        .join('')}]+)$`,
+    ].join(''),
     'gim',
   );
   const analysedListForPrefix = messageContent.split(prefixHailPattern);
