@@ -1,8 +1,10 @@
 import { Client } from 'discord.js';
 
 import { DISCORD_APP_BOT_TOKEN } from './environment';
-// import { initialiseDatabase } from './db';
 import logger from './logger';
+
+import { respondWithDiceResult } from './ttrpg';
+import { rollDicePrefixPatterns } from './ttrpg/constants';
 import {
   playAndOrAddYoutubeToPlaylist,
   skip,
@@ -36,7 +38,13 @@ import {
   resetPlaylistRequests,
 } from './music/constants';
 
-import { respond, interpretRequest, sendHelpDoc } from './social';
+import {
+  respond,
+  interpretRequest,
+  sendHelpDoc,
+  extractRequestDetailsForBot,
+  confirmRequestType,
+} from './social';
 import {
   defaultResponses,
   gratitudeRequests,
@@ -56,6 +64,7 @@ import {
   meaningOfLifeRequests,
   meaningOfLifeResponses,
 } from './social/constants';
+import { MsgBotRequestStyle } from './social/types';
 
 const djBotus = new Client();
 
@@ -83,11 +92,28 @@ djBotus.on('message', async (message) => {
     return false;
   }
 
-  if (message.content.match(/^;/) || message.mentions.has(userId)) {
+  const requestDetails = extractRequestDetailsForBot(message.content);
+
+  const messageContent = (() => {
+    if (message.mentions.has(userId)) {
+      // Respond to mentions of it
+      return message.content;
+    }
+    return requestDetails.requestStr;
+  })();
+
+  if (requestDetails.style !== MsgBotRequestStyle.NotARequest) {
     logger.log({
       level: 'info',
-      message: `${message.author.tag} | ${message.author.id} | ${message.content}`,
+      message: `${message.author.tag} | ${message.author.id} | ${message.content} | ${requestDetails.requestStr}`,
     });
+  }
+
+  // TTRPG
+  if (confirmRequestType(messageContent, rollDicePrefixPatterns)) {
+    // roll 2d4 -> ['', '2d4', '2', '4', undefined, undefined, undefined, undefined, undefined, '']
+    const rollSplit = messageContent.split(rollDicePrefixPatterns[0]);
+    return respondWithDiceResult(message, rollSplit[1]);
   }
 
   // Help

@@ -7,6 +7,7 @@ import isFinite from 'lodash/isFinite';
 import isNull from 'lodash/isNull';
 
 import { multiServerSession } from '../constants';
+import { reactWithEmoji } from '../social';
 import {
   maxAllowableVolume,
   songScaffold,
@@ -22,18 +23,6 @@ import logger from '../logger';
 import { getYoutubeLinkAndVolFromRequest } from './helper';
 
 const defaultPlaylistName = 'default';
-
-const reactWithEmoji = {
-  received: (message: Message) => {
-    message.react('👌');
-  },
-  failed: (message: Message) => {
-    message.react('⛔');
-  },
-  succeeded: (message: Message) => {
-    message.react('✅');
-  },
-};
 
 export const createServerSession = async (message: Message) => {
   const serverId = message.guild?.id;
@@ -1197,8 +1186,8 @@ export const stop = (message: Message) => {
       });
       return;
     }
-    playlist.voiceChannel?.leave();
     reactWithEmoji.succeeded(message);
+    playlist.voiceChannel?.leave();
     return;
   }
   reactWithEmoji.succeeded(message);
@@ -1284,9 +1273,8 @@ export const clear = async (message: Message) => {
       message: `No voice channel found found even after attempting to join one in order to clear the playlist.`,
     });
   }
-
-  deletePlaylist(message, defaultPlaylistName);
   reactWithEmoji.succeeded(message);
+  deletePlaylist(message, defaultPlaylistName);
 };
 
 export const setSongVolume = async (message: Message) => {

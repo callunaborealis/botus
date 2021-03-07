@@ -1,9 +1,30 @@
 export const hailRequests = [
   // name + greeting
-  /^botus[ ]?[,?!(...)](([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?([h]?ello|[h]?ey|hi|ay|(was)?sup|yo|o[iy])( |$)/gim,
+  /^botus[\s]?[,?!(\.\.\.)]?(h?ello|[h]?ey([h]?ey)?|hi|ay|(wa[s]{0,100})?su[p]{1,100}|yo|o[iy])?( |$)/gim,
   // greeting + name
-  /^(([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[ ]?[,?!(...)]/gim,
+  /^(([h]?ello|[h]?ey( [h]?ey)?|hi|ay|(wa[s]{0,100})?su[p]{1,100}|yo|o[iy]) )?botus[\s]?[,?!(\.\.\.)]?/gim,
   /^;hail$/gim,
+];
+
+/**
+ * /(?: |[,?!] ?|[\.]{2,} ?)/gim
+ */
+export const botNameContentSeparator = '(?: |[,?!] ?|[\\.]{2,} ?)';
+export const listOfGreetingsToBot = [
+  // ello, hello
+  'h?ello',
+  // allo, hallo
+  'h?allo',
+  // hey, ey, ey ey, hey hey, eyey, heyhey
+  'h?ey(?: ?h?ey)?',
+  'hi',
+  // ay, aye
+  'aye?',
+  // wassssssuppppppppppppp or wassup or wasup or sup
+  '(?:wa)?[s]{1,100}?u[p]{1,100}',
+  'yo',
+  // oy, oi
+  'o[iy]',
 ];
 
 export const hailResponses = [
@@ -13,7 +34,11 @@ export const hailResponses = [
   (username: string) => `Hi, ${username}.`,
 ];
 
-export const helphelpRequests = [/^(;help[ ]?help)|(botus help[ ]?help)/gim];
+export const helphelpRequests = [/^(;help[\s]?help)|(botus help[\s]?help)/gim];
+export const helpHelpRequests2 = ['help help', 'helphelp'];
+export const helpPrefixCommands = ['h', 'help'];
+export const helpTypes = ['', 'music'];
+export const helpNaturalRequests = ['help'];
 export const helpRequests = [/^((;h( |$))|(;help( |$))|(botus help( |$)))/gim];
 
 export const greetingRequests = [
@@ -25,12 +50,12 @@ export const greetingRequests = [
   /^botus (good )?(mornin[g]?|day|afternoon|evenin[g]?|night|nite)[,.!]?( |$)/gim,
   /^(good )?(mornin[g]?|day|afternoon|evenin[g]?|night|nite)[,.!]? botus( |$)/gim,
   // whats up
-  /^(([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?what[']?s[ ]?up( |$)/gim,
-  /^what[']?s[ ]?up botus/gim,
+  /^(([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?what[']?s[\s]?up( |$)/gim,
+  /^what[']?s[\s]?up botus/gim,
   /^(([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?wa[s]{1,100}up( |$)/gim,
   /^wa[s]{1,100}up botus/gim,
-  /^(([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?wh[au]t[ ]?up( |$)/gim,
-  /^wh[au]t[ ]?up botus( |$)/gim,
+  /^(([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?wh[au]t[\s]?up( |$)/gim,
+  /^wh[au]t[\s]?up botus( |$)/gim,
   /^botus[,.!?]? wassup( |$)/gim,
   /^[was]?sup botus( |$)/gim,
   // Debug
@@ -47,6 +72,17 @@ export const greetingResponses = [
 ];
 
 // Asking if the context is okay
+export const howsItGoingPrefixCommands = ['howru'];
+export const howIsVariants = ['how is', "how's", 'hows'];
+export const howAreVariants = ["how're", 'how r', 'how are'];
+export const whatIsVariants = ['what is', "what's", 'whats'];
+export const howsItGoingNaturalRequests = [
+  // How is it going
+  "how(?:(?: i)|')?s it goin[g']?",
+  // How is/are things
+  `(?:${[...howIsVariants, ...howAreVariants].join('|')}) things?`,
+  `(?:${whatIsVariants.join('|')}) up`,
+];
 export const howIsItGoingRequests = [
   /^botus[,.!?]? how(( i)|')?s it goin[g]?( |$)/gim,
   /^botus[,.!?]? how are things?( |$)/gim,

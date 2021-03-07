@@ -3,7 +3,7 @@ import { getYoutubeLinkAndVolFromRequest } from '../../src/music/helper';
 import { expectedInputs, expectedOutputs } from './cases';
 
 describe('Music: Requests processing', () => {
-  describe('music getYoutubeLinkAndVolFromRequest', () => {
+  describe('getYoutubeLinkAndVolFromRequest', () => {
     expectedInputs.getYoutubeLinkAndVolFromRequest.forEach(
       (expectedInput, i) => {
         const expected = expectedOutputs.getYoutubeLinkAndVolFromRequest[i];
