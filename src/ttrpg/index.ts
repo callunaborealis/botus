@@ -88,7 +88,15 @@ export const interpretDiceRollRequest = (
 };
 
 const operateOnValues = (operator: OperatorFormat, values: number[]) => {
-  return values.reduce((ev, value) => {
+  const spliced = [...values];
+  if (spliced.length === 0) {
+    return 0;
+  }
+  if (spliced.length === 1) {
+    return values[0];
+  }
+  spliced.splice(0, 1);
+  return spliced.reduce((ev, value) => {
     if (operator === '+') {
       return ev + value;
     }
@@ -102,7 +110,78 @@ const operateOnValues = (operator: OperatorFormat, values: number[]) => {
       return Math.floor(ev / value);
     }
     return ev;
-  }, 0);
+  }, values[0]);
+};
+
+export const calculateDiceResult = (requestStr: string) => {
+  const diceComponents: DieComponentFormat<
+    'die' | 'const' | 'operator'
+  >[] = interpretDiceRollRequest(requestStr);
+  const { displayedValues, total, values } = diceComponents.reduce(
+    (eventualValues, diceComponent) => {
+      switch (diceComponent.type) {
+        case 'const': {
+          const modifier = (diceComponent as DieComponentFormat<'const'>)
+            .attributes.value;
+          return {
+            ...eventualValues,
+            total: operateOnValues(eventualValues.previousOperator, [
+              eventualValues.total,
+              modifier,
+            ]),
+            displayedValues: [
+              ...eventualValues.displayedValues,
+              `(**${modifier}**)`,
+            ],
+            previousValue: modifier,
+            values: [...eventualValues.values, modifier],
+          };
+        }
+        case 'die': {
+          const {
+            rolls,
+            d,
+          } = (diceComponent as DieComponentFormat<'die'>).attributes;
+          const dice = rollMultipleDice(`${rolls}d${d}`);
+          return {
+            ...eventualValues,
+            total: operateOnValues(eventualValues.previousOperator, [
+              eventualValues.total,
+              dice.total,
+            ]),
+            displayedValues: [
+              ...eventualValues.displayedValues,
+              `( ${dice.values.map((val) => `**[ ${val} ]**`).join(' + ')} : ${
+                dice.total
+              } )`,
+            ],
+            previousValue: dice.total,
+            values: [...eventualValues.values, dice.total],
+          };
+        }
+        default: {
+          const operator = (diceComponent as DieComponentFormat<'operator'>)
+            .attributes.value;
+          return {
+            ...eventualValues,
+            displayedValues: [
+              ...eventualValues.displayedValues,
+              ` ${operator} `,
+            ],
+            previousOperator: operator,
+          };
+        }
+      }
+    },
+    {
+      total: 0,
+      displayedValues: [] as string[],
+      previousValue: 0,
+      previousOperator: '+' as OperatorFormat,
+      values: [] as number[],
+    },
+  );
+  return { total, values: displayedValues };
 };
 
 export const respondWithDiceResult = (message: Message, requestStr: string) => {
@@ -114,40 +193,13 @@ export const respondWithDiceResult = (message: Message, requestStr: string) => {
     return reactWithEmoji.failed(message);
   }
 
-  let currentOperator: OperatorFormat = '+';
-  let totalValue = 0;
-  const values = diceComponents.map((diceComponent) => {
-    switch (diceComponent.type) {
-      case 'const': {
-        const modifier = (diceComponent as DieComponentFormat<'const'>)
-          .attributes.value;
-        totalValue = operateOnValues(currentOperator, [totalValue, modifier]);
-        return `(**${modifier}**)`;
-      }
-      case 'die': {
-        const {
-          rolls,
-          d,
-        } = (diceComponent as DieComponentFormat<'die'>).attributes;
-        const dice = rollMultipleDice(`${rolls}d${d}`);
-        totalValue = operateOnValues(currentOperator, [totalValue, dice.total]);
-        return `( ${dice.values.map((val) => `**[ ${val} ]**`).join(' + ')} : ${
-          dice.total
-        } )`;
-      }
-      default: {
-        const operator = (diceComponent as DieComponentFormat<'operator'>)
-          .attributes.value;
-        currentOperator = operator;
-        return ` ${operator} `;
-      }
-    }
-  });
+  const { total, values } = calculateDiceResult(requestStr);
+
   const embed = new MessageEmbed()
     .setColor('#0099ff')
     .setTitle(`Rolling ${requestStr}`)
     .addFields(
-      { name: 'Total', value: totalValue },
+      { name: 'Total', value: total },
       { name: 'Values', value: values.join('') },
     );
   return message.channel.send(embed);
