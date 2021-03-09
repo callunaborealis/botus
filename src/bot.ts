@@ -94,6 +94,13 @@ djBotus.on('message', async (message) => {
 
   const requestDetails = extractRequestDetailsForBot(message.content);
 
+  if (requestDetails.style !== MsgBotRequestStyle.NotARequest) {
+    logger.log({
+      level: 'info',
+      message: `${message.author.tag} | ${message.author.id} | ${message.content} | ${requestDetails.requestStr}`,
+    });
+  }
+
   const messageContent = (() => {
     if (message.mentions.has(userId)) {
       // Respond to mentions of it
@@ -101,13 +108,6 @@ djBotus.on('message', async (message) => {
     }
     return requestDetails.requestStr;
   })();
-
-  if (requestDetails.style !== MsgBotRequestStyle.NotARequest) {
-    logger.log({
-      level: 'info',
-      message: `${message.author.tag} | ${message.author.id} | ${message.content} | ${requestDetails.requestStr}`,
-    });
-  }
 
   // TTRPG
   if (confirmRequestType(messageContent, rollDicePrefixPatterns)) {

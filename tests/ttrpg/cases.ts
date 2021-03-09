@@ -54,37 +54,65 @@ export const expectations = {
     output: DieComponentFormat<DieComponentFormatType>[];
   }[],
   calculateDiceResult: [
-    { input: '', output: { total: 0, values: [] } },
+    { input: '', output: { isInvalid: true, total: NaN, values: [] } },
     {
       input: '2+5',
-      output: { total: 7, values: ['(**2**)', ' + ', '(**5**)'] },
+      output: {
+        isInvalid: false,
+        total: 7,
+        values: ['(**2**)', ' + ', '(**5**)'],
+      },
     },
     {
       input: '2-5',
-      output: { total: -3, values: ['(**2**)', ' - ', '(**5**)'] },
+      output: {
+        isInvalid: false,
+        total: -3,
+        values: ['(**2**)', ' - ', '(**5**)'],
+      },
     },
     {
       input: '2 x 5',
-      output: { total: 10, values: ['(**2**)', ' x ', '(**5**)'] },
+      output: {
+        isInvalid: false,
+        total: 10,
+        values: ['(**2**)', ' x ', '(**5**)'],
+      },
     },
     {
       input: '2 * 5',
-      output: { total: 10, values: ['(**2**)', ' * ', '(**5**)'] },
+      output: {
+        isInvalid: false,
+        total: 10,
+        values: ['(**2**)', ' * ', '(**5**)'],
+      },
     },
     {
       input: '10 / 5',
-      output: { total: 2, values: ['(**10**)', ' / ', '(**5**)'] },
+      output: {
+        isInvalid: false,
+        total: 2,
+        values: ['(**10**)', ' / ', '(**5**)'],
+      },
     },
     {
       input: '10 / 3',
-      output: { total: 3, values: ['(**10**)', ' / ', '(**3**)'] },
+      output: {
+        isInvalid: false,
+        total: 3,
+        values: ['(**10**)', ' / ', '(**3**)'],
+      },
     },
     {
       input: '3 / 30',
-      output: { total: 0, values: ['(**3**)', ' / ', '(**30**)'] },
+      output: {
+        isInvalid: false,
+        total: 0,
+        values: ['(**3**)', ' / ', '(**30**)'],
+      },
     },
   ] as {
     input: string;
-    output: { total: number; values: string[] };
+    output: { isInvalid: boolean; total: number; values: string[] };
   }[],
 };

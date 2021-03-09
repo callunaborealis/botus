@@ -113,11 +113,20 @@ const operateOnValues = (operator: OperatorFormat, values: number[]) => {
   }, values[0]);
 };
 
-export const calculateDiceResult = (requestStr: string) => {
+export const calculateDiceResult = (
+  requestStr: string,
+): { isInvalid: boolean; total: number; values: string[] } => {
   const diceComponents: DieComponentFormat<
     'die' | 'const' | 'operator'
   >[] = interpretDiceRollRequest(requestStr);
-  const { displayedValues, total, values } = diceComponents.reduce(
+  if (diceComponents.length === 0) {
+    return {
+      isInvalid: true,
+      total: NaN,
+      values: [],
+    };
+  }
+  const { displayedValues, total } = diceComponents.reduce(
     (eventualValues, diceComponent) => {
       switch (diceComponent.type) {
         case 'const': {
@@ -181,19 +190,15 @@ export const calculateDiceResult = (requestStr: string) => {
       values: [] as number[],
     },
   );
-  return { total, values: displayedValues };
+  return { isInvalid: false, total, values: displayedValues };
 };
 
 export const respondWithDiceResult = (message: Message, requestStr: string) => {
-  const diceComponents: DieComponentFormat<
-    'die' | 'const' | 'operator'
-  >[] = interpretDiceRollRequest(requestStr);
+  const { isInvalid, total, values } = calculateDiceResult(requestStr);
 
-  if (diceComponents.length === 0) {
+  if (isInvalid) {
     return reactWithEmoji.failed(message);
   }
-
-  const { total, values } = calculateDiceResult(requestStr);
 
   const embed = new MessageEmbed()
     .setColor('#0099ff')

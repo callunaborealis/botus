@@ -58,10 +58,15 @@ describe('TTRPG: Requests processing', () => {
         expected.output.total
       } and dices are "${expected.output.values.join(' , ')}"`, () => {
         const diceDetails = calculateDiceResult(expected.input);
-        expect(diceDetails.total).to.equal(expected.output.total);
+        if (diceDetails.isInvalid) {
+          expect(diceDetails.total).to.be.NaN;
+        } else {
+          expect(diceDetails.total).to.equal(expected.output.total);
+        }
         expect(diceDetails.values.join(' , ')).to.equal(
           expected.output.values.join(' , '),
         );
+        expect(diceDetails.isInvalid).to.equal(expected.output.isInvalid);
       });
     });
   });
