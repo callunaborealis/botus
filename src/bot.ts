@@ -43,7 +43,7 @@ import {
   interpretRequest,
   sendHelpDoc,
   extractRequestDetailsForBot,
-  confirmRequestType,
+  identifyRequest,
 } from './social';
 import {
   defaultResponses,
@@ -57,14 +57,21 @@ import {
   hailResponses,
   howsItGoingResponses,
   howAreYouResponses,
-  helphelpRequests,
-  helpRequests,
   hugRequests,
   hugResponses,
   meaningOfLifeRequests,
   meaningOfLifeResponses,
+  helpPrefixCommandPatterns,
+  helpNaturalRequestPatterns,
+  helpHelpPrefixCommandPatterns,
+  helpNaturalMusicRequestExamples,
 } from './social/constants';
-import { MsgBotRequestStyle } from './social/types';
+import {
+  HelpNaturalRequestMatchesShape,
+  HelpPrefixRequestMatchesShape,
+  MsgBotRequestStyle,
+} from './social/types';
+import { DiceRequestStrMatchesShape } from './ttrpg/types';
 
 const djBotus = new Client();
 
@@ -110,18 +117,53 @@ djBotus.on('message', async (message) => {
   })();
 
   // TTRPG
-  if (confirmRequestType(messageContent, rollDicePrefixPatterns)) {
-    // roll 2d4 -> ['', '2d4', '2', '4', undefined, undefined, undefined, undefined, undefined, '']
-    const rollSplit = messageContent.split(rollDicePrefixPatterns[0]);
-    return respondWithDiceResult(message, rollSplit[1]);
+  if (requestDetails.style === MsgBotRequestStyle.Prefix) {
+    const { matches } = identifyRequest<DiceRequestStrMatchesShape>(
+      messageContent,
+      rollDicePrefixPatterns,
+    );
+    if (matches.length > 1) {
+      const [_, diceFormatStr] = matches;
+      return respondWithDiceResult(message, diceFormatStr as string);
+    }
   }
 
   // Help
-  if (interpretRequest(message, helphelpRequests)) {
-    return message.channel.send('No help for you!');
+  if (requestDetails.style === MsgBotRequestStyle.Prefix) {
+    const helpPrefixMatchDetails = identifyRequest<HelpPrefixRequestMatchesShape>(
+      messageContent,
+      helpPrefixCommandPatterns,
+    );
+    if (helpPrefixMatchDetails.matches?.[1] === 'music') {
+      return sendHelpDoc(message, 'music');
+    }
+    if (helpPrefixMatchDetails.index !== -1) {
+      return sendHelpDoc(message, 'about');
+    }
   }
-  if (interpretRequest(message, helpRequests)) {
-    return sendHelpDoc(message);
+  const helpMatchDetails = identifyRequest<HelpNaturalRequestMatchesShape>(
+    messageContent,
+    helpNaturalRequestPatterns,
+  );
+  if (
+    helpNaturalMusicRequestExamples.includes(
+      helpMatchDetails.matches?.[1] ?? '',
+    )
+  ) {
+    return sendHelpDoc(message, 'music');
+  }
+  if (helpMatchDetails.index !== -1) {
+    return sendHelpDoc(message, 'about');
+  }
+
+  if (requestDetails.style === MsgBotRequestStyle.Prefix) {
+    const helpHelpMatchDetails = identifyRequest(
+      messageContent,
+      helpHelpPrefixCommandPatterns,
+    );
+    if (helpHelpMatchDetails.index !== -1) {
+      return message.channel.send('No help for you!');
+    }
   }
 
   // Music: Debug - Hard resets the server session on the spot in case of failure

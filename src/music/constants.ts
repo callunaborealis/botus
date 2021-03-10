@@ -21,11 +21,20 @@ export const songScaffold: SongShape = {
 };
 
 // Makes the bot join your voice channel.
-export const joinPrefixCommands = ['join', 'j'];
+export const joinPrefixCommands = ['j', 'join'];
+export const joinPrefixCommandPatterns = [
+  new RegExp(`(${joinPrefixCommands.join('|')})(?: |$)`),
+];
+export const joinNaturalRequestExamples = ['join vc', 'join the voice chat'];
+export const joinNaturalRequests = [
+  'join(?: the)? vc',
+  'join(?: the)? voice chat',
+].map((v) => new RegExp(v, 'gim'));
 /**
  * @deprecated
  */
 export const joinVCRequests = [/^;(join|j)$/gim];
+
 export const loopTrackPrefixCommands = [
   'loop',
   'loop track',
@@ -35,6 +44,19 @@ export const loopTrackPrefixCommands = [
   'ls',
   'lt',
   'repeat',
+];
+export const loopTrackPrefixCommandPatterns = [
+  new RegExp(`(${loopTrackPrefixCommands.join('|')})(?: |$)`, 'gim'),
+];
+export const loopTrackNaturalRequestExamples = [
+  'play the current song again and again',
+  'keep playing this song',
+  'keep repeating this song',
+  'repeat this song',
+  'loop this song',
+  'put this track on repeat',
+  'ensure this song keeps playing',
+  'stay on this song',
 ];
 /**
  * @deprecated
