@@ -22,6 +22,9 @@ export const songScaffold: SongShape = {
 
 // Makes the bot join your voice channel.
 export const joinPrefixCommands = ['join', 'j'];
+/**
+ * @deprecated
+ */
 export const joinVCRequests = [/^;(join|j)$/gim];
 export const loopTrackPrefixCommands = [
   'loop',
@@ -33,6 +36,9 @@ export const loopTrackPrefixCommands = [
   'lt',
   'repeat',
 ];
+/**
+ * @deprecated
+ */
 export const loopTrackRequests = [
   /^;(loop ?track|ls|lt|loop ?song|repeat)$/gim,
 ];
@@ -44,11 +50,20 @@ export const loopOffPrefixCommands = [
   'loop off',
   'loopoff',
 ];
+/**
+ * @deprecated
+ */
 export const loopOffRequests = [/^;(loop ?stop|loop ?off)$/gim];
 export const loopCyclePrefixCommands = ['l', 'loop'];
+/**
+ * @deprecated
+ */
 export const loopCycleRequests = [/^;(l|loop)$/gim];
 
 export const setSongVolPrefixCommands = ['v'];
+/**
+ * @deprecated
+ */
 export const setSongVolRequests = [
   // Set vol for current song.
   /(^;v) [\d]+(\.?[\d]+)?/gim,
@@ -79,11 +94,17 @@ export const removeSongNaturalKeywords = [
   'take out',
   'take away',
 ];
+/**
+ * @deprecated
+ */
 export const removeSongRequests = [
   /^;rm [\d]+/gim,
   /(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]?([\w\d\s]{0,})? (remove|take away|delete|throw|get rid of|discard|take out|take away) (track|song) [\d]+( |$)/gim,
 ];
 export const stopSongPrefixCommands = ['stop', 'enough', 'halt'];
+/**
+ * @deprecated
+ */
 export const stopSongRequests = [/^;(stop|enough|halt)$/gim];
 export const disconnectVCPrefixCommands = [
   'dc',
@@ -98,10 +119,16 @@ export const disconnectVCPrefixCommands = [
   'reset',
   'bye',
 ];
+/**
+ * @deprecated
+ */
 export const disconnectVCRequests = [
   /^;(dc|fuck ?off|go ?away|get ?out|kick|leave|reset|bye)( (\w+)?)?$/gi,
 ];
 export const resetPlaylistPrefixCommands = ['forcereset', 'hardreset'];
+/**
+ * @deprecated
+ */
 export const resetPlaylistRequests = [
   // Reset
   /^;(forcereset|hardreset)( (\w+)?)?$/gi,
@@ -133,6 +160,9 @@ export const playExistingTrackPrefixCommands = [
     '([\\d]+)',
   ],
 ];
+/**
+ * @deprecated
+ */
 export const playExistingTrackRequests = [
   /^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]? [\w\d\s]{0,}(play|add)( track| song)? ([\d]+)/gim,
   /^;(p|play|add)( track| song)? ([\d]+)/gim,
@@ -141,6 +171,9 @@ export const playExistingTrackRequests = [
 ];
 
 export const playYoutubeLinkPrefixCommands = ['q', 'queue', 'p', 'play', 'add'];
+/**
+ * @deprecated
+ */
 export const playYoutubeURLRequests = [
   // hey / hi / sup / hello / yo / oi / oy (optional) botus ... play/add [youtube link] (natural language processing)
   /^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]? [\w\d\s]{0,}(queue|play|add) ((?:https?:\/\/)?(?:(?:(?:www\.?)?youtube\.com(?:\/(?:(?:watch\?\S*?(v=[^&\s]+)\S*)|(?:v(\/\S*))|(channel\/\S+)|(?:user\/(\S+))|(?:results\?(search_query=\S+))))?)|(?:youtu\.be(\/\S*)?)))/gim,
@@ -157,6 +190,9 @@ export const listPrefixCommands = [
   'play',
   'playlist',
 ];
+/**
+ * @deprecated
+ */
 export const listRequests = [
   /^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]? (what[']?s playin[g]?|queue|(play)?list)( |$)/gim,
   /^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]? show(( (pg?|page))?( [\d]+))( |$)/gim,
@@ -166,6 +202,9 @@ export const listRequests = [
 ];
 
 export const skipPrefixCommands = ['next', 'n', 'skip', 'jump'];
+/**
+ * @deprecated
+ */
 export const skipRequests = [
   /^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]? (skip|next|jump)/gim,
   // Groovy aliases
@@ -173,6 +212,9 @@ export const skipRequests = [
 ];
 
 export const clearPrefixCommands = ['clear'];
+/**
+ * @deprecated
+ */
 export const clearRequests = [
   /^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]? clear/gim,
   // Shortcut
