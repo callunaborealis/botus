@@ -1,3 +1,6 @@
+/**
+ * @deprecated
+ */
 export const hailRequests = [
   // name + greeting
   /^botus[\s]?[,?!(\.\.\.)]?(h?ello|[h]?ey([h]?ey)?|hi|ay|(wa[s]{0,100})?su[p]{1,100}|yo|o[iy])?( |$)/gim,
@@ -34,13 +37,21 @@ export const hailResponses = [
   (username: string) => `Hi, ${username}.`,
 ];
 
+/**
+ * @deprecated
+ */
 export const helphelpRequests = [/^(;help[\s]?help)|(botus help[\s]?help)/gim];
-export const helpHelpRequests2 = ['help help', 'helphelp'];
+export const helpHelpNaturalRequests = ['help help', 'helphelp'];
 export const helpPrefixCommands = ['h', 'help'];
 export const helpTypes = ['', 'music'];
 export const helpNaturalRequests = ['help'];
+/**
+ * @deprecated
+ */
 export const helpRequests = [/^((;h( |$))|(;help( |$))|(botus help( |$)))/gim];
-
+/**
+ * @deprecated
+ */
 export const greetingRequests = [
   // greeting + name
   /^(([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus( |$)/gim,
@@ -83,6 +94,9 @@ export const howsItGoingNaturalRequests = [
   `(?:${[...howIsVariants, ...howAreVariants].join('|')}) things?`,
   `(?:${whatIsVariants.join('|')}) up`,
 ];
+/**
+ * @deprecated
+ */
 export const howIsItGoingRequests = [
   /^botus[,.!?]? how(( i)|')?s it goin[g]?( |$)/gim,
   /^botus[,.!?]? how are things?( |$)/gim,
@@ -92,7 +106,10 @@ export const howIsItGoingRequests = [
   /^;howru$/i,
 ];
 
-// Asking if Botus is okay
+/**
+ * Asking if Botus is okay
+ * @deprecated
+ */
 export const howAreYouRequests = [
   /**
    * botus how are ya
@@ -135,6 +152,9 @@ export const howAreYouResponses = [
   () => "_shrugs._ I'll be fine. Take care friendo.",
 ];
 
+/**
+ * @deprecated
+ */
 export const gratitudeRequests = [
   /^[\w\d\s]{0,10}botus(,|\.+|!)? thank (you|ya|u)( |$)/gim,
   /^[\w\d\s]{0,10}botus(,|\.+|!)? thanks( |$)/gim,
@@ -146,6 +166,9 @@ export const gratitudeRequests = [
   /^;thanks$/i,
 ];
 
+/**
+ * @deprecated
+ */
 export const hugRequests = [
   /^botus[,\.!?]? (I want|give me|I need|I would like|can (you|ya|u)|can you give me|can I have) (a )?hugs?( |$)/gim,
   /^botus[,\.!?]? (I'?m|I am) (glum|hopeless|miserable|sad|depressed|down|unhappy)( |$)/gim,
@@ -185,7 +208,9 @@ export const gratitudeResponses = [
   () => `_gives a brief wink and turns away._`,
   () => `Yep. You're welcome.`,
 ];
-
+/**
+ * @deprecated
+ */
 export const meaningOfLifeRequests = [
   /^botus[,\.!?]? tell (me|us|them) the meaning? of life(\?|$)/gim,
   /^botus[,\.!?]? what('| i)?s the meaning? of life(\?|$)/gim,

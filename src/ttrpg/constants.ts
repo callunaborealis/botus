@@ -1,7 +1,5 @@
 import { OperatorFormat } from './types';
 
-export const createCharacterRequests = [/;create( |$)/gim];
-
 export const rollDicePrefixCommands = ['roll'];
 export const rollDiceNaturalRequests = rollDicePrefixCommands;
 const integer = '\\d+';
