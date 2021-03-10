@@ -41,14 +41,50 @@ export const hailResponses = [
  * @deprecated
  */
 export const helphelpRequests = [/^(;help[\s]?help)|(botus help[\s]?help)/gim];
-export const helpHelpNaturalRequests = ['help help', 'helphelp'];
+export const helpHelpPrefixCommands = ['help help', 'helphelp'];
+export const helpHelpPrefixCommandPatterns = [
+  new RegExp(`(?:${helpHelpPrefixCommands.join('|')})$`),
+];
 export const helpPrefixCommands = ['h', 'help'];
-export const helpTypes = ['', 'music'];
-export const helpNaturalRequests = ['help'];
-/**
- * @deprecated
- */
-export const helpRequests = [/^((;h( |$))|(;help( |$))|(botus help( |$)))/gim];
+export const helpMusicTypes = ['music'];
+export const helpPrefixCommandPatterns = [
+  new RegExp(
+    `(?:${helpPrefixCommands.join('|')})(?: (${helpMusicTypes.join(
+      '|',
+    )}))?(?: |$)`,
+  ),
+];
+export const helpNaturalAboutRequestExamples = [
+  // Issues
+  'where can i report an issue about you',
+  'how to fix you',
+  'can i suggest how to make you better',
+  // Identity
+  'who are you',
+  'what are you',
+  'who made you',
+];
+export const helpNaturalMusicRequestExamples = [
+  'help me with music',
+  'how to play music',
+  'how to play youtube videos',
+  'how do you use music',
+  'how to get you to play youtube',
+  'i want to see music readme',
+  'show me how to play music',
+  'how to get you to stop playing music',
+  'how to reduce volume',
+  'how to raise volume',
+  'show me how to use you for music',
+];
+export const helpNaturalRequestPatterns = [
+  new RegExp(
+    `(?:(${helpNaturalAboutRequestExamples.join(
+      '|',
+    )})|(${helpNaturalMusicRequestExamples.join('|')}))(?: |$)`,
+  ),
+];
+
 /**
  * @deprecated
  */

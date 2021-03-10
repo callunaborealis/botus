@@ -3,6 +3,8 @@ import {
   howIsVariants,
   howAreVariants,
   whatIsVariants,
+  helpHelpPrefixCommandPatterns,
+  helpPrefixCommandPatterns,
 } from '../../src/social/constants';
 import {
   ExtractedMsgBotRequestDetails,
@@ -10,6 +12,7 @@ import {
 } from '../../src/social/types';
 import {
   joinPrefixCommands,
+  joinPrefixCommandPatterns,
   loopCyclePrefixCommands,
   loopPlaylistPrefixCommands,
   loopOffPrefixCommands,
@@ -22,9 +25,12 @@ import {
   resetPlaylistPrefixCommands,
   disconnectVCPrefixCommands,
   stopSongPrefixCommands,
+  joinNaturalRequests,
 } from '../../src/music/constants';
+import { rollDicePrefixPatterns } from '../../src/ttrpg/constants';
 
 const greetingsBotWillRecognise = [
+  '',
   // 'h?ello',
   'ello',
   'hello',
@@ -55,14 +61,15 @@ const greetingsBotWillRecognise = [
 // /(?: |[,?!] ?|[\.]{2,} ?)/gim
 const separatorsBotWillCheckFor = [
   ' ',
-  ',',
-  ', ',
-  '?',
-  '? ',
-  '!',
-  '! ',
-  '...',
-  '... ',
+  // NOTE: Commented out as already checked
+  // ',',
+  // ', ',
+  // '?',
+  // '? ',
+  // '!',
+  // '! ',
+  // '...',
+  // '... ',
 ];
 
 const howsItGoingPhrases = [
@@ -82,11 +89,6 @@ const howsItGoingPhrases = [
   // what('| i)?s up
   ...whatIsVariants.map((v) => `${v} up`),
 ];
-
-interface TestCaseIOShape {
-  input: { messageContent: string };
-  output: ExtractedMsgBotRequestDetails;
-}
 
 const naturalRequests = ['raise the volume'];
 const prefixCommands = [
@@ -109,37 +111,188 @@ const prefixCommands = [
 
 export const expectations = {
   extractRequestDetailsForBot: [
-    ...greetingsBotWillRecognise.reduce((acc, greeting) => {
-      return separatorsBotWillCheckFor.reduce((acc2, separator) => {
-        return naturalRequests.reduce((acc3, naturalRequest) => {
-          return [
-            ...acc3,
-            {
-              input: {
-                messageContent: `${greeting}${separator}botus${separator}${naturalRequest}`,
+    ...greetingsBotWillRecognise.reduce(
+      (acc, greeting) => {
+        return separatorsBotWillCheckFor.reduce((acc2, separator) => {
+          return naturalRequests.reduce((acc3, naturalRequest) => {
+            const greetingAndSep =
+              greeting === '' ? '' : `${greeting}${separator}`;
+            return [
+              ...acc3,
+              {
+                input: {
+                  messageContent: `${greetingAndSep}botus${separator}${naturalRequest}`,
+                },
+                output: {
+                  greeting,
+                  style: MsgBotRequestStyle.Natural,
+                  requestStr: naturalRequest,
+                },
               },
-              output: {
-                greeting,
-                style: MsgBotRequestStyle.Natural,
-                requestStr: naturalRequest,
-              },
+            ];
+          }, acc2);
+        }, acc);
+      },
+      [] as {
+        input: { messageContent: string };
+        output: ExtractedMsgBotRequestDetails;
+      }[],
+    ),
+    ...prefixCommands.reduce(
+      (acc, prefixCommand) => {
+        return [
+          ...acc,
+          {
+            input: { messageContent: `;${prefixCommand}` },
+            output: {
+              greeting: '',
+              style: MsgBotRequestStyle.Prefix,
+              requestStr: prefixCommand,
             },
-          ];
-        }, acc2);
-      }, acc);
-    }, [] as TestCaseIOShape[]),
-    ...prefixCommands.reduce((acc, prefixCommand) => {
-      return [
-        ...acc,
-        {
-          input: { messageContent: `;${prefixCommand}` },
-          output: {
-            greeting: '',
-            style: MsgBotRequestStyle.Prefix,
-            requestStr: prefixCommand,
           },
-        },
-      ];
-    }, [] as TestCaseIOShape[]),
+        ];
+      },
+      [] as {
+        input: { messageContent: string };
+        output: ExtractedMsgBotRequestDetails;
+      }[],
+    ),
   ],
+  identifyRequest: [
+    {
+      input: { messageContent: '', listOfMatches: [] },
+      output: { index: -1, matches: [] },
+    },
+    // ROLLS
+    ...[
+      {
+        messageContent: 'roll 2d5+10',
+        matches: [
+          '',
+          // Dice format captured
+          '2d5+10',
+          // rolls
+          '2',
+          // faces
+          '5',
+          undefined,
+          '+',
+          undefined,
+          undefined,
+          '10',
+          '',
+        ],
+        index: 0,
+      },
+      {
+        messageContent: 'roll 8d10',
+        matches: [
+          '',
+          // Dice format captured
+          '8d10',
+          // rolls
+          '8',
+          // faces
+          '10',
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          '',
+        ],
+        index: 0,
+      },
+      {
+        messageContent: '',
+        matches: [],
+        index: -1,
+      },
+    ].map(({ messageContent, matches, index }) => {
+      return {
+        input: {
+          messageContent,
+          listOfMatches: rollDicePrefixPatterns,
+        },
+        output: {
+          index,
+          matches,
+        },
+      };
+    }),
+    // MUSIC: JUMP
+    ...[
+      {
+        messageContent: 'k',
+        matches: [],
+        index: -1,
+      },
+      {
+        messageContent: 'j',
+        matches: ['', 'j', ''],
+        index: 0,
+      },
+      {
+        messageContent: 'join',
+        matches: ['', 'join', ''],
+        index: 0,
+      },
+    ].map(({ messageContent, matches, index }) => {
+      return {
+        input: {
+          messageContent,
+          listOfMatches: joinPrefixCommandPatterns,
+        },
+        output: {
+          index,
+          matches,
+        },
+      };
+    }),
+    // MUSIC: JOIN NATURAL
+    ...[
+      {
+        messageContent: 'join the voice chat',
+        matches: ['', ''],
+        index: 1,
+      },
+    ].map(({ messageContent, matches, index }) => {
+      return {
+        input: {
+          messageContent,
+          listOfMatches: joinNaturalRequests,
+        },
+        output: {
+          index,
+          matches,
+        },
+      };
+    }),
+    ...[
+      {
+        messageContent: 'help',
+        matches: ['', undefined, ''],
+        index: 0,
+      },
+      {
+        messageContent: 'help music',
+        matches: ['', 'music', ''],
+        index: 0,
+      },
+    ].map(({ messageContent, matches, index }) => {
+      return {
+        input: {
+          messageContent,
+          listOfMatches: helpPrefixCommandPatterns,
+        },
+        output: {
+          index,
+          matches,
+        },
+      };
+    }),
+  ] as {
+    input: { messageContent: string; listOfMatches: RegExp[] };
+    output: { index: number; matches: (string | undefined)[] };
+  }[],
 };
