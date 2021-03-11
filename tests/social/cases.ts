@@ -3,8 +3,10 @@ import {
   howIsVariants,
   howAreVariants,
   whatIsVariants,
-  helpHelpPrefixCommandPatterns,
   helpPrefixCommandPatterns,
+  helpNaturalMusicRequestExamples,
+  helpNaturalRequestPatterns,
+  helpNaturalAboutRequestExamples,
 } from '../../src/social/constants';
 import {
   ExtractedMsgBotRequestDetails,
@@ -274,16 +276,38 @@ export const expectations = {
         matches: ['', undefined, ''],
         index: 0,
       },
-      {
-        messageContent: 'help music',
-        matches: ['', 'music', ''],
-        index: 0,
-      },
     ].map(({ messageContent, matches, index }) => {
       return {
         input: {
           messageContent,
           listOfMatches: helpPrefixCommandPatterns,
+        },
+        output: {
+          index,
+          matches,
+        },
+      };
+    }),
+    ...[
+      ...helpNaturalMusicRequestExamples.map((example) => {
+        return {
+          messageContent: example,
+          matches: ['', undefined, example, ''],
+          index: 0,
+        };
+      }),
+      ...helpNaturalAboutRequestExamples.map((example) => {
+        return {
+          messageContent: example,
+          matches: ['', example, undefined, ''],
+          index: 0,
+        };
+      }),
+    ].map(({ messageContent, matches, index }) => {
+      return {
+        input: {
+          messageContent,
+          listOfMatches: helpNaturalRequestPatterns,
         },
         output: {
           index,

@@ -13,6 +13,7 @@ export const hailRequests = [
  * /(?: |[,?!] ?|[\.]{2,} ?)/gim
  */
 export const botNameContentSeparator = '(?: |[,?!] ?|[\\.]{2,} ?)';
+export const requestPatternTerminator = '(?: |[\\?\\!\\.\\,]|$)';
 export const listOfGreetingsToBot = [
   // ello, hello
   'h?ello',
@@ -43,7 +44,9 @@ export const hailResponses = [
 export const helphelpRequests = [/^(;help[\s]?help)|(botus help[\s]?help)/gim];
 export const helpHelpPrefixCommands = ['help help', 'helphelp'];
 export const helpHelpPrefixCommandPatterns = [
-  new RegExp(`(?:${helpHelpPrefixCommands.join('|')})$`),
+  new RegExp(
+    `(?:${helpHelpPrefixCommands.join('|')})${requestPatternTerminator}`,
+  ),
 ];
 export const helpPrefixCommands = ['h', 'help'];
 export const helpMusicTypes = ['music'];
@@ -51,7 +54,7 @@ export const helpPrefixCommandPatterns = [
   new RegExp(
     `(?:${helpPrefixCommands.join('|')})(?: (${helpMusicTypes.join(
       '|',
-    )}))?(?: |$)`,
+    )}))?${requestPatternTerminator}`,
   ),
 ];
 export const helpNaturalAboutRequestExamples = [
@@ -67,6 +70,7 @@ export const helpNaturalAboutRequestExamples = [
 export const helpNaturalMusicRequestExamples = [
   'help me with music',
   'how to play music',
+  'how do you play music',
   'how to play youtube videos',
   'how do you use music',
   'how to get you to play youtube',
@@ -79,9 +83,12 @@ export const helpNaturalMusicRequestExamples = [
 ];
 export const helpNaturalRequestPatterns = [
   new RegExp(
-    `(?:(${helpNaturalAboutRequestExamples.join(
-      '|',
-    )})|(${helpNaturalMusicRequestExamples.join('|')}))(?: |$)`,
+    `(?:(${helpNaturalAboutRequestExamples
+      .map((eg) => `(?:${eg})`)
+      .join('|')})|(${helpNaturalMusicRequestExamples
+      .map((eg) => `(?:${eg})`)
+      .join('|')}))${requestPatternTerminator}`,
+    'gim',
   ),
 ];
 
