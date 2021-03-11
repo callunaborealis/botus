@@ -1,4 +1,5 @@
 import { Client } from 'discord.js';
+import isString from 'lodash/isString';
 
 import { DISCORD_APP_BOT_TOKEN } from './environment';
 import logger from './logger';
@@ -23,19 +24,20 @@ import {
 import {
   playYoutubeURLRequests,
   playExistingTrackRequests,
-  joinVCRequests,
-  disconnectVCRequests,
   clearRequests,
   listRequests,
   skipRequests,
-  loopPlaylistRequests,
-  loopTrackRequests,
-  loopOffRequests,
-  loopCycleRequests,
   setSongVolRequests,
   removeSongRequests,
   stopSongRequests,
-  resetPlaylistRequests,
+  resetPlaylistPrefixCommandPatterns,
+  debugPrefixCommandPatterns,
+  loopPlaylistPrefixCommandPatterns,
+  loopTrackPrefixCommandPatterns,
+  loopCyclePrefixCommandPatterns,
+  loopOffPrefixCommandPatterns,
+  joinPrefixCommandPatterns,
+  disconnectVCPrefixCommandPatterns,
 } from './music/constants';
 
 import {
@@ -141,19 +143,17 @@ djBotus.on('message', async (message) => {
       return sendHelpDoc(message, 'about');
     }
   }
-  const helpMatchDetails = identifyRequest<HelpNaturalRequestMatchesShape>(
-    messageContent,
-    helpNaturalRequestPatterns,
-  );
-  if (
-    helpNaturalMusicRequestExamples.includes(
-      helpMatchDetails.matches?.[1] ?? '',
-    )
-  ) {
-    return sendHelpDoc(message, 'music');
-  }
-  if (helpMatchDetails.index !== -1) {
-    return sendHelpDoc(message, 'about');
+  if (requestDetails.style === MsgBotRequestStyle.Natural) {
+    const helpMatchDetails = identifyRequest<HelpNaturalRequestMatchesShape>(
+      messageContent,
+      helpNaturalRequestPatterns,
+    );
+    if (isString(helpMatchDetails.matches[2])) {
+      return sendHelpDoc(message, 'music');
+    }
+    if (helpMatchDetails.index !== -1) {
+      return sendHelpDoc(message, 'about');
+    }
   }
 
   if (requestDetails.style === MsgBotRequestStyle.Prefix) {
@@ -167,25 +167,71 @@ djBotus.on('message', async (message) => {
   }
 
   // Music: Debug - Hard resets the server session on the spot in case of failure
-  if (interpretRequest(message, resetPlaylistRequests)) {
-    return createServerSession(message);
-  }
-  if (interpretRequest(message, [/^;debug$/gim])) {
-    return displayDebugValues(message);
+  if (requestDetails.style === MsgBotRequestStyle.Prefix) {
+    const hardResetDetails = identifyRequest(
+      messageContent,
+      resetPlaylistPrefixCommandPatterns,
+    );
+    if (hardResetDetails.index !== -1) {
+      return createServerSession(message, true);
+    }
+    const debugDetails = identifyRequest(
+      messageContent,
+      debugPrefixCommandPatterns,
+    );
+    if (debugDetails.index !== -1) {
+      return displayDebugValues(message);
+    }
   }
 
   // Music: Loop
-  if (interpretRequest(message, loopTrackRequests)) {
-    return loop(message, 'song');
+  if (requestDetails.style === MsgBotRequestStyle.Prefix) {
+    const loopTrackDetails = identifyRequest(
+      messageContent,
+      loopTrackPrefixCommandPatterns,
+    );
+    if (loopTrackDetails.index !== -1) {
+      return loop(message, 'song');
+    }
+    const loopPlaylistDetails = identifyRequest(
+      messageContent,
+      loopPlaylistPrefixCommandPatterns,
+    );
+    if (loopPlaylistDetails.index !== -1) {
+      return loop(message, 'playlist');
+    }
+    const loopOffDetails = identifyRequest(
+      messageContent,
+      loopOffPrefixCommandPatterns,
+    );
+    if (loopOffDetails.index !== -1) {
+      return loop(message, 'off');
+    }
+    const loopCycleDetails = identifyRequest(
+      messageContent,
+      loopCyclePrefixCommandPatterns,
+    );
+    if (loopCycleDetails.index !== -1) {
+      return loop(message);
+    }
   }
-  if (interpretRequest(message, loopPlaylistRequests)) {
-    return loop(message, 'playlist');
-  }
-  if (interpretRequest(message, loopOffRequests)) {
-    return loop(message, 'off');
-  }
-  if (interpretRequest(message, loopCycleRequests)) {
-    return loop(message);
+
+  // Music: Voice Connection
+  if (requestDetails.style === MsgBotRequestStyle.Prefix) {
+    const joinVCDetails = identifyRequest(
+      messageContent,
+      joinPrefixCommandPatterns,
+    );
+    if (joinVCDetails.index !== -1) {
+      return joinVoiceChannel(message);
+    }
+    const dcVCDetails = identifyRequest(
+      messageContent,
+      disconnectVCPrefixCommandPatterns,
+    );
+    if (dcVCDetails.index !== -1) {
+      return disconnectVoiceChannel(message);
+    }
   }
 
   // Music: Volume
@@ -203,12 +249,7 @@ djBotus.on('message', async (message) => {
   if (interpretRequest(message, playYoutubeURLRequests)) {
     return playAndOrAddYoutubeToPlaylist(message);
   }
-  if (interpretRequest(message, joinVCRequests)) {
-    return joinVoiceChannel(message);
-  }
-  if (interpretRequest(message, disconnectVCRequests)) {
-    return disconnectVoiceChannel(message);
-  }
+
   if (interpretRequest(message, listRequests)) {
     return list(message);
   }
