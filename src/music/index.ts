@@ -766,6 +766,8 @@ export const list = async (message: Message) => {
     song: `Just playing one song from`,
   };
 
+  reactWithEmoji.received(message);
+
   const trackChunkedPlaylist = playlist.songs.reduce(
     (
       eventualTrackList: { currentTrackIndex: number; tracks: string[] },
@@ -773,7 +775,6 @@ export const list = async (message: Message) => {
       index: number,
       songsList: SongShape[],
     ) => {
-      reactWithEmoji.received(message);
       const nowPlayingTag = (() => {
         if (
           currentTrackOnList.id === currentSongId &&
