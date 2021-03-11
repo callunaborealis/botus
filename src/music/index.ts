@@ -1435,7 +1435,7 @@ export const setSongVolume = async (message: Message) => {
   const songName = (() => {
     if (requestedSongIndex !== -1) {
       return `track ${requestedSongIndex + 1} (**${
-        playlist.currentSong.title
+        playlist.songs[songIndexToSet].title
       }**)`;
     }
     return `the current song`;
