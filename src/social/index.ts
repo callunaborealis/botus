@@ -378,6 +378,12 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
         value: `Type \`${botPrefix}${helpPrefixCommands[1]}\` to get this help menu.\nType \`${botPrefix}${helpPrefixCommands[1]} ${helpMusicTypes[0]}\` to get a list of music commands.`,
         inline: false,
       },
+      {
+        name: ':game_die: How are dice rolls calculated?',
+        value:
+          'All dice are rolled using the `ckknight/random-js` library extended by the `nodeCrypto` "engine". Technical details about calculating true randomness here: https://github.com/ckknight/random-js.',
+        inline: false,
+      },
     );
 
   message.channel.send(aboutEmbed);
