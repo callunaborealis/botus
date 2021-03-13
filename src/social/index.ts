@@ -25,7 +25,7 @@ import {
   removeSongPrefixCommands,
 } from '../music/constants';
 import { setSongVolPrefixCommands } from '../music/volume/constants';
-import { showPlaylistPrefixCommands } from '../music/list';
+import { showPlaylistPrefixCommands } from '../music/list/constants';
 
 const botPrefix = BOT_PREFIX;
 

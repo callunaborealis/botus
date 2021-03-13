@@ -38,7 +38,8 @@ import {
   joinPrefixCommandPatterns,
   disconnectVCPrefixCommandPatterns,
 } from './music/constants';
-import { showPlaylistPrefixCommandPatterns } from './music/list';
+import { list } from './music/list';
+import { showPlaylistPrefixCommandPatterns } from './music/list/constants';
 
 import {
   respond,

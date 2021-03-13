@@ -1,21 +1,5 @@
 import { Message, MessageEmbed } from 'discord.js';
-import { defaultPlaylistName, getPlaylist } from './playlist';
-
-export const showPlaylistPrefixCommands = [
-  /**
-   * /^;(q|queue|(play)?list)(( (pg?|page))?( [\d]+)| ((everything|all)))?( |$)/gim
-   */
-  'playlist',
-  'queue',
-  'play',
-  'q',
-];
-const showPlaylistPrefixCommandPattern = `(?:${showPlaylistPrefixCommands.join(
-  '|',
-)})`;
-export const showPlaylistPrefixCommandPatterns = [
-  new RegExp([showPlaylistPrefixCommandPattern].join('')),
-];
+import { defaultPlaylistName, getPlaylist } from '../playlist';
 
 export const generateDisplayedPlaylistPages = (params: {
   messageContent: string;
@@ -32,7 +16,7 @@ export const list = async (
   const playlist = getPlaylist(message, defaultPlaylistName);
   const pages = generateDisplayedPlaylistPages({
     messageContent: '',
-    requestedPage: 1,
+    requestedPage: options.requestedPage,
   });
   let actualCurrentPageIndex = 0;
   for (const page of pages) {
