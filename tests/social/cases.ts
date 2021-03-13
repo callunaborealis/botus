@@ -19,7 +19,6 @@ import {
   loopPlaylistPrefixCommands,
   loopOffPrefixCommands,
   loopTrackPrefixCommands,
-  setSongVolPrefixCommands,
   removeSongPrefixCommands,
   clearPrefixCommands,
   skipPrefixCommands,
@@ -29,6 +28,7 @@ import {
   stopSongPrefixCommands,
   joinNaturalRequests,
 } from '../../src/music/constants';
+import { setSongVolPrefixCommands } from '../../src/music/volume/constants';
 import { rollDicePrefixPatterns } from '../../src/ttrpg/constants';
 
 const greetingsBotWillRecognise = [

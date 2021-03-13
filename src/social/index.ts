@@ -21,8 +21,8 @@ import {
   playExistingTrackOptTrackPrefixCommands,
   playYoutubeLinkPrefixCommands,
   removeSongPrefixCommands,
-  setSongVolPrefixCommands,
 } from '../music/constants';
+import { setSongVolPrefixCommands } from '../music/volume/constants';
 
 export const extractRequestDetailsForBot = (
   messageContent: Message['content'],

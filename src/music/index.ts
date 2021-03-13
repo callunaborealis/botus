@@ -14,7 +14,6 @@ import {
   loopOrder,
   loopOrderedMessages,
   existingTrackPattern,
-  resetPlaylistRequests,
   listRequests,
 } from './constants';
 import { LoopType, PlaylistShape, SongShape } from './types';
@@ -24,7 +23,10 @@ import { getYoutubeLinkAndVolFromRequest } from './helper';
 
 const defaultPlaylistName = 'default';
 
-export const createServerSession = async (message: Message) => {
+export const createServerSession = async (
+  message: Message,
+  shouldReset: boolean = false,
+) => {
   const serverId = message.guild?.id;
   if (!serverId) {
     return null;
@@ -65,7 +67,7 @@ export const createServerSession = async (message: Message) => {
   }
 
   // Reset playlists
-  if (message.content.match(resetPlaylistRequests[0])) {
+  if (shouldReset) {
     const candidates = message.content.split(/;(forcereset|hardreset) /gim);
     const playlistName = (() => {
       if (candidates?.[0] && candidates[0] !== '') {
@@ -1278,7 +1280,13 @@ export const clear = async (message: Message) => {
   deletePlaylist(message, defaultPlaylistName);
 };
 
-export const setSongVolume = async (message: Message) => {
+export const setSongVolume = async (
+  message: Message,
+  options?: {
+    volume: string;
+    track?: string;
+  },
+) => {
   reactWithEmoji.received(message);
   const playlist = getPlaylist(message, defaultPlaylistName);
   if (!playlist) {
@@ -1305,6 +1313,19 @@ export const setSongVolume = async (message: Message) => {
   setPlaylist(message, defaultPlaylistName, playlist);
 
   const requestedSongIndex = (() => {
+    const receivedTrack = parseInt(options?.track ?? '-', 10);
+    if (isFinite(receivedTrack)) {
+      if (playlist.songs[receivedTrack - 1]) {
+        // Song exists in songs
+        return receivedTrack - 1;
+      }
+      message.channel.send(
+        `_shrugs_ I couldn't find the track number ${receivedTrack} on the playlist.`,
+      );
+    }
+    /**
+     * @deprecated
+     */
     const candidates = message.content.match(/ (track|song|t|s) [\d]+/gim);
     if (candidates && candidates[0]) {
       const songNr = parseInt(
@@ -1333,6 +1354,13 @@ export const setSongVolume = async (message: Message) => {
 
   const volume: number | '-' = (() => {
     const volumeToSetForCurrentSong = (() => {
+      const receivedVolume = parseFloat(options?.volume ?? '-');
+      if (isFinite(receivedVolume)) {
+        return receivedVolume;
+      }
+      /**
+       * @deprecated
+       */
       const volShortCutMentions = message.content.match(
         /(^;v) [\d]+(\.\d+)?([ ?]|$)/gim,
       );
@@ -1340,6 +1368,9 @@ export const setSongVolume = async (message: Message) => {
       if (volShortCutMentions && volShortCutMentions[0]) {
         return parseFloat(volShortCutMentions[0].split(/(^;v) /gim)[2]);
       }
+      /**
+       * @deprecated
+       */
       const volumeMentions = message.content.match(
         / vol(\.|ume)? ?(as|at|to|with|using)? [\d]+(\.\d+)?([ ?]|$)/gim,
       );
