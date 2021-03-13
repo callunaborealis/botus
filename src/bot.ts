@@ -27,7 +27,6 @@ import {
   clearRequests,
   listRequests,
   skipRequests,
-  setSongVolRequests,
   removeSongRequests,
   stopSongRequests,
   resetPlaylistPrefixCommandPatterns,
@@ -66,7 +65,6 @@ import {
   helpPrefixCommandPatterns,
   helpNaturalRequestPatterns,
   helpHelpPrefixCommandPatterns,
-  helpNaturalMusicRequestExamples,
 } from './social/constants';
 import {
   HelpNaturalRequestMatchesShape,
@@ -74,6 +72,12 @@ import {
   MsgBotRequestStyle,
 } from './social/types';
 import { DiceRequestStrMatchesShape } from './ttrpg/types';
+import {
+  setSongVolNaturalRequestPatterns,
+  setSongVolPrefixCommandPatterns,
+} from './music/volume/constants';
+import { TrackVolPrefixCommandMatches } from './music/volume/types';
+import { extractNaturalSetVolumeDetails } from './music/volume';
 
 const djBotus = new Client();
 
@@ -235,9 +239,43 @@ djBotus.on('message', async (message) => {
   }
 
   // Music: Volume
-  if (interpretRequest(message, setSongVolRequests)) {
-    return setSongVolume(message);
+  if (requestDetails.style === MsgBotRequestStyle.Prefix) {
+    const setVolPrefixDetails = identifyRequest(
+      messageContent,
+      setSongVolPrefixCommandPatterns,
+    );
+    if (setVolPrefixDetails.index === 0) {
+      const matches = setVolPrefixDetails.matches as TrackVolPrefixCommandMatches[0];
+      return setSongVolume(message, {
+        volume: matches[1],
+        track: matches[2],
+      });
+    }
+    if (setVolPrefixDetails.index === 1) {
+      const matches = setVolPrefixDetails.matches as TrackVolPrefixCommandMatches[1];
+      return setSongVolume(message, {
+        volume: matches[2],
+        track: matches[1],
+      });
+    }
   }
+  if (requestDetails.style === MsgBotRequestStyle.Natural) {
+    const setVolNaturalDetails = identifyRequest(
+      messageContent,
+      setSongVolNaturalRequestPatterns,
+    );
+    if (setVolNaturalDetails.index >= 0) {
+      const naturalVolDetails = extractNaturalSetVolumeDetails({
+        index: setVolNaturalDetails.index,
+        matches: setVolNaturalDetails.matches,
+      });
+      return setSongVolume(message, {
+        volume: naturalVolDetails.volume.toString(), // TODO: Remove yo-yo string conversion
+        track: naturalVolDetails.track.toString(),
+      });
+    }
+  }
+
   if (interpretRequest(message, removeSongRequests)) {
     return removeSong(message);
   }

@@ -13,7 +13,7 @@ export const hailRequests = [
  * /(?: |[,?!] ?|[\.]{2,} ?)/gim
  */
 export const botNameContentSeparator = '(?: |[,?!] ?|[\\.]{2,} ?)';
-export const requestPatternTerminator = '(?: |[\\?\\!\\.\\,]|$)';
+export const requestPatternTerminator = '(?: |[?!.,]|$)';
 export const listOfGreetingsToBot = [
   // ello, hello
   'h?ello',

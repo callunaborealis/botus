@@ -1,3 +1,4 @@
+import { requestPatternTerminator } from '../social/constants';
 import { LoopType, SongShape } from './types';
 
 export const loopOrder: LoopType[] = ['playlist', 'song', 'off'];
@@ -23,17 +24,29 @@ export const songScaffold: SongShape = {
 // Makes the bot join your voice channel.
 export const joinPrefixCommands = ['j', 'join'];
 export const joinPrefixCommandPatterns = [
-  new RegExp(`(${joinPrefixCommands.join('|')})(?: |$)`),
+  new RegExp(`(${joinPrefixCommands.join('|')})${requestPatternTerminator}`),
 ];
 export const joinNaturalRequestExamples = ['join vc', 'join the voice chat'];
 export const joinNaturalRequests = [
   'join(?: the)? vc',
   'join(?: the)? voice chat',
 ].map((v) => new RegExp(v, 'gim'));
-/**
- * @deprecated
- */
-export const joinVCRequests = [/^;(join|j)$/gim];
+export const disconnectVCPrefixCommands = [
+  'dc',
+  'fuckoff',
+  'fuck off',
+  'goaway',
+  'go away',
+  'getout',
+  'get out',
+  'kick',
+  'leave',
+  'reset',
+  'bye',
+];
+export const disconnectVCPrefixCommandPatterns = disconnectVCPrefixCommands.map(
+  (p) => new RegExp(`${p}${requestPatternTerminator}`, 'gim'),
+);
 
 export const loopTrackPrefixCommands = [
   'loop',
@@ -46,7 +59,10 @@ export const loopTrackPrefixCommands = [
   'repeat',
 ];
 export const loopTrackPrefixCommandPatterns = [
-  new RegExp(`(${loopTrackPrefixCommands.join('|')})(?: |$)`, 'gim'),
+  new RegExp(
+    `(${loopTrackPrefixCommands.join('|')})${requestPatternTerminator}`,
+    'gim',
+  ),
 ];
 export const loopTrackNaturalRequestExamples = [
   'play the current song again and again',
@@ -58,53 +74,27 @@ export const loopTrackNaturalRequestExamples = [
   'ensure this song keeps playing',
   'stay on this song',
 ];
-/**
- * @deprecated
- */
-export const loopTrackRequests = [
-  /^;(loop ?track|ls|lt|loop ?song|repeat)$/gim,
-];
+
 export const loopPlaylistPrefixCommands = ['lq', 'loop queue', 'lp'];
-export const loopPlaylistRequests = [/^;(lq|loop queue|lp)$/gim];
+export const loopPlaylistPrefixCommandPatterns = loopPlaylistPrefixCommands.map(
+  (p) => new RegExp(`${p}${requestPatternTerminator}`, 'gim'),
+);
+
 export const loopOffPrefixCommands = [
   'loop stop',
   'loopstop',
   'loop off',
   'loopoff',
 ];
-/**
- * @deprecated
- */
-export const loopOffRequests = [/^;(loop ?stop|loop ?off)$/gim];
+export const loopOffPrefixCommandPatterns = loopOffPrefixCommands.map(
+  (p) => new RegExp(`${p}${requestPatternTerminator}`, 'gim'),
+);
+
 export const loopCyclePrefixCommands = ['l', 'loop'];
-/**
- * @deprecated
- */
-export const loopCycleRequests = [/^;(l|loop)$/gim];
+export const loopCyclePrefixCommandPatterns = loopOffPrefixCommands.map(
+  (p) => new RegExp(`${p}${requestPatternTerminator}`, 'gim'),
+);
 
-export const setSongVolPrefixCommands = ['v'];
-/**
- * @deprecated
- */
-export const setSongVolRequests = [
-  // Set vol for current song.
-  /(^;v) [\d]+(\.?[\d]+)?/gim,
-  // Set vol for current song with track and song
-  // Human friendly
-  // botus set the volume to 2
-  /^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]?([\w\d\s]{0,})?( (raise|lower|change|set|update|make))( the)?( vol(\.|ume)?)( (as|at|to|with|using))? [\d]+(\.?[\d]+)?( |$)/gim,
-  // Volume + Song
-  /(^;v) [\d]+(\.?[\d]+)? (t|s|track|song) [\d]+( |$)/gim,
-  /(^;v) (t|s|track|song) [\d]+ (vol(\.|ume) )?[\d]+(\.?[\d]+)?( |$)/gim,
-  // botus raise the volume to 3 for song 2
-  /^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]?([\w\d\s]{0,})?( (raise|lower|change|set|update|make))( the)?( vol(\.|ume)?)( (as|at|to|with|using))? [\d]+(\.\d+)?(( (for|with))( (song|track))( [\d]+))([ ?]|$)/gim,
-  // botus, for song 2, raise the volume to 3
-  /(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]?([\w\d\s]{0,})?(( (for|with))?( (song|track))( [\d]+))[,:-]?( (with|raise|lower|change|set|update|make))?( the)?( vol(\.|ume)?)( (as|at|to|with|using))? [\d]+(\.\d+)?([ ?]|$)/gim,
-
-  // Set vol for other track (including this one)
-  /(^;v)( t| s| track| song)? ([\d]+)( vol(\.|ume))?[\d]+(\.\d+)?/gim,
-  /(^;v)( vol(\.|ume))?[\d]+(\.\d+)?( track| song | t| s)? ([\d]+)/gim,
-];
 export const removeSongPrefixCommands = ['rm'];
 export const removeSongNaturalKeywords = [
   'remove',
@@ -128,19 +118,7 @@ export const stopSongPrefixCommands = ['stop', 'enough', 'halt'];
  * @deprecated
  */
 export const stopSongRequests = [/^;(stop|enough|halt)$/gim];
-export const disconnectVCPrefixCommands = [
-  'dc',
-  'fuckoff',
-  'fuck off',
-  'goaway',
-  'go away',
-  'getout',
-  'get out',
-  'kick',
-  'leave',
-  'reset',
-  'bye',
-];
+
 /**
  * @deprecated
  */
@@ -148,12 +126,11 @@ export const disconnectVCRequests = [
   /^;(dc|fuck ?off|go ?away|get ?out|kick|leave|reset|bye)( (\w+)?)?$/gi,
 ];
 export const resetPlaylistPrefixCommands = ['forcereset', 'hardreset'];
-/**
- * @deprecated
- */
-export const resetPlaylistRequests = [
-  // Reset
-  /^;(forcereset|hardreset)( (\w+)?)?$/gi,
+export const resetPlaylistPrefixCommandPatterns = [
+  new RegExp(
+    `(${resetPlaylistPrefixCommands.join('|')})${requestPatternTerminator}`,
+    'gim',
+  ),
 ];
 
 export const existingTrackPattern = new RegExp(/([\d]+)/gim);
@@ -242,3 +219,8 @@ export const clearRequests = [
   // Shortcut
   /^;clear/gim,
 ];
+
+const debugPrefixCommands = ['debug'];
+export const debugPrefixCommandPatterns = debugPrefixCommands.map(
+  (p) => new RegExp(`${p}${requestPatternTerminator}`, 'gim'),
+);
