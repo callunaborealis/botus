@@ -1,4 +1,4 @@
-import { Message } from 'discord.js';
+import { Message, TextChannel, VoiceChannel } from 'discord.js';
 import logger from '../logger';
 import { songScaffold } from './constants';
 import { createServerSession, multiServerSession } from './session';
@@ -6,25 +6,14 @@ import { PlaylistShape } from './types';
 
 export const defaultPlaylistName = 'default';
 
-export const createPlaylist = async (
-  message: Message,
-  name: string,
-  purpose: string,
-) => {
-  const serverId = message.guild?.id;
-  if (!serverId) {
-    return null;
-  }
-  const voiceChannel = message.member?.voice.channel;
-  if (!voiceChannel) {
-    message.channel.send(
-      `I can't create a new playlist named "${name}" to ${purpose} as no one is in voice chat.`,
-    );
-    return null;
-  }
-  const newPlaylist: PlaylistShape = {
-    textChannel: message.channel,
-    voiceChannel: voiceChannel,
+export const generateEmptyPlaylist = (params: {
+  textChannel: Message['channel'];
+  voiceChannel: VoiceChannel | null | undefined;
+}): PlaylistShape => {
+  const { textChannel, voiceChannel } = params;
+  return {
+    textChannel,
+    voiceChannel: voiceChannel ?? null,
     connection: null,
     songs: [],
     volume: 0,
@@ -36,6 +25,31 @@ export const createPlaylist = async (
     disconnectOnFinish: false,
     isWriteLocked: false,
   };
+};
+
+export const createPlaylist = async (
+  message: Message,
+  name: string,
+  purpose: string,
+) => {
+  const serverId = message.guild?.id;
+  if (!serverId) {
+    return null;
+  }
+  const voiceChannel = message.member?.voice.channel;
+  // NOTE: Do I need this?
+  if (!voiceChannel) {
+    message.channel.send(
+      `I can't create a new playlist named "${name}" to ${purpose} as no one is in voice chat.`,
+    );
+    return null;
+  }
+
+  const newPlaylist = generateEmptyPlaylist({
+    textChannel: message.channel,
+    voiceChannel,
+  });
+
   if (!multiServerSession.has(serverId)) {
     // This will always run until multi-playlists are supported
     const serverSession = await createServerSession(message);
@@ -51,7 +65,7 @@ export const createPlaylist = async (
   if (playlist) {
     logger.log({
       level: 'error',
-      message: `Unable to create a new playlist as already exists to ${purpose}. - ${name}`,
+      message: `Unable to create playlist "${name}" to ${purpose} as playlist "${name}" already exists.`,
     });
     return null;
   }
@@ -59,7 +73,7 @@ export const createPlaylist = async (
     ...serverSession,
     playlists: {
       ...serverSession.playlists,
-      [defaultPlaylistName]: newPlaylist,
+      [name]: newPlaylist,
     },
   });
   return newPlaylist;
