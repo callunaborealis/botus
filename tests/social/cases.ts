@@ -1,3 +1,4 @@
+import { BOT_PREFIX } from '../../src/constants';
 import {
   howsItGoingPrefixCommands,
   howIsVariants,
@@ -145,7 +146,7 @@ export const expectations = {
         return [
           ...acc,
           {
-            input: { messageContent: `;${prefixCommand}` },
+            input: { messageContent: `${BOT_PREFIX}${prefixCommand}` },
             output: {
               greeting: '',
               style: MsgBotRequestStyle.Prefix,

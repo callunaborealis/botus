@@ -2,6 +2,8 @@ import { Message, MessageEmbed } from 'discord.js';
 
 import isArray from 'lodash/isArray';
 import random from 'lodash/random';
+
+import { BOT_PREFIX } from '../constants';
 import { ExtractedMsgBotRequestDetails, MsgBotRequestStyle } from './types';
 import {
   botNameContentSeparator,
@@ -25,7 +27,7 @@ import {
 } from '../music/constants';
 import { setSongVolPrefixCommands } from '../music/volume/constants';
 
-const botPrefix = ';';
+const botPrefix = BOT_PREFIX;
 
 export const extractRequestDetailsForBot = (
   messageContent: Message['content'],
