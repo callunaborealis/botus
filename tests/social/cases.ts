@@ -28,7 +28,7 @@ import {
   stopSongPrefixCommands,
   joinNaturalRequests,
 } from '../../src/music/constants';
-import { showPlaylistPrefixCommands } from '../../src/music/list';
+import { showPlaylistPrefixCommands } from '../../src/music/list/constants';
 import { setSongVolPrefixCommands } from '../../src/music/volume/constants';
 import { rollDicePrefixPatterns } from '../../src/ttrpg/constants';
 
