@@ -15,7 +15,6 @@ import {
   clearPrefixCommands,
   disconnectVCPrefixCommands,
   joinPrefixCommands,
-  listPrefixCommands,
   loopCyclePrefixCommands,
   loopOffPrefixCommands,
   loopPlaylistPrefixCommands,
@@ -26,6 +25,7 @@ import {
   removeSongPrefixCommands,
 } from '../music/constants';
 import { setSongVolPrefixCommands } from '../music/volume/constants';
+import { showPlaylistPrefixCommands } from '../music/list';
 
 const botPrefix = BOT_PREFIX;
 
@@ -257,15 +257,15 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
         {
           name: 'Shows the playlist songs',
           value: [
-            listPrefixCommands.map((cmd) => `\`${cmd}\``).join(' , '),
+            showPlaylistPrefixCommands.map((cmd) => `\`${cmd}\``).join(' , '),
             '\n',
             'Removing the current track skips or ends the playlist.',
             '\n',
             '**e.g.**',
             '\n',
-            `\`${botPrefix}${listPrefixCommands[0]}\` - Shows songs. If more than 1 page, shows page of current song. If nothing playing, it shows the first page.`,
+            `\`${botPrefix}${showPlaylistPrefixCommands[0]}\` - Shows songs. If more than 1 page, shows page of current song. If nothing playing, it shows the first page.`,
             '\n',
-            `\`${botPrefix}${listPrefixCommands[0]} page 4\` - Shows page 4 of the playlist.`,
+            `\`${botPrefix}${showPlaylistPrefixCommands[0]} page 4\` - Shows page 4 of the playlist.`,
           ].join(''),
         },
         {
