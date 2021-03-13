@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import isFinite from 'lodash/isFinite';
 import isNull from 'lodash/isNull';
+import isNil from 'lodash/isNil';
 
 import { reactWithEmoji } from '../social';
 import {
@@ -149,7 +150,7 @@ export const play = (message: Message, song: SongShape) => {
 
   playlist.isWriteLocked = true; // Prevents concurrent conflict writes to the playlist
 
-  if (!playlist.connection) {
+  if (isNil(playlist.connection)) {
     playlist.textChannel?.send(
       '_flips his glorious hair and leaves silently._',
     );
@@ -398,7 +399,8 @@ const addTrackToPlaylist = async (
     !playlist?.currentSong?.id ||
     playlist?.currentSong?.id === songScaffold.id
   ) {
-    if (!playlist.connection) {
+    // Need to check if playlist.connection = null
+    if (isNil(playlist.connection)) {
       const connection = await voiceChannel.join();
       playlist.connection = connection;
       setPlaylist(message, defaultPlaylistName, playlist);
@@ -533,7 +535,7 @@ export const joinVoiceChannel = async (message: Message) => {
     }
     const connection = await voiceChannel.join();
     playlist.connection = connection;
-    if (!playlist.connection) {
+    if (isNil(playlist.connection)) {
       throw new Error("There isn't a playlist connection.");
     }
     setPlaylist(message, defaultPlaylistName, playlist);
@@ -802,7 +804,7 @@ export const skip = async (message: Message) => {
       }
       const connection = await voiceChannel.join();
       playlist.connection = connection;
-      if (!playlist.connection) {
+      if (isNil(playlist.connection)) {
         throw new Error('Playlist connection invalid after joining.');
       }
       if (!playlist.connection.dispatcher) {
@@ -835,7 +837,7 @@ export const removeSong = (message: Message) => {
       "_looks at the empty playlist queue blankly._ There's nothing to remove.",
     );
   }
-  if (!playlist.connection) {
+  if (isNil(playlist.connection)) {
     reactWithEmoji.failed(message);
     logger.log({
       level: 'error',
@@ -1067,7 +1069,7 @@ export const clear = async (message: Message) => {
       }
       const connection = await voiceChannel.join();
       playlist.connection = connection;
-      if (!playlist.connection) {
+      if (isNil(playlist.connection)) {
         throw new Error('Playlist connection invalid after joining.');
       }
       setPlaylist(message, defaultPlaylistName, playlist);
@@ -1241,7 +1243,7 @@ export const setSongVolume = async (
       }
       const connection = await voiceChannel.join();
       playlist.connection = connection;
-      if (!playlist.connection) {
+      if (isNil(playlist.connection)) {
         throw new Error('Playlist connection invalid after joining.');
       }
       if (!playlist.connection.dispatcher) {
