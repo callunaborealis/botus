@@ -331,13 +331,13 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
           ].join(''),
         },
         {
-          name: 'Shows the help message',
+          name: 'Shows this help message',
           value: [
             helpPrefixCommands.map((cmd) => `\`${cmd}\``).join(' , '),
             '\n',
             '**e.g.**',
             '\n',
-            `\`${botPrefix}${helpPrefixCommands[1]}\` - Help`,
+            `\`${botPrefix}${helpPrefixCommands[1]} ${helpMusicTypes[0]}\` - Help Music`,
           ].join(''),
         },
       );
@@ -373,7 +373,7 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
       },
       {
         name: ':notepad_spiral: List of Commands',
-        value: `Type \`${botPrefix} ${helpPrefixCommands[1]}\` to get this help menu.\nType \`${botPrefix}${helpPrefixCommands[1]} ${helpMusicTypes[0]}\` to get a list of music commands.`,
+        value: `Type \`${botPrefix}${helpPrefixCommands[1]}\` to get this help menu.\nType \`${botPrefix}${helpPrefixCommands[1]} ${helpMusicTypes[0]}\` to get a list of music commands.`,
         inline: false,
       },
     );
