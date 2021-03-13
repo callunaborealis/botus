@@ -19,20 +19,20 @@ export const showPlaylistPrefixCommandPatterns = [
 
 export const generateDisplayedPlaylistPages = (params: {
   messageContent: string;
-  page?: number | 'all';
+  requestedPage?: number | 'all';
 }) => {
-  const { messageContent, page } = params;
+  const { messageContent, requestedPage } = params;
   return [];
 };
 
 export const list = async (
   message: Message,
-  options: { page?: number | 'all' },
+  options: { requestedPage?: number | 'all' },
 ) => {
   const playlist = getPlaylist(message, defaultPlaylistName);
   const pages = generateDisplayedPlaylistPages({
     messageContent: '',
-    page: 1,
+    requestedPage: 1,
   });
   let actualCurrentPageIndex = 0;
   for (const page of pages) {
