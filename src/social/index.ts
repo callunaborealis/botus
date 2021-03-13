@@ -3,7 +3,7 @@ import { Message, MessageEmbed } from 'discord.js';
 import isArray from 'lodash/isArray';
 import random from 'lodash/random';
 
-import { BOT_PREFIX } from '../constants';
+import { BOT_PREFIX, THEME_COLOUR } from '../constants';
 import { ExtractedMsgBotRequestDetails, MsgBotRequestStyle } from './types';
 import {
   botNameContentSeparator,
@@ -174,7 +174,7 @@ export const reply = (message: Message, reply: string) => {
 export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
   if (helpType === 'music') {
     const musicHelpEmbed = new MessageEmbed()
-      .setColor('#0099ff')
+      .setColor(THEME_COLOUR)
       .setTitle(`**Music**`)
       .setDescription(
         'I\'m mostly like Groovy but with a ";" instead of a "-" prefix.',
@@ -346,7 +346,7 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
     return message.channel.send(musicHelpEmbed);
   }
   const aboutEmbed = new MessageEmbed()
-    .setColor('#0099ff')
+    .setColor(THEME_COLOUR)
     .setTitle(
       `**Botus - Music and Social Discord Bot, former Bald Insurgent Leader**`,
     )

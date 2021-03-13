@@ -9,6 +9,7 @@ import {
   operatorComponentParts,
 } from './constants';
 import { DieComponentFormat, OperatorFormat } from './types';
+import { THEME_COLOUR } from '../constants';
 
 const random = new Random(nodeCrypto);
 
@@ -203,7 +204,7 @@ export const respondWithDiceResult = (message: Message, requestStr: string) => {
   }
 
   const embed = new MessageEmbed()
-    .setColor('#8a0a29')
+    .setColor(THEME_COLOUR)
     .setAuthor(
       message.member?.nickname ?? message.author.username,
       message.author.avatarURL() ?? undefined,
