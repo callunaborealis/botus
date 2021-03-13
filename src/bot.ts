@@ -11,7 +11,7 @@ import {
   skip,
   clear,
   loop,
-  list,
+  list as listV1,
   setSongVolume,
   removeSong,
   stop,
@@ -38,6 +38,7 @@ import {
   joinPrefixCommandPatterns,
   disconnectVCPrefixCommandPatterns,
 } from './music/constants';
+import { showPlaylistPrefixCommandPatterns } from './music/list';
 
 import {
   respond,
@@ -238,6 +239,14 @@ djBotus.on('message', async (message) => {
     }
   }
 
+  // Music: Playlist Management
+  if (requestDetails.style === MsgBotRequestStyle.Prefix) {
+    const showPlaylistPrefixDetails = identifyRequest(
+      messageContent,
+      showPlaylistPrefixCommandPatterns,
+    );
+  }
+
   // Music: Volume
   if (requestDetails.style === MsgBotRequestStyle.Prefix) {
     const setVolPrefixDetails = identifyRequest(
@@ -289,7 +298,7 @@ djBotus.on('message', async (message) => {
   }
 
   if (interpretRequest(message, listRequests)) {
-    return list(message);
+    return listV1(message);
   }
   if (interpretRequest(message, skipRequests)) {
     return skip(message);
