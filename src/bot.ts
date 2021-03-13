@@ -246,6 +246,9 @@ djBotus.on('message', async (message) => {
       messageContent,
       showPlaylistPrefixCommandPatterns,
     );
+    if (showPlaylistPrefixDetails.index !== -1) {
+      return list(message);
+    }
   }
 
   // Music: Volume

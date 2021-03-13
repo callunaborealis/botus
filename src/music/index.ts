@@ -575,11 +575,6 @@ export const list = async (message: Message) => {
   if (!playlist) {
     return message.channel.send('There is no such playlist.');
   }
-  if (!playlist.currentSong) {
-    return message.channel.send(
-      `Nothing is playing at the moment for the **${defaultPlaylistName}** playlist.`,
-    );
-  }
   if (playlist.songs.length === 0) {
     return message.channel.send(
       `There are no songs in the **${defaultPlaylistName}** playlist.`,

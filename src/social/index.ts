@@ -381,7 +381,7 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
       {
         name: ':game_die: How are dice rolls calculated?',
         value:
-          'All dice are rolled using the `ckknight/random-js` library extended by the `nodeCrypto` "engine". Technical details about calculating true randomness here: https://github.com/ckknight/random-js.',
+          'All dice are rolled using the `ckknight/random-js` library extended by the `nodeCrypto` "engine". Technical details about how random numbers are calculated here: https://github.com/ckknight/random-js.',
         inline: false,
       },
     );
