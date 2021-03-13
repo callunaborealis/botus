@@ -6,6 +6,7 @@ import { ExtractedMsgBotRequestDetails, MsgBotRequestStyle } from './types';
 import {
   botNameContentSeparator,
   helpPrefixCommands,
+  helpMusicTypes,
   listOfGreetingsToBot,
 } from './constants';
 import {
@@ -24,10 +25,11 @@ import {
 } from '../music/constants';
 import { setSongVolPrefixCommands } from '../music/volume/constants';
 
+const botPrefix = ';';
+
 export const extractRequestDetailsForBot = (
   messageContent: Message['content'],
 ): ExtractedMsgBotRequestDetails => {
-  const botPrefix = ';';
   /**
    * /^(?:;)([\\w]{1,})/gim;
    */
@@ -185,11 +187,11 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
             '\n',
             '**e.g.**',
             '\n',
-            `\`;${playYoutubeLinkPrefixCommands[0]} {youtube link/playlist}\` -- Adds a song and plays it if it's the first song.`,
+            `\`${playYoutubeLinkPrefixCommands[0]} {youtube link/playlist}\` -- Adds a song and plays it if it's the first song.`,
             '\n',
             '`botus play/add {youtube link/playlist}`    -- Plays / Adds a YouTube track or playlist to the playlist',
             '\n',
-            `\`;${playYoutubeLinkPrefixCommands[0]} {youtube link/playlist} at vol 5.4\` -- With volume set at 5.4 out of 10`,
+            `\`${botPrefix}${playYoutubeLinkPrefixCommands[0]} {youtube link/playlist} at vol 5.4\` -- With volume set at 5.4 out of 10`,
             '\n',
             '`botus play/add {youtube link/playlist} at volume 4`  -- With volume set at 4 out of 10',
           ].join(''),
@@ -211,11 +213,11 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
             '\n',
             '**e.g.**',
             '\n',
-            `\`;${playExistingTrackMandTrackPrefixCommands[0]} track 2\` -- Plays track 2`,
+            `\`${botPrefix}${playExistingTrackMandTrackPrefixCommands[0]} track 2\` -- Plays track 2`,
             '\n',
-            `\`;${playExistingTrackMandTrackPrefixCommands[1]} song 3\` -- Plays track 3`,
+            `\`${botPrefix}${playExistingTrackMandTrackPrefixCommands[1]} song 3\` -- Plays track 3`,
             '\n',
-            `\`;${playExistingTrackOptTrackPrefixCommands[0]} 1\` -- Plays track 1`,
+            `\`${botPrefix}${playExistingTrackOptTrackPrefixCommands[0]} 1\` -- Plays track 1`,
           ].join(''),
         },
         {
@@ -259,9 +261,9 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
             '\n',
             '**e.g.**',
             '\n',
-            `\`;${listPrefixCommands[0]}\` - Shows songs. If more than 1 page, shows page of current song. If nothing playing, it shows the first page.`,
+            `\`${botPrefix}${listPrefixCommands[0]}\` - Shows songs. If more than 1 page, shows page of current song. If nothing playing, it shows the first page.`,
             '\n',
-            `\`;${listPrefixCommands[0]} page 4\` - Shows page 4 of the playlist.`,
+            `\`${botPrefix}${listPrefixCommands[0]} page 4\` - Shows page 4 of the playlist.`,
           ].join(''),
         },
         {
@@ -271,7 +273,7 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
             '\n',
             '**e.g.**',
             ' ',
-            `\`;${loopCyclePrefixCommands[0]}\``,
+            `\`${botPrefix}${loopCyclePrefixCommands[0]}\``,
           ].join(''),
         },
         {
@@ -281,7 +283,7 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
             '\n',
             '**e.g.**',
             ' ',
-            `\`;${loopPlaylistPrefixCommands[0]}\``,
+            `\`${botPrefix}${loopPlaylistPrefixCommands[0]}\``,
           ].join(''),
         },
         {
@@ -291,7 +293,7 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
             '\n',
             '**e.g.**',
             ' ',
-            `\`;${loopTrackPrefixCommands[0]}\``,
+            `\`${botPrefix}${loopTrackPrefixCommands[0]}\``,
           ].join(''),
         },
         {
@@ -301,7 +303,7 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
             '\n',
             '**e.g.**',
             ' ',
-            `\`;${loopOffPrefixCommands[0]}\``,
+            `\`${botPrefix}${loopOffPrefixCommands[0]}\``,
           ].join(''),
         },
         {
@@ -310,8 +312,12 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
             setSongVolPrefixCommands.map((cmd) => `\`${cmd}\``).join(' , '),
             '\n',
             '**e.g.**',
-            ' ',
-            `\`;${setSongVolPrefixCommands[0]}\``,
+            '\n',
+            `\`${botPrefix}${setSongVolPrefixCommands[0]} 5\` - Sets volume 5 for the current song`,
+            '\n',
+            `\`${botPrefix}${setSongVolPrefixCommands[0]} 5.5 track 3\` - Sets volume 5.5 for track 3`,
+            '\n',
+            `\`${botPrefix}${setSongVolPrefixCommands[0]} track 4 volume 3.45\` - Sets volume 3.45 for track 4`,
           ].join(''),
         },
         {
@@ -321,17 +327,17 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
             '\n',
             '**e.g.**',
             ' ',
-            `\`;${clearPrefixCommands[0]}\``,
+            `\`${botPrefix}${clearPrefixCommands[0]}\``,
           ].join(''),
         },
         {
-          name: 'Show bot info and music help messages',
+          name: 'Shows the help message',
           value: [
             helpPrefixCommands.map((cmd) => `\`${cmd}\``).join(' , '),
             '\n',
             '**e.g.**',
-            ' ',
-            `\`;${helpPrefixCommands[0]}\``,
+            '\n',
+            `\`${botPrefix}${helpPrefixCommands[1]}\` - Help`,
           ].join(''),
         },
       );
@@ -367,8 +373,7 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
       },
       {
         name: ':notepad_spiral: List of Commands',
-        value:
-          'Type `;help` to get this help menu.\nType `;help music` to get a list of music commands.',
+        value: `Type \`${botPrefix} ${helpPrefixCommands[1]}\` to get this help menu.\nType \`${botPrefix}${helpPrefixCommands[1]} ${helpMusicTypes[0]}\` to get a list of music commands.`,
         inline: false,
       },
     );
