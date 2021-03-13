@@ -6,7 +6,6 @@ import { v4 as uuidv4 } from 'uuid';
 import isFinite from 'lodash/isFinite';
 import isNull from 'lodash/isNull';
 
-import { multiServerSession } from '../constants';
 import { reactWithEmoji } from '../social';
 import {
   maxAllowableVolume,
@@ -16,195 +15,17 @@ import {
   existingTrackPattern,
   listRequests,
 } from './constants';
+import {
+  createPlaylist,
+  defaultPlaylistName,
+  deletePlaylist,
+  getPlaylist,
+  setPlaylist,
+} from './playlist';
 import { LoopType, PlaylistShape, SongShape } from './types';
 import { getNextLoopedIndex } from '../utils';
 import logger from '../logger';
 import { getYoutubeLinkAndVolFromRequest } from './helper';
-
-const defaultPlaylistName = 'default';
-
-export const createServerSession = async (
-  message: Message,
-  shouldReset: boolean = false,
-) => {
-  const serverId = message.guild?.id;
-  if (!serverId) {
-    return null;
-  }
-  const serverSession = multiServerSession.get(serverId);
-
-  const generateNewPlaylist = (): PlaylistShape => {
-    const voiceChannel = message.member?.voice.channel ?? null;
-    return {
-      textChannel: message.channel,
-      voiceChannel: voiceChannel,
-      connection: null,
-      songs: [],
-      volume: 0,
-      currentSong: songScaffold,
-      previousSong: songScaffold,
-      nextSong: songScaffold,
-      loop: 'off',
-      stopOnFinish: false,
-      disconnectOnFinish: false,
-      isWriteLocked: false,
-    };
-  };
-
-  if (!serverSession) {
-    const voiceChannel = message.member?.voice.channel;
-    if (!voiceChannel) {
-      return null;
-    }
-    const newPlaylist: PlaylistShape = generateNewPlaylist();
-    const newServerSession = {
-      playlists: {
-        [defaultPlaylistName]: newPlaylist,
-      },
-    };
-    multiServerSession.set(serverId, newServerSession);
-    return newServerSession;
-  }
-
-  // Reset playlists
-  if (shouldReset) {
-    const candidates = message.content.split(/;(forcereset|hardreset) /gim);
-    const playlistName = (() => {
-      if (candidates?.[0] && candidates[0] !== '') {
-        return candidates[0];
-      }
-      return defaultPlaylistName;
-    })();
-    await clear(message);
-    if (serverSession.playlists[playlistName]) {
-      delete serverSession.playlists[playlistName];
-    }
-    const newPlaylist: PlaylistShape = generateNewPlaylist();
-    const newServerSession = {
-      ...serverSession,
-      playlists: { [defaultPlaylistName]: newPlaylist },
-    };
-    multiServerSession.set(serverId, newServerSession);
-    reactWithEmoji.succeeded(message);
-    return newServerSession;
-  }
-  return serverSession;
-};
-
-const createPlaylist = async (
-  message: Message,
-  name: string,
-  purpose: string,
-) => {
-  const serverId = message.guild?.id;
-  if (!serverId) {
-    return null;
-  }
-  const voiceChannel = message.member?.voice.channel;
-  if (!voiceChannel) {
-    message.channel.send(
-      `I can't create a new playlist named "${name}" to ${purpose} as no one is in voice chat.`,
-    );
-    return null;
-  }
-  const newPlaylist: PlaylistShape = {
-    textChannel: message.channel,
-    voiceChannel: voiceChannel,
-    connection: null,
-    songs: [],
-    volume: 0,
-    currentSong: songScaffold,
-    previousSong: songScaffold,
-    nextSong: songScaffold,
-    loop: 'off',
-    stopOnFinish: false,
-    disconnectOnFinish: false,
-    isWriteLocked: false,
-  };
-  if (!multiServerSession.has(serverId)) {
-    // This will always run until multi-playlists are supported
-    const serverSession = await createServerSession(message);
-    const playlist = serverSession?.playlists[name] || null;
-    return playlist;
-  }
-  const serverSession = multiServerSession.get(serverId);
-  if (!serverSession) {
-    // Redundant for typing consistency
-    return null;
-  }
-  const playlist = serverSession?.playlists[name];
-  if (playlist) {
-    logger.log({
-      level: 'error',
-      message: `Unable to create a new playlist as already exists to ${purpose}. - ${name}`,
-    });
-    return null;
-  }
-  multiServerSession.set(serverId, {
-    ...serverSession,
-    playlists: {
-      ...serverSession.playlists,
-      [defaultPlaylistName]: newPlaylist,
-    },
-  });
-  return newPlaylist;
-};
-
-const getPlaylist = (message: Message, name: string) => {
-  const serverId = message.guild?.id;
-  if (!serverId) {
-    return null;
-  }
-  if (!multiServerSession.has(serverId)) {
-    return null;
-  }
-  const serverSession = multiServerSession.get(serverId);
-  const playlist = serverSession?.playlists[name];
-  if (playlist) {
-    return playlist;
-  }
-  return null;
-};
-
-const deletePlaylist = (message: Message, name: string) => {
-  const serverId = message.guild?.id;
-  if (!serverId) {
-    return message.channel.send('_struggles to find the playlist to delete._');
-  }
-  const serverSession = multiServerSession.get(serverId);
-  if (!serverSession) {
-    return;
-  }
-  const playlists = serverSession.playlists;
-
-  delete playlists[name];
-  multiServerSession.set(serverId, {
-    ...serverSession,
-    playlists,
-  });
-};
-
-export const setPlaylist = (
-  message: Message,
-  name: string,
-  playlist: PlaylistShape,
-) => {
-  const serverId = message.guild?.id;
-  if (!serverId) {
-    return message.channel.send('_struggles to find the playlist to update._');
-  }
-  const serverSession = multiServerSession.get(serverId);
-  if (!serverSession) {
-    return;
-  }
-  multiServerSession.set(serverId, {
-    ...serverSession,
-    playlists: {
-      ...serverSession.playlists,
-      [name]: { ...playlist, isWriteLocked: false },
-    },
-  });
-};
 
 /**
  *
@@ -741,7 +562,10 @@ export const disconnectVoiceChannel = async (message: Message) => {
   await stop(message);
 };
 
+export const showPlaylist = async (message: Message) => {};
+
 /**
+ * @deprecated
  * Shows the playlist
  */
 export const list = async (message: Message) => {

@@ -16,11 +16,11 @@ import {
   removeSong,
   stop,
   playExistingTrack,
-  createServerSession,
   joinVoiceChannel,
   disconnectVoiceChannel,
   displayDebugValues,
 } from './music';
+import { createServerSession } from './music/session';
 import {
   playYoutubeURLRequests,
   playExistingTrackRequests,
