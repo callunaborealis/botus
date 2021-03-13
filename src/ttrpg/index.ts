@@ -1,4 +1,5 @@
 import { Message, MessageEmbed } from 'discord.js';
+import { nodeCrypto, Random } from 'random-js';
 import isFinite from 'lodash/isFinite';
 import { reactWithEmoji } from '../social';
 
@@ -9,10 +10,11 @@ import {
 } from './constants';
 import { DieComponentFormat, OperatorFormat } from './types';
 
+const random = new Random(nodeCrypto);
+
 const rollDie = (minDieValue: number, maxDieValue: number): number => {
-  const dieVal =
-    minDieValue + Math.floor(Math.random() * (maxDieValue - minDieValue + 1));
-  return dieVal;
+  const dieValue = random.integer(minDieValue, maxDieValue);
+  return dieValue;
 };
 
 /**
@@ -201,7 +203,11 @@ export const respondWithDiceResult = (message: Message, requestStr: string) => {
   }
 
   const embed = new MessageEmbed()
-    .setColor('#0099ff')
+    .setColor('#8a0a29')
+    .setAuthor(
+      message.member?.nickname ?? message.author.username,
+      message.author.avatarURL() ?? undefined,
+    )
     .setTitle(`Rolling ${requestStr}`)
     .addFields(
       { name: 'Total', value: total },
