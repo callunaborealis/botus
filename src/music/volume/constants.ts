@@ -1,6 +1,9 @@
-import { prefixCommandTerminatorPatternStr } from '../../constants';
+import {
+  askingForPermissionPattern,
+  whitespacePattern,
+  prefixCommandTerminatorPatternStr,
+} from '../../constants';
 
-const mandatorySpace = '[ ]{1,3}';
 const trackNumberPattern = '[\\d]+';
 const volumeLevelPattern = '[\\d]+(?:(?:\\.)[\\d]+)?';
 const optionalVolumeSynonyms = ['volume', 'vol'];
@@ -12,13 +15,13 @@ export const setSongVolPrefixCommandPatterns = [
   new RegExp(
     [
       `(?:${setSongVolPrefixCommands.join('|')})`,
-      mandatorySpace,
+      whitespacePattern,
       // Volume nr
       `(?:(?:(?:${optionalVolumeSynonyms.join(
         '|',
-      )})${mandatorySpace})?(${volumeLevelPattern}))`,
+      )})${whitespacePattern})?(${volumeLevelPattern}))`,
       // track nr
-      `(?:${mandatorySpace}(?:${trackTermPatterns})${mandatorySpace}(${trackNumberPattern}))?`,
+      `(?:${whitespacePattern}(?:${trackTermPatterns})${whitespacePattern}(${trackNumberPattern}))?`,
       prefixCommandTerminatorPatternStr,
     ].join(''),
     'gim',
@@ -26,13 +29,13 @@ export const setSongVolPrefixCommandPatterns = [
   new RegExp(
     [
       `(?:${setSongVolPrefixCommands.join('|')})`,
-      mandatorySpace,
+      whitespacePattern,
       // advance track nr
-      `(?:(?:${trackTermPatterns})${mandatorySpace}(${trackNumberPattern}))?`,
+      `(?:(?:${trackTermPatterns})${whitespacePattern}(${trackNumberPattern}))?`,
       // Volume nr
-      `(?:${mandatorySpace}(?:(?:${optionalVolumeSynonyms.join(
+      `(?:${whitespacePattern}(?:(?:${optionalVolumeSynonyms.join(
         '|',
-      )})?${mandatorySpace})(${volumeLevelPattern}))`,
+      )})?${whitespacePattern})(${volumeLevelPattern}))`,
       prefixCommandTerminatorPatternStr,
     ].join(''),
     'gim',
@@ -116,46 +119,30 @@ const relativeVolumeSetKeywords = ['by', 'plus', 'minus'];
 
 const volumePattern = volumeSynonyms.map((p) => `(?:${p})`).join('|');
 const upPrefixTermVolumePattern = upPrefixTermsVolumeSynonyms
-  .map((p) => `(?:(?:${p})${mandatorySpace}(?:${volumePattern}))`)
+  .map((p) => `(?:(?:${p})${whitespacePattern}(?:${volumePattern}))`)
   .join('|');
 const upSandwichTermsVolumePattern = upSandwichTermsVolumeSynonyms
   .map(
     ([p, s]) =>
-      `(?:${p}${mandatorySpace}(?:${volumePattern})${mandatorySpace}${s})`,
+      `(?:${p}${whitespacePattern}(?:${volumePattern})${whitespacePattern}${s})`,
   )
   .join('|');
 
 const downPrefixTermVolumePattern = downPrefixTermsVolumeSynonyms
-  .map((p) => `(?:(?:${p})${mandatorySpace}(?:${volumePattern}))`)
+  .map((p) => `(?:(?:${p})${whitespacePattern}(?:${volumePattern}))`)
   .join('|');
 const downSandwichTermsVolumePattern = downSandwichTermsVolumeSynonyms
   .map(
     ([p, s]) =>
-      `(?:${p}${mandatorySpace}${volumePattern}${mandatorySpace}${s})`,
+      `(?:${p}${whitespacePattern}${volumePattern}${whitespacePattern}${s})`,
   )
   .join('|');
 
 const neutralPrefixTermsVolumePattern = neutralPrefixTermsVolumeSynonyms
-  .map((p) => `(?:(?:${p})${mandatorySpace}(?:${volumePattern}))`)
+  .map((p) => `(?:(?:${p})${whitespacePattern}(?:${volumePattern}))`)
   .join('|');
 const absoluteVolumeSetPattern = absoluteVolumeSetKeywords.join('|');
 const relativeVolumeSetPattern = relativeVolumeSetKeywords.join('|');
-
-const askingForPermissionPattern = [
-  `(?:`,
-  mandatorySpace,
-  `(?:`,
-  [
-    '(?:can|will) you',
-    'are you able to',
-    '(?:pretty )?please',
-    '(?:fucking? )?go(?: (?:ahead|forth)(?: and|, )?)',
-  ]
-    .map((p) => `(?:${p})`)
-    .join('|'),
-  `)`,
-  `)?`,
-].join('');
 
 const trackPrefixTermPattern = '(?:for)';
 const trackNrPattern = [
@@ -174,7 +161,7 @@ export const setSongVolNaturalRequestPatterns = [
       '(?:',
       '(?:',
       // optional "Are you able to"
-      `(?:${askingForPermissionPattern}${mandatorySpace})?`,
+      `(?:${askingForPermissionPattern}${whitespacePattern})?`,
       // "set the volume"
       '(?:',
       `(${upPrefixTermVolumePattern})`,
@@ -187,13 +174,13 @@ export const setSongVolNaturalRequestPatterns = [
       '|',
       `(${neutralPrefixTermsVolumePattern})`,
       ')',
-      mandatorySpace,
+      whitespacePattern,
       ')',
       // volume 2.45
-      `(?:(?:(${absoluteVolumeSetPattern})|(${relativeVolumeSetPattern}))${mandatorySpace})?`,
+      `(?:(?:(${absoluteVolumeSetPattern})|(${relativeVolumeSetPattern}))${whitespacePattern})?`,
       `(${volumeLevelPattern})`,
       // "for track 3"
-      `(?:${mandatorySpace}(?:(?:${trackPrefixTermPattern})${mandatorySpace}(?:${trackNrPattern})))?`,
+      `(?:${whitespacePattern}(?:(?:${trackPrefixTermPattern})${whitespacePattern}(?:${trackNrPattern})))?`,
       ')',
     ].join(''),
     'gim',
