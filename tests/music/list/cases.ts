@@ -3,7 +3,10 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { songScaffold } from '../../../src/music/constants';
 import { LoopType, PlaylistShape, SongShape } from '../../../src/music/types';
-import { DisplayedPlaylistShape } from '../../../src/music/list/types';
+import {
+  DisplayedPlaylistShape,
+  ListPrefixCommandMatches,
+} from '../../../src/music/list/types';
 import {
   generateNowPlayingTag,
   generateVolumeTag,
@@ -81,12 +84,43 @@ const generateMockPage = (options: {
 
 export const cases = {
   identifyRequests: {
-    positive: [
-      ...showPlaylistPrefixCommands.map((t) => `${t}`),
-      ...showPlaylistPrefixCommands.map((t) => `${t} 2`),
-      ...showPlaylistPrefixCommands.map((t) => `${t} ${pageTerms[0]} 2`),
-      ...showPlaylistPrefixCommands.map((t) => `${t} p. 2`),
-    ],
+    checkPageNr: [
+      ...showPlaylistPrefixCommands.map((t) => {
+        return {
+          messageContent: `${t}`,
+          page: undefined,
+        };
+      }),
+      ...showPlaylistPrefixCommands.map((t) => {
+        return { messageContent: `${t} 2`, page: 2 };
+      }),
+      ...showPlaylistPrefixCommands.map((t) => {
+        return { messageContent: `${t} ${pageTerms[0]} 3.4`, page: 3 };
+      }),
+      ...showPlaylistPrefixCommands.map((t) => {
+        return {
+          messageContent: `${t} ${pageTerms[2]} 12`,
+          page: 12,
+        };
+      }),
+      ...showPlaylistPrefixCommands.map((t) => {
+        return { messageContent: `${t} p. 100`, page: 100 };
+      }),
+    ].map((input) => {
+      return {
+        input,
+        output: {
+          index: 0,
+          matches: [
+            '',
+            undefined,
+            undefined,
+            input.page ? `${input.page}` : undefined,
+            '',
+          ] as ListPrefixCommandMatches[0],
+        },
+      };
+    }),
     negative: showPlaylistPrefixCommands.map((t) => `${t} ${rawTracks[0].url}`),
   },
   generateDisplayedPlaylistPages: [

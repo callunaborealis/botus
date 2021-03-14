@@ -80,6 +80,7 @@ import {
 } from './music/volume/constants';
 import { TrackVolPrefixCommandMatches } from './music/volume/types';
 import { extractNaturalSetVolumeDetails } from './music/volume';
+import { ListPrefixCommandMatches } from './music/list/types';
 
 const djBotus = new Client();
 
@@ -242,12 +243,18 @@ djBotus.on('message', async (message) => {
 
   // Music: Playlist Management
   if (requestDetails.style === MsgBotRequestStyle.Prefix) {
-    const showPlaylistPrefixDetails = identifyRequest(
-      messageContent,
-      showPlaylistPrefixCommandPatterns,
-    );
+    const showPlaylistPrefixDetails = identifyRequest<
+      ListPrefixCommandMatches[0]
+    >(messageContent, showPlaylistPrefixCommandPatterns);
     if (showPlaylistPrefixDetails.index !== -1) {
-      return list(message);
+      if (showPlaylistPrefixDetails.matches[3]) {
+        const pageNrRequested = parseInt(
+          showPlaylistPrefixDetails.matches[3],
+          10,
+        );
+        return list(message, { pageNrRequested });
+      }
+      return list(message, {});
     }
   }
 

@@ -31,7 +31,7 @@ export const showPlaylistPrefixCommandPatterns = [
       // To prevent matching with playlist
       `(?!${mandatorySpace}${youtubeLinkPatternStr})`,
       // page 2 | 2 | none
-      `(?:${mandatorySpace}(?:(?:${pageTermsPattern})${mandatorySpace})?(${pageNumberPattern}))?`,
+      `(?:${mandatorySpace}(?:(?:${pageTermsPattern})${mandatorySpace})?(${pageNumberPattern})(?:\\.[\\d]+)?)?`,
       prefixCommandTerminatorPatternStr,
     ].join(''),
     'gim',
