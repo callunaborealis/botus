@@ -22,10 +22,10 @@ import {
   playExistingTrackMandTrackPrefixCommands,
   playExistingTrackOptTrackPrefixCommands,
   playYoutubeLinkPrefixCommands,
-  removeSongPrefixCommands,
 } from '../music/constants';
 import { setSongVolPrefixCommands } from '../music/volume/constants';
 import { showPlaylistPrefixCommands } from '../music/list/constants';
+import { removeSongPrefixCommands } from '../music/rm/constants';
 
 const botPrefix = BOT_PREFIX;
 

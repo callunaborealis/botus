@@ -12,7 +12,6 @@ import {
   clear,
   loop,
   setSongVolume,
-  removeSong,
   stop,
   playExistingTrack,
   joinVoiceChannel,
@@ -37,6 +36,7 @@ import {
   disconnectVCPrefixCommandPatterns,
 } from './music/constants';
 import { list } from './music/list';
+import { removeSong } from './music/rm';
 import {
   showPlaylistNaturalRequestPatterns,
   showPlaylistPrefixCommandPatterns,

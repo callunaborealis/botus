@@ -99,17 +99,6 @@ export const loopCyclePrefixCommandPatterns = loopOffPrefixCommands.map(
   (p) => new RegExp(`${p}${prefixCommandTerminatorPatternStr}`, 'gim'),
 );
 
-export const removeSongPrefixCommands = ['rm'];
-export const removeSongNaturalKeywords = [
-  'remove',
-  'take away',
-  'delete',
-  'throw',
-  'get rid of',
-  'discard',
-  'take out',
-  'take away',
-];
 /**
  * @deprecated
  */
