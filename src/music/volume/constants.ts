@@ -198,6 +198,6 @@ export const setSongVolNaturalRequestPatterns = [
     ].join(''),
     'gim',
   ),
-  // for track 1, set volume to 4
-  // set track 1 volume to 4 / make track 1 volume softer by 2
+  // TODO: for track 1, set volume to 4
+  // TODO: set track 1 volume to 4 / make track 1 volume softer by 2
 ];
