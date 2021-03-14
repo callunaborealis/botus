@@ -43,7 +43,7 @@ describe('List', () => {
             expected.output.currentPageIndex + 1,
           );
         });
-        it(`should generate generate ${expected.output.pages.length} pages`, () => {
+        it(`should generate ${expected.output.pages.length} pages`, () => {
           expect(pages.length).to.equal(expected.output.pages.length);
         });
         it(`should generate all track details into pages when asked for it`, () => {
