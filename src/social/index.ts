@@ -25,7 +25,7 @@ import {
 } from '../music/constants';
 import { setSongVolPrefixCommands } from '../music/volume/constants';
 import { showPlaylistPrefixCommands } from '../music/list/constants';
-import { removeSongPrefixCommands } from '../music/rm/constants';
+import { removeTrackPrefixCommands } from '../music/rm/constants';
 
 const botPrefix = BOT_PREFIX;
 
@@ -245,13 +245,13 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
         {
           name: 'Removes a track',
           value: [
-            removeSongPrefixCommands.map((cmd) => `\`${cmd}\``).join(' , '),
+            removeTrackPrefixCommands.map((cmd) => `\`${cmd}\``).join(' , '),
             '\n',
             'Removing the current track skips or ends the playlist.',
             '\n',
             '**e.g.**',
             ' ',
-            `\`;${removeSongPrefixCommands[0]}\``,
+            `\`;${removeTrackPrefixCommands[0]}\``,
           ].join(''),
         },
         {

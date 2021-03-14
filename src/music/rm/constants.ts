@@ -1,5 +1,5 @@
-export const removeSongPrefixCommands = ['remove', 'rm', 'r'];
-export const removeSongNaturalKeywords = [
+export const removeTrackPrefixCommands = ['remove', 'rm', 'r'];
+export const removeTrackNaturalKeywords = [
   'remove',
   'take away',
   'delete',
@@ -9,3 +9,5 @@ export const removeSongNaturalKeywords = [
   'take out',
   'take away',
 ];
+
+export const removeTrackPrefixCommandPattern = [new RegExp('', 'gim')];
