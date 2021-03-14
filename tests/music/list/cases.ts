@@ -84,6 +84,63 @@ const generateMockPage = (options: {
 
 export const cases = {
   identifyRequests: {
+    checkPageNrNaturally: [
+      ...[
+        'show page 2 of this playlist',
+        'show this playlist page 2',
+        'show the page 2 of this playlist',
+      ].map((input) => {
+        return {
+          messageContent: input,
+          index: 0,
+          page: 2,
+        };
+      }),
+      ...[
+        'show 2nd page of this playlist',
+        'show this playlist 2nd page',
+        'show the 2nd page of this playlist',
+      ].map((input) => {
+        return {
+          messageContent: input,
+          index: 0,
+          page: 2,
+        };
+      }),
+      ...[
+        'show all of the playlist',
+        'show everything playing',
+        'show everything that is playing right now',
+      ].map((input) => {
+        return {
+          messageContent: input,
+          index: 1,
+          page: 'all',
+        };
+      }),
+      ...['what is playing', 'show what is playing'].map((input) => {
+        return {
+          messageContent: input,
+          index: 2,
+          page: 'current',
+        };
+      }),
+    ].map((input) => {
+      return {
+        input: input,
+        output: {
+          index: input.index,
+        },
+      };
+    }) as {
+      input: {
+        messageContent: string;
+        index: number;
+        page: number | 'current' | 'all';
+        pageLocationIndex?: number;
+      };
+      output: { index: number };
+    }[],
     checkPageNr: [
       ...showPlaylistPrefixCommands.map((t) => {
         return {
@@ -122,6 +179,11 @@ export const cases = {
       };
     }),
     negative: showPlaylistPrefixCommands.map((t) => `${t} ${rawTracks[0].url}`),
+    negativeNatural: [
+      '',
+      'play',
+      'play https://www.youtube.com/playlist?list=OLAK5uy_m_vU4h8tDdmgf4MOg58Rxx9F4AT82wH1g at vol 3.4',
+    ],
   },
   generateDisplayedPlaylistPages: [
     (() => {
