@@ -3,12 +3,12 @@ import {
   whitespacePattern,
   prefixCommandTerminatorPatternStr,
 } from '../../constants';
+import { trackTermsPattern } from '../constants';
 
 const trackNumberPattern = '[\\d]+';
 const volumeLevelPattern = '[\\d]+(?:(?:\\.)[\\d]+)?';
 const optionalVolumeSynonyms = ['volume', 'vol'];
-const trackTermSynonyms = ['track', 'song', 't', 's'];
-const trackTermPatterns = trackTermSynonyms.join('|');
+
 export const setSongVolPrefixCommands = ['v'];
 export const setSongVolPrefixCommandPatterns = [
   // ;v track 2 vol 2
@@ -21,7 +21,7 @@ export const setSongVolPrefixCommandPatterns = [
         '|',
       )})${whitespacePattern})?(${volumeLevelPattern}))`,
       // track nr
-      `(?:${whitespacePattern}(?:${trackTermPatterns})${whitespacePattern}(${trackNumberPattern}))?`,
+      `(?:${whitespacePattern}(?:${trackTermsPattern})${whitespacePattern}(${trackNumberPattern}))?`,
       prefixCommandTerminatorPatternStr,
     ].join(''),
     'gim',
@@ -31,7 +31,7 @@ export const setSongVolPrefixCommandPatterns = [
       `(?:${setSongVolPrefixCommands.join('|')})`,
       whitespacePattern,
       // advance track nr
-      `(?:(?:${trackTermPatterns})${whitespacePattern}(${trackNumberPattern}))?`,
+      `(?:(?:${trackTermsPattern})${whitespacePattern}(${trackNumberPattern}))?`,
       // Volume nr
       `(?:${whitespacePattern}(?:(?:${optionalVolumeSynonyms.join(
         '|',
@@ -147,9 +147,9 @@ const relativeVolumeSetPattern = relativeVolumeSetKeywords.join('|');
 const trackPrefixTermPattern = '(?:for)';
 const trackNrPattern = [
   // for track 4
-  `(?:${trackTermPatterns}) (${trackNumberPattern})`,
+  `(?:${trackTermsPattern}) (${trackNumberPattern})`,
   // for the 4th track
-  `(?:the )?(${trackNumberPattern})(?:st|nd|rd|th) (?:${trackTermPatterns})`,
+  `(?:the )?(${trackNumberPattern})(?:st|nd|rd|th) (?:${trackTermsPattern})`,
 ]
   .map((p) => `(?:${p})`)
   .join('|');

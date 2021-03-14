@@ -21,6 +21,9 @@ export const songScaffold: SongShape = {
   volume: 0,
 };
 
+const trackTermSynonyms = ['track', 'song', 't', 's'];
+export const trackTermsPattern = trackTermSynonyms.join('|');
+
 // Makes the bot join your voice channel.
 export const joinPrefixCommands = ['j', 'join'];
 export const joinPrefixCommandPatterns = [
@@ -99,13 +102,6 @@ export const loopCyclePrefixCommandPatterns = loopOffPrefixCommands.map(
   (p) => new RegExp(`${p}${prefixCommandTerminatorPatternStr}`, 'gim'),
 );
 
-/**
- * @deprecated
- */
-export const removeSongRequests = [
-  /^;rm [\d]+/gim,
-  /(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]?([\w\d\s]{0,})? (remove|take away|delete|throw|get rid of|discard|take out|take away) (track|song) [\d]+( |$)/gim,
-];
 export const stopSongPrefixCommands = ['stop', 'enough', 'halt'];
 /**
  * @deprecated

@@ -4,8 +4,26 @@ import logger from '../../logger';
 import { reactWithEmoji } from '../../social';
 import { dryRunTraversePlaylistByStep } from '../helper';
 import { defaultPlaylistName, getPlaylist, setPlaylist } from '../playlist';
+import { RemoveTrackMatchPatterns } from './types';
 
-export const removeSong = (message: Message) => {
+export const getTrackNrFromRmSongCommand = (
+  matches: (string | undefined)[],
+) => {
+  if (!matches[1]) {
+    return 'current';
+  }
+  const t = parseInt(matches[1]);
+  if (isFinite(t)) {
+    return t;
+  }
+  return 'current';
+};
+
+export const removeSong = (
+  message: Message,
+  options: { trackNr: number | 'current' },
+) => {
+  const { trackNr } = options;
   reactWithEmoji.received(message);
   const playlist = getPlaylist(message, defaultPlaylistName);
   if (!playlist) {
@@ -32,30 +50,17 @@ export const removeSong = (message: Message) => {
   }
   playlist.isWriteLocked = true;
   setPlaylist(message, defaultPlaylistName, playlist);
-  const songNrCandidate = (() => {
-    const trackNrMentions = message.content.match(/(track|song) [\d]+/gim);
-    if (trackNrMentions && trackNrMentions[0]) {
-      const possibleTrackNrs = trackNrMentions[0].split(/(track|song) /gim);
-      return possibleTrackNrs?.[2] ?? '-';
-    }
-    return message.content.split(/;rm /)[1];
-  })();
-  const parsedSongNrCandidate = parseInt(songNrCandidate, 10);
-  if (!isFinite(parsedSongNrCandidate)) {
-    playlist.isWriteLocked = false;
-    reactWithEmoji.failed(message);
-    logger.log({
-      level: 'error',
-      message: `Invalid song number candidate: "${songNrCandidate}"`,
-    });
-    setPlaylist(message, defaultPlaylistName, playlist);
-    return;
-  }
-  const previousCurrentSong = playlist.currentSong;
+
   const songs = [...playlist.songs];
-  const indexOfSongToBeRemoved = songs.findIndex(
-    (_, i) => i === parsedSongNrCandidate - 1,
-  );
+  const indexOfSongToBeRemoved = (() => {
+    if (trackNr === 'current') {
+      return songs.findIndex((song) => song.id === playlist.currentSong.id);
+    }
+    return songs.findIndex((_, i) => i === trackNr - 1);
+  })();
+
+  const previousCurrentSong = playlist.currentSong;
+
   if (indexOfSongToBeRemoved === -1) {
     reactWithEmoji.failed(message);
     playlist.isWriteLocked = false;
@@ -68,20 +73,13 @@ export const removeSong = (message: Message) => {
   }
   const removedSong = songs[indexOfSongToBeRemoved];
   const updatedSongs = [...songs];
-  updatedSongs.splice(parsedSongNrCandidate - 1, 1);
+  updatedSongs.splice(indexOfSongToBeRemoved, 1);
   const [
     nextPreviousSong,
     nextCurrentSong,
+    // Legacy bug: Play next song if current song instead of first song in the playlist
     nextNextSong,
   ] = dryRunTraversePlaylistByStep({ ...playlist, songs: updatedSongs }, 1);
-
-  if (updatedSongs.length === 0 || previousCurrentSong?.id === removedSong.id) {
-    playlist.isWriteLocked = false;
-    setPlaylist(message, defaultPlaylistName, playlist);
-    if (playlist.connection.dispatcher) {
-      playlist.connection.dispatcher.end();
-    }
-  }
   const updatedPlaylist = {
     ...playlist,
     previousSong: nextPreviousSong,
@@ -90,6 +88,15 @@ export const removeSong = (message: Message) => {
     songs: updatedSongs,
     isWriteLocked: false,
   };
+
+  if (updatedSongs.length === 0 || previousCurrentSong?.id === removedSong.id) {
+    setPlaylist(message, defaultPlaylistName, updatedPlaylist);
+
+    if (playlist.connection.dispatcher) {
+      playlist.connection.dispatcher.end();
+    }
+  }
+
   reactWithEmoji.succeeded(message);
   setPlaylist(message, defaultPlaylistName, updatedPlaylist);
   message.channel.send(

@@ -24,7 +24,6 @@ import {
   playExistingTrackRequests,
   clearRequests,
   skipRequests,
-  removeSongRequests,
   stopSongRequests,
   resetPlaylistPrefixCommandPatterns,
   debugPrefixCommandPatterns,
@@ -36,7 +35,7 @@ import {
   disconnectVCPrefixCommandPatterns,
 } from './music/constants';
 import { list } from './music/list';
-import { removeSong } from './music/rm';
+import { getTrackNrFromRmSongCommand, removeSong } from './music/rm';
 import {
   showPlaylistNaturalRequestPatterns,
   showPlaylistPrefixCommandPatterns,
@@ -86,6 +85,7 @@ import {
   ListPrefixCommandMatches,
 } from './music/list/types';
 import { getPageNrFromNaturalRequestMatches } from './music/list/helper';
+import { removeTrackPrefixCommandPatterns } from './music/rm/constants';
 
 const djBotus = new Client();
 
@@ -313,9 +313,15 @@ djBotus.on('message', async (message) => {
       });
     }
   }
-
-  if (interpretRequest(message, removeSongRequests)) {
-    return removeSong(message);
+  if (requestDetails.style === MsgBotRequestStyle.Prefix) {
+    const rmTrackPrefixDetails = identifyRequest(
+      messageContent,
+      removeTrackPrefixCommandPatterns,
+    );
+    const trackNr = getTrackNrFromRmSongCommand(rmTrackPrefixDetails.matches);
+    if (rmTrackPrefixDetails.index === 0) {
+      return removeSong(message, { trackNr });
+    }
   }
 
   // Music: Playlist Management

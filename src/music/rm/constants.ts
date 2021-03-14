@@ -1,3 +1,9 @@
+import {
+  prefixCommandTerminatorPatternStr,
+  whitespacePattern,
+} from '../../constants';
+import { trackTermsPattern } from '../constants';
+
 export const removeTrackPrefixCommands = ['remove', 'rm', 'r'];
 export const removeTrackNaturalKeywords = [
   'remove',
@@ -9,5 +15,15 @@ export const removeTrackNaturalKeywords = [
   'take out',
   'take away',
 ];
-
-export const removeTrackPrefixCommandPattern = [new RegExp('', 'gim')];
+const trackNumberPattern = '[\\d]+';
+export const removeTrackPrefixCommandPatterns = [
+  new RegExp(
+    [
+      `(?:${removeTrackPrefixCommands.join('|')})`,
+      // Optional track nr to remove, if not, remove current track
+      `(?:${whitespacePattern}(?:(?:${trackTermsPattern})${whitespacePattern})?(${trackNumberPattern}))?`,
+      prefixCommandTerminatorPatternStr,
+    ].join(''),
+    'gim',
+  ),
+];
