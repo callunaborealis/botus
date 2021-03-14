@@ -189,7 +189,7 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
             '\n',
             '**e.g.**',
             '\n',
-            `\`${playYoutubeLinkPrefixCommands[0]} {youtube link/playlist}\` -- Adds a song and plays it if it's the first song.`,
+            `\`${playYoutubeLinkPrefixCommands[0]} {youtube link/playlist}\` -- Adds a track and plays it if it's the first track.`,
             '\n',
             '`botus play/add {youtube link/playlist}`    -- Plays / Adds a YouTube track or playlist to the playlist',
             '\n',
@@ -255,7 +255,7 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
           ].join(''),
         },
         {
-          name: 'Shows the playlist songs',
+          name: 'Shows the playlist tracks',
           value: [
             showPlaylistPrefixCommands.map((cmd) => `\`${cmd}\``).join(' , '),
             '\n',
@@ -263,7 +263,7 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
             '\n',
             '**e.g.**',
             '\n',
-            `\`${botPrefix}${showPlaylistPrefixCommands[0]}\` - Shows songs. If more than 1 page, shows page of current song. If nothing playing, it shows the first page.`,
+            `\`${botPrefix}${showPlaylistPrefixCommands[0]}\` - Shows tracks. If more than 1 page, shows page of current track. If nothing playing, it shows the first page.`,
             '\n',
             `\`${botPrefix}${showPlaylistPrefixCommands[0]} page 4\` - Shows page 4 of the playlist.`,
           ].join(''),
@@ -289,7 +289,7 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
           ].join(''),
         },
         {
-          name: 'Loop (Song)',
+          name: 'Loop (Track)',
           value: [
             loopTrackPrefixCommands.map((cmd) => `\`${cmd}\``).join(' , '),
             '\n',
@@ -315,7 +315,7 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
             '\n',
             '**e.g.**',
             '\n',
-            `\`${botPrefix}${setSongVolPrefixCommands[0]} 5\` - Sets volume 5 for the current song`,
+            `\`${botPrefix}${setSongVolPrefixCommands[0]} 5\` - Sets volume 5 for the current track`,
             '\n',
             `\`${botPrefix}${setSongVolPrefixCommands[0]} 5.5 track 3\` - Sets volume 5.5 for track 3`,
             '\n',
