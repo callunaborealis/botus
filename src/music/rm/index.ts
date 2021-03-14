@@ -1,10 +1,9 @@
 import { Message } from 'discord.js';
-import { isNil } from 'lodash';
+import isNil from 'lodash/isNil';
 import logger from '../../logger';
 import { reactWithEmoji } from '../../social';
 import { dryRunTraversePlaylistByStep } from '../helper';
 import { defaultPlaylistName, getPlaylist, setPlaylist } from '../playlist';
-import { RemoveTrackMatchPatterns } from './types';
 
 export const getTrackNrFromRmSongCommand = (
   matches: (string | undefined)[],
