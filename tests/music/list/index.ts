@@ -1,8 +1,30 @@
 import { expect } from 'chai';
 import { cases } from './cases';
 import { generateDisplayedPlaylistPages } from '../../../src/music/list';
+import { identifyRequest } from '../../../src/social';
+import { showPlaylistPrefixCommandPatterns } from '../../../src/music/list/constants';
 
 describe('List', () => {
+  describe('identifyRequest', () => {
+    cases.identifyRequests.positive.forEach((expected) => {
+      it(`should show the playlist for "${expected}"`, () => {
+        const { index } = identifyRequest(
+          expected,
+          showPlaylistPrefixCommandPatterns,
+        );
+        expect(index).to.equal(0);
+      });
+    });
+    cases.identifyRequests.negative.forEach((expected) => {
+      it(`should not show the playlist when coupled with a YouTube link: "${expected}"`, () => {
+        const { index } = identifyRequest(
+          expected,
+          showPlaylistPrefixCommandPatterns,
+        );
+        expect(index).to.equal(-1);
+      });
+    });
+  });
   describe('generateDisplayedPlaylistPages', () => {
     cases.generateDisplayedPlaylistPages.forEach((expected, i) => {
       describe(`For a playlist of a total size of ${expected.input.numberOfTracks} tracks`, () => {
