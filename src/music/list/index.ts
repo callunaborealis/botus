@@ -187,7 +187,13 @@ export const generateDisplayedPlaylistPages = (params: {
   };
 };
 
-export const list = async (message: Message) => {
+export const list = async (
+  message: Message,
+  options: {
+    pageNrRequested?: number;
+  },
+) => {
+  const { pageNrRequested } = options;
   const playlist = getPlaylist(message, defaultPlaylistName);
   if (isNil(playlist)) {
     const playlistPageEmbed = new MessageEmbed()
@@ -199,42 +205,20 @@ export const list = async (message: Message) => {
     return message.channel.send(playlistPageEmbed);
   }
 
-  // NOTE: Temp until request integration
-  const pageIndexRequested = (() => {
-    const nlpCandidates = message.content.match(/ (pg?|page) [\d]+/gim);
-    const queryCandidates = message.content.match(/^;q [\d]+$/gim);
-    if (nlpCandidates && nlpCandidates[0]) {
-      const innerPageNrCands = nlpCandidates[0].split(/ (pg?|page) /);
-      const pageRequested = parseInt(innerPageNrCands[2], 10);
-      if (isFinite(pageRequested)) {
-        return pageRequested - 1;
-      }
-      message.channel.send(
-        "That page you requested doesn't exist. I'll show the first page or page with the current track instead.",
-      );
-    }
-    if (queryCandidates && queryCandidates[0]) {
-      const innerPageNrCands = queryCandidates[0].split(';q ');
-      const pageRequested = parseInt(innerPageNrCands[1], 10);
-      if (isFinite(pageRequested)) {
-        return pageRequested - 1;
-      }
-      message.channel.send(
-        "That page you requested doesn't exist. I'll show the first page or page with the current track instead.",
-      );
-    }
-    return 'current';
-  })();
-
   const { currentPageIndex, pages } = generateDisplayedPlaylistPages({
     playlist,
   });
 
   const requestedPageIndex = (() => {
-    if (pageIndexRequested === 'current' || !pages[pageIndexRequested]) {
-      return currentPageIndex;
+    if (pageNrRequested) {
+      if (isFinite(pageNrRequested) && pages[pageNrRequested - 1]) {
+        return pageNrRequested - 1;
+      }
+      message.channel.send(
+        "That page you requested doesn't exist. I'll show the first page or page with the current track instead.",
+      );
     }
-    return pageIndexRequested;
+    return currentPageIndex;
   })();
 
   if (pages[requestedPageIndex]) {

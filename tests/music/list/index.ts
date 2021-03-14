@@ -6,13 +6,16 @@ import { showPlaylistPrefixCommandPatterns } from '../../../src/music/list/const
 
 describe('List', () => {
   describe('identifyRequest', () => {
-    cases.identifyRequests.positive.forEach((expected) => {
-      it(`should show the playlist for "${expected}"`, () => {
-        const { index } = identifyRequest(
-          expected,
+    cases.identifyRequests.checkPageNr.forEach((expected) => {
+      it(`should extract ${
+        expected.input.page ? `page ${expected.input.page}` : 'no page'
+      } from "${expected.input.messageContent}"`, () => {
+        const { index, matches } = identifyRequest(
+          expected.input.messageContent,
           showPlaylistPrefixCommandPatterns,
         );
-        expect(index).to.equal(0);
+        expect(index).to.equal(expected.output.index);
+        expect(matches).to.deep.equal(expected.output.matches);
       });
     });
     cases.identifyRequests.negative.forEach((expected) => {
