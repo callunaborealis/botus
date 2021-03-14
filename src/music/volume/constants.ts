@@ -1,4 +1,4 @@
-import { requestPatternTerminator } from '../../social/constants';
+import { prefixCommandTerminatorPatternStr } from '../../constants';
 
 const mandatorySpace = '[ ]{1,3}';
 const trackNumberPattern = '[\\d]+';
@@ -19,7 +19,7 @@ export const setSongVolPrefixCommandPatterns = [
       )})${mandatorySpace})?(${volumeLevelPattern}))`,
       // track nr
       `(?:${mandatorySpace}(?:${trackTermPatterns})${mandatorySpace}(${trackNumberPattern}))?`,
-      requestPatternTerminator,
+      prefixCommandTerminatorPatternStr,
     ].join(''),
     'gim',
   ),
@@ -33,7 +33,7 @@ export const setSongVolPrefixCommandPatterns = [
       `(?:${mandatorySpace}(?:(?:${optionalVolumeSynonyms.join(
         '|',
       )})?${mandatorySpace})(${volumeLevelPattern}))`,
-      requestPatternTerminator,
+      prefixCommandTerminatorPatternStr,
     ].join(''),
     'gim',
   ),
