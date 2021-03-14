@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { extractRequestDetailsForBot } from '../../src/social';
+import { identifyRequest, extractRequestDetailsForBot } from '../../src/social';
 import { expectations } from './cases';
 
 describe('Social: Requests processing', () => {
@@ -19,6 +19,24 @@ describe('Social: Requests processing', () => {
         expect(greeting).to.equal(expected.output.greeting);
         expect(requestStr).to.equal(expected.output.requestStr);
         expect(style).to.equal(expected.output.style);
+      });
+    });
+  });
+  describe('identifyRequest', () => {
+    expectations.identifyRequest.forEach((expected) => {
+      it(`should ${expected.output.index === -1 ? 'not ' : ''}match "${
+        expected.input.messageContent
+      }" ${
+        expected.input.listOfMatches[expected.output.index]
+          ? `with "${expected.input.listOfMatches[expected.output.index]}"`
+          : ''
+      }`, () => {
+        const { index, matches } = identifyRequest(
+          expected.input.messageContent,
+          expected.input.listOfMatches,
+        );
+        expect(index).to.equal(expected.output.index);
+        expect(matches).to.deep.equal(expected.output.matches);
       });
     });
   });

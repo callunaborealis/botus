@@ -97,3 +97,50 @@ export const expectedOutputs = {
     },
   ],
 };
+
+export const expectations = {
+  identifyRequest: {
+    rm: [
+      {
+        input: 'rm 22',
+        output: {
+          index: 0,
+          matches: ['', '22', ''],
+          trackNr: 22,
+        },
+      },
+      {
+        input: 'rm',
+        output: {
+          index: 0,
+          matches: ['', undefined, ''],
+          trackNr: 'current',
+        },
+      },
+      {
+        input: 'rm song',
+        output: {
+          index: 0,
+          matches: ['', undefined, 'song'],
+          trackNr: 'current',
+        },
+      },
+      {
+        input: 'rm track 12',
+        output: {
+          index: 0,
+          matches: ['', '12', ''],
+          trackNr: 12,
+        },
+      },
+      {
+        input: 'rm song 24',
+        output: {
+          index: 0,
+          matches: ['', '24', ''],
+          trackNr: 24,
+        },
+      },
+    ],
+  },
+};

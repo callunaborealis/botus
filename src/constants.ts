@@ -1,4 +1,22 @@
-import { Snowflake } from 'discord.js';
-import { ServerSessionShape } from './types';
+export const BOT_PREFIX = ';';
+export const THEME_COLOUR = '#8a0a29';
 
-export const multiServerSession: Map<Snowflake, ServerSessionShape> = new Map();
+// Pattern matching components
+export const prefixCommandTerminatorPatternStr = '(?:[ ]{1,}|$)';
+export const naturalRequestTerminatorPatternStr = '(?: |[?!.,]|$)';
+export const whitespacePattern = '[ ]{1,3}';
+export const askingForPermissionPattern = [
+  `(?:`,
+  whitespacePattern,
+  `(?:`,
+  [
+    '(?:can|will) you',
+    'are you able to',
+    '(?:pretty )?please',
+    '(?:fucking? )?go(?: (?:ahead|forth)(?: and|, )?)',
+  ]
+    .map((p) => `(?:${p})`)
+    .join('|'),
+  `)`,
+  `)?`,
+].join('');

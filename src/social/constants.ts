@@ -1,3 +1,11 @@
+import {
+  naturalRequestTerminatorPatternStr,
+  prefixCommandTerminatorPatternStr,
+} from '../constants';
+
+/**
+ * @deprecated
+ */
 export const hailRequests = [
   // name + greeting
   /^botus[\s]?[,?!(\.\.\.)]?(h?ello|[h]?ey([h]?ey)?|hi|ay|(wa[s]{0,100})?su[p]{1,100}|yo|o[iy])?( |$)/gim,
@@ -10,6 +18,7 @@ export const hailRequests = [
  * /(?: |[,?!] ?|[\.]{2,} ?)/gim
  */
 export const botNameContentSeparator = '(?: |[,?!] ?|[\\.]{2,} ?)';
+
 export const listOfGreetingsToBot = [
   // ello, hello
   'h?ello',
@@ -34,13 +43,65 @@ export const hailResponses = [
   (username: string) => `Hi, ${username}.`,
 ];
 
+/**
+ * @deprecated
+ */
 export const helphelpRequests = [/^(;help[\s]?help)|(botus help[\s]?help)/gim];
-export const helpHelpRequests2 = ['help help', 'helphelp'];
+export const helpHelpPrefixCommands = ['help help', 'helphelp'];
+export const helpHelpPrefixCommandPatterns = [
+  new RegExp(
+    `(?:${helpHelpPrefixCommands.join(
+      '|',
+    )})${prefixCommandTerminatorPatternStr}`,
+  ),
+];
 export const helpPrefixCommands = ['h', 'help'];
-export const helpTypes = ['', 'music'];
-export const helpNaturalRequests = ['help'];
-export const helpRequests = [/^((;h( |$))|(;help( |$))|(botus help( |$)))/gim];
+export const helpMusicTypes = ['music'];
+export const helpPrefixCommandPatterns = [
+  new RegExp(
+    `(?:${helpPrefixCommands.join('|')})(?: (${helpMusicTypes.join(
+      '|',
+    )}))?${prefixCommandTerminatorPatternStr}`,
+  ),
+];
+export const helpNaturalAboutRequestExamples = [
+  // Issues
+  'where can i report an issue about you',
+  'how to fix you',
+  'can i suggest how to make you better',
+  // Identity
+  'who are you',
+  'what are you',
+  'who made you',
+];
+export const helpNaturalMusicRequestExamples = [
+  'help me with music',
+  'how to play music',
+  'how do you play music',
+  'how to play youtube videos',
+  'how do you use music',
+  'how to get you to play youtube',
+  'i want to see music readme',
+  'show me how to play music',
+  'how to get you to stop playing music',
+  'how to reduce volume',
+  'how to raise volume',
+  'show me how to use you for music',
+];
+export const helpNaturalRequestPatterns = [
+  new RegExp(
+    `(?:(${helpNaturalAboutRequestExamples
+      .map((eg) => `(?:${eg})`)
+      .join('|')})|(${helpNaturalMusicRequestExamples
+      .map((eg) => `(?:${eg})`)
+      .join('|')}))${naturalRequestTerminatorPatternStr}`,
+    'gim',
+  ),
+];
 
+/**
+ * @deprecated
+ */
 export const greetingRequests = [
   // greeting + name
   /^(([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus( |$)/gim,
@@ -83,6 +144,9 @@ export const howsItGoingNaturalRequests = [
   `(?:${[...howIsVariants, ...howAreVariants].join('|')}) things?`,
   `(?:${whatIsVariants.join('|')}) up`,
 ];
+/**
+ * @deprecated
+ */
 export const howIsItGoingRequests = [
   /^botus[,.!?]? how(( i)|')?s it goin[g]?( |$)/gim,
   /^botus[,.!?]? how are things?( |$)/gim,
@@ -92,7 +156,10 @@ export const howIsItGoingRequests = [
   /^;howru$/i,
 ];
 
-// Asking if Botus is okay
+/**
+ * Asking if Botus is okay
+ * @deprecated
+ */
 export const howAreYouRequests = [
   /**
    * botus how are ya
@@ -135,6 +202,9 @@ export const howAreYouResponses = [
   () => "_shrugs._ I'll be fine. Take care friendo.",
 ];
 
+/**
+ * @deprecated
+ */
 export const gratitudeRequests = [
   /^[\w\d\s]{0,10}botus(,|\.+|!)? thank (you|ya|u)( |$)/gim,
   /^[\w\d\s]{0,10}botus(,|\.+|!)? thanks( |$)/gim,
@@ -146,6 +216,9 @@ export const gratitudeRequests = [
   /^;thanks$/i,
 ];
 
+/**
+ * @deprecated
+ */
 export const hugRequests = [
   /^botus[,\.!?]? (I want|give me|I need|I would like|can (you|ya|u)|can you give me|can I have) (a )?hugs?( |$)/gim,
   /^botus[,\.!?]? (I'?m|I am) (glum|hopeless|miserable|sad|depressed|down|unhappy)( |$)/gim,
@@ -185,7 +258,9 @@ export const gratitudeResponses = [
   () => `_gives a brief wink and turns away._`,
   () => `Yep. You're welcome.`,
 ];
-
+/**
+ * @deprecated
+ */
 export const meaningOfLifeRequests = [
   /^botus[,\.!?]? tell (me|us|them) the meaning? of life(\?|$)/gim,
   /^botus[,\.!?]? what('| i)?s the meaning? of life(\?|$)/gim,

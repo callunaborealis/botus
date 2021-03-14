@@ -1,4 +1,5 @@
 import { Message, MessageEmbed } from 'discord.js';
+import { nodeCrypto, Random } from 'random-js';
 import isFinite from 'lodash/isFinite';
 import { reactWithEmoji } from '../social';
 
@@ -8,11 +9,13 @@ import {
   operatorComponentParts,
 } from './constants';
 import { DieComponentFormat, OperatorFormat } from './types';
+import { THEME_COLOUR } from '../constants';
+
+const random = new Random(nodeCrypto);
 
 const rollDie = (minDieValue: number, maxDieValue: number): number => {
-  const dieVal =
-    minDieValue + Math.floor(Math.random() * (maxDieValue - minDieValue + 1));
-  return dieVal;
+  const dieValue = random.integer(minDieValue, maxDieValue);
+  return dieValue;
 };
 
 /**
@@ -113,11 +116,20 @@ const operateOnValues = (operator: OperatorFormat, values: number[]) => {
   }, values[0]);
 };
 
-export const calculateDiceResult = (requestStr: string) => {
+export const calculateDiceResult = (
+  requestStr: string,
+): { isInvalid: boolean; total: number; values: string[] } => {
   const diceComponents: DieComponentFormat<
     'die' | 'const' | 'operator'
   >[] = interpretDiceRollRequest(requestStr);
-  const { displayedValues, total, values } = diceComponents.reduce(
+  if (diceComponents.length === 0) {
+    return {
+      isInvalid: true,
+      total: NaN,
+      values: [],
+    };
+  }
+  const { displayedValues, total } = diceComponents.reduce(
     (eventualValues, diceComponent) => {
       switch (diceComponent.type) {
         case 'const': {
@@ -181,22 +193,22 @@ export const calculateDiceResult = (requestStr: string) => {
       values: [] as number[],
     },
   );
-  return { total, values: displayedValues };
+  return { isInvalid: false, total, values: displayedValues };
 };
 
 export const respondWithDiceResult = (message: Message, requestStr: string) => {
-  const diceComponents: DieComponentFormat<
-    'die' | 'const' | 'operator'
-  >[] = interpretDiceRollRequest(requestStr);
+  const { isInvalid, total, values } = calculateDiceResult(requestStr);
 
-  if (diceComponents.length === 0) {
+  if (isInvalid) {
     return reactWithEmoji.failed(message);
   }
 
-  const { total, values } = calculateDiceResult(requestStr);
-
   const embed = new MessageEmbed()
-    .setColor('#0099ff')
+    .setColor(THEME_COLOUR)
+    .setAuthor(
+      message.member?.nickname ?? message.author.username,
+      message.author.avatarURL() ?? undefined,
+    )
     .setTitle(`Rolling ${requestStr}`)
     .addFields(
       { name: 'Total', value: total },
