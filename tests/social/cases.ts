@@ -28,7 +28,7 @@ import {
   joinNaturalRequests,
 } from '../../src/music/constants';
 import { showPlaylistPrefixCommands } from '../../src/music/list/constants';
-import { removeSongPrefixCommands } from '../../src/music/rm/constants';
+import { removeTrackPrefixCommands } from '../../src/music/rm/constants';
 import { setSongVolPrefixCommands } from '../../src/music/volume/constants';
 import { rollDicePrefixPatterns } from '../../src/ttrpg/constants';
 
@@ -103,7 +103,7 @@ const prefixCommands = [
   ...loopCyclePrefixCommands,
   ...loopTrackPrefixCommands,
   ...setSongVolPrefixCommands,
-  ...removeSongPrefixCommands,
+  ...removeTrackPrefixCommands,
   ...stopSongPrefixCommands,
   ...disconnectVCPrefixCommands,
   ...resetPlaylistPrefixCommands,
