@@ -38,16 +38,60 @@ const generatePlaylist = (tracks: SongShape[], currentTrackIndex: number) => {
   };
 };
 
+const generateMockPage = (options: {
+  tracks: SongShape[];
+  currentTrackIndex: number;
+  currentPage: number;
+  totalPages: number;
+}) => {
+  const { tracks, currentTrackIndex, currentPage, totalPages } = options;
+  return {
+    title: 'Default Playlist',
+    description:
+      totalPages > 1
+        ? `Current page: ${1}/${2}.\nTo move to another page within the **default** playlist, send \`;q {any number between ${1} to ${2}}\`.\n`
+        : 'Now playing the **default** playlist:',
+    fields: [
+      ...tracks.map((track, i) => {
+        return {
+          name: `1. ${generateNowPlayingTag({
+            currentTrackId: tracks[currentTrackIndex]?.id ?? songScaffold.id,
+            iteratedTrackId: track.id,
+            nextTrackId: tracks[currentTrackIndex + 1]?.id ?? songScaffold.id,
+            playlistLoopType: 'off',
+            isLastSong: false,
+          })} ${generateVolumeTag(track.volume)}`,
+          value: `${track.title}\n${track.url}`,
+        };
+      }),
+      ...[
+        totalPages > 1
+          ? {
+              name: '\u200b',
+              value: `Current page: ${currentPage}/${totalPages}.\nTo move to another page within the **default** playlist, send \`;q {any number between ${currentPage} to ${totalPages}}\`.\n`,
+              inline: false,
+            }
+          : {},
+      ],
+    ],
+  };
+};
+
 export const cases = {
   generateDisplayedPlaylistPages: [
     (() => {
-      const tracks = generateMockTracks(0);
+      const numberOfTracks = 0;
+      const currentTrackIndex = -1;
+      const currentPageIndex = -1;
+      const tracks = generateMockTracks(numberOfTracks);
       return {
         input: {
-          playlist: generatePlaylist(tracks, -1),
+          currentTrackIndex,
+          numberOfTracks,
+          playlist: generatePlaylist(tracks, currentTrackIndex),
         },
         output: {
-          currentPageIndex: -1,
+          currentPageIndex,
           pages: [
             {
               title: 'Default Playlist',
@@ -59,94 +103,169 @@ export const cases = {
       };
     })(),
     (() => {
-      const tracks = generateMockTracks(2);
+      const numberOfTracks = 2;
+      const currentTrackIndex = 0;
+      const currentPageIndex = 0;
+      const tracks = generateMockTracks(numberOfTracks);
       return {
-        input: { playlist: generatePlaylist(tracks, 0) },
+        input: {
+          currentTrackIndex,
+          numberOfTracks,
+          playlist: generatePlaylist(tracks, currentTrackIndex),
+        },
         output: {
-          currentPageIndex: 0,
+          currentPageIndex: currentPageIndex,
           pages: [
-            {
-              title: 'Default Playlist',
-              description: 'Now playing the **default** playlist:',
-              fields: [
-                ...tracks.map((track, i) => {
-                  return {
-                    name: `${i + 1}. ${generateNowPlayingTag({
-                      currentTrackId: tracks[0].id,
-                      iteratedTrackId: track.id,
-                      nextTrackId: tracks[1].id,
-                      playlistLoopType: 'off',
-                      isLastSong: false,
-                    })} ${generateVolumeTag(track.volume)}`,
-                    value: `${track.title}\n${track.url}`,
-                  };
-                }),
-              ],
-            },
+            generateMockPage({
+              tracks,
+              currentTrackIndex,
+              currentPage: 1,
+              totalPages: 1,
+            }),
           ],
         },
       };
     })(),
     (() => {
-      const tracks1 = generateMockTracks(10);
-      const tracks2 = generateMockTracks(4);
+      const numberOfTracks = 7;
+      const currentTrackIndex = 0;
+      const currentPageIndex = 0;
+      const tracks = generateMockTracks(numberOfTracks);
       return {
-        input: { playlist: generatePlaylist([...tracks1, ...tracks2], 0) },
+        input: {
+          currentTrackIndex,
+          numberOfTracks,
+          playlist: generatePlaylist(tracks, currentTrackIndex),
+        },
         output: {
-          currentPageIndex: 0,
+          currentPageIndex: currentPageIndex,
           pages: [
-            {
-              title: 'Default Playlist',
-              description: `Current page: ${1}/${2}.\nTo move to another page within the **default** playlist, send \`;q {any number between ${1} to ${2}}\`.\n`,
-              fields: [
-                ...tracks1.map((track, i) => {
-                  return {
-                    name: `1. ${generateNowPlayingTag({
-                      currentTrackId: tracks1[0].id,
-                      iteratedTrackId: track.id,
-                      nextTrackId: tracks1[1].id,
-                      playlistLoopType: 'off',
-                      isLastSong: false,
-                    })} ${generateVolumeTag(track.volume)}`,
-                    value: `${track.title}\n${track.url}`,
-                  };
-                }),
-                {
-                  name: '\u200b',
-                  value: `Current page: ${1}/${2}.\nTo move to another page within the **default** playlist, send \`;q {any number between ${1} to ${2}}\`.\n`,
-                  inline: false,
-                },
-              ],
-            },
-            {
-              title: 'Default Playlist',
-              description: `Current page: ${2}/${2}.\nTo move to another page within the **default** playlist, send \`;q {any number between ${2} to ${2}}\`.\n`,
-              fields: [
-                ...tracks2.map((track, i) => {
-                  return {
-                    name: `${i + 1 + 10}. ${generateNowPlayingTag({
-                      currentTrackId: tracks1[0].id,
-                      iteratedTrackId: track.id,
-                      nextTrackId: tracks1[1].id,
-                      playlistLoopType: 'off',
-                      isLastSong: false,
-                    })} ${generateVolumeTag(track.volume)}`,
-                    value: `${track.title}\n${track.url}`,
-                  };
-                }),
-                {
-                  name: '\u200b',
-                  value: `Current page: ${2}/${2}.\nTo move to another page within the **default** playlist, send \`;q {any number between ${2} to ${2}}\`.\n`,
-                  inline: false,
-                },
-              ],
-            },
+            generateMockPage({
+              tracks,
+              currentTrackIndex,
+              currentPage: 1,
+              totalPages: 1,
+            }),
+          ],
+        },
+      };
+    })(),
+    (() => {
+      const numberOfTracks = [10, 4];
+      const currentTrackIndex = 10;
+      const currentPageIndex = 1;
+      const tracks1 = generateMockTracks(numberOfTracks[0]);
+      const tracks2 = generateMockTracks(numberOfTracks[1]);
+      return {
+        input: {
+          currentTrackIndex,
+          numberOfTracks: numberOfTracks[0] + numberOfTracks[1],
+          playlist: generatePlaylist(
+            [...tracks1, ...tracks2],
+            currentTrackIndex,
+          ),
+        },
+        output: {
+          currentPageIndex,
+          pages: [
+            generateMockPage({
+              tracks: tracks1,
+              currentTrackIndex,
+              currentPage: 1,
+              totalPages: 2,
+            }),
+            generateMockPage({
+              tracks: tracks1,
+              currentTrackIndex,
+              currentPage: 2,
+              totalPages: 2,
+            }),
+          ],
+        },
+      };
+    })(),
+    (() => {
+      const numberOfTracks = [10, 4];
+      const currentTrackIndex = 0;
+      const currentPageIndex = 0;
+      const tracks1 = generateMockTracks(numberOfTracks[0]);
+      const tracks2 = generateMockTracks(numberOfTracks[1]);
+      return {
+        input: {
+          currentTrackIndex,
+          numberOfTracks: numberOfTracks[0] + numberOfTracks[1],
+          playlist: generatePlaylist(
+            [...tracks1, ...tracks2],
+            currentTrackIndex,
+          ),
+        },
+        output: {
+          currentPageIndex,
+          pages: [
+            generateMockPage({
+              tracks: tracks1,
+              currentTrackIndex,
+              currentPage: 1,
+              totalPages: 2,
+            }),
+            generateMockPage({
+              tracks: tracks1,
+              currentTrackIndex,
+              currentPage: 2,
+              totalPages: 2,
+            }),
+          ],
+        },
+      };
+    })(),
+    (() => {
+      const numberOfTracks = [10, 10, 5];
+      const currentTrackIndex = 20;
+      const currentPageIndex = 2;
+      const tracks = numberOfTracks.map((t) =>
+        generateMockTracks(numberOfTracks[0]),
+      );
+      return {
+        input: {
+          currentTrackIndex,
+          numberOfTracks:
+            numberOfTracks[0] + numberOfTracks[1] + numberOfTracks[2],
+          playlist: generatePlaylist(
+            [...tracks[0], ...tracks[1], ...tracks[2]],
+            currentTrackIndex,
+          ),
+        },
+        output: {
+          currentPageIndex,
+          pages: [
+            generateMockPage({
+              tracks: tracks[0],
+              currentTrackIndex,
+              currentPage: 1,
+              totalPages: numberOfTracks.length,
+            }),
+            generateMockPage({
+              tracks: tracks[1],
+              currentTrackIndex,
+              currentPage: 2,
+              totalPages: numberOfTracks.length,
+            }),
+            generateMockPage({
+              tracks: tracks[2],
+              currentTrackIndex,
+              currentPage: 3,
+              totalPages: numberOfTracks.length,
+            }),
           ],
         },
       };
     })(),
   ] as {
-    input: { playlist: PlaylistShape };
+    input: {
+      currentTrackIndex: number;
+      numberOfTracks: number;
+      playlist: PlaylistShape;
+    };
     output: DisplayedPlaylistShape;
   }[],
 };
