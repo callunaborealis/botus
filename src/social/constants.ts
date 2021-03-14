@@ -1,3 +1,8 @@
+import {
+  naturalRequestTerminatorPatternStr,
+  prefixCommandTerminatorPatternStr,
+} from '../constants';
+
 /**
  * @deprecated
  */
@@ -13,7 +18,7 @@ export const hailRequests = [
  * /(?: |[,?!] ?|[\.]{2,} ?)/gim
  */
 export const botNameContentSeparator = '(?: |[,?!] ?|[\\.]{2,} ?)';
-export const requestPatternTerminator = '(?: |[?!.,]|$)';
+
 export const listOfGreetingsToBot = [
   // ello, hello
   'h?ello',
@@ -45,7 +50,9 @@ export const helphelpRequests = [/^(;help[\s]?help)|(botus help[\s]?help)/gim];
 export const helpHelpPrefixCommands = ['help help', 'helphelp'];
 export const helpHelpPrefixCommandPatterns = [
   new RegExp(
-    `(?:${helpHelpPrefixCommands.join('|')})${requestPatternTerminator}`,
+    `(?:${helpHelpPrefixCommands.join(
+      '|',
+    )})${prefixCommandTerminatorPatternStr}`,
   ),
 ];
 export const helpPrefixCommands = ['h', 'help'];
@@ -54,7 +61,7 @@ export const helpPrefixCommandPatterns = [
   new RegExp(
     `(?:${helpPrefixCommands.join('|')})(?: (${helpMusicTypes.join(
       '|',
-    )}))?${requestPatternTerminator}`,
+    )}))?${prefixCommandTerminatorPatternStr}`,
   ),
 ];
 export const helpNaturalAboutRequestExamples = [
@@ -87,7 +94,7 @@ export const helpNaturalRequestPatterns = [
       .map((eg) => `(?:${eg})`)
       .join('|')})|(${helpNaturalMusicRequestExamples
       .map((eg) => `(?:${eg})`)
-      .join('|')}))${requestPatternTerminator}`,
+      .join('|')}))${naturalRequestTerminatorPatternStr}`,
     'gim',
   ),
 ];

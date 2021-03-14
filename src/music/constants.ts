@@ -1,4 +1,4 @@
-import { requestPatternTerminator } from '../social/constants';
+import { prefixCommandTerminatorPatternStr } from '../constants';
 import { LoopType, SongShape } from './types';
 
 export const loopOrder: LoopType[] = ['playlist', 'song', 'off'];
@@ -24,7 +24,9 @@ export const songScaffold: SongShape = {
 // Makes the bot join your voice channel.
 export const joinPrefixCommands = ['j', 'join'];
 export const joinPrefixCommandPatterns = [
-  new RegExp(`(${joinPrefixCommands.join('|')})${requestPatternTerminator}`),
+  new RegExp(
+    `(${joinPrefixCommands.join('|')})${prefixCommandTerminatorPatternStr}`,
+  ),
 ];
 export const joinNaturalRequestExamples = ['join vc', 'join the voice chat'];
 export const joinNaturalRequests = [
@@ -45,7 +47,7 @@ export const disconnectVCPrefixCommands = [
   'bye',
 ];
 export const disconnectVCPrefixCommandPatterns = disconnectVCPrefixCommands.map(
-  (p) => new RegExp(`${p}${requestPatternTerminator}`, 'gim'),
+  (p) => new RegExp(`${p}${prefixCommandTerminatorPatternStr}`, 'gim'),
 );
 
 export const loopTrackPrefixCommands = [
@@ -60,7 +62,9 @@ export const loopTrackPrefixCommands = [
 ];
 export const loopTrackPrefixCommandPatterns = [
   new RegExp(
-    `(${loopTrackPrefixCommands.join('|')})${requestPatternTerminator}`,
+    `(${loopTrackPrefixCommands.join(
+      '|',
+    )})${prefixCommandTerminatorPatternStr}`,
     'gim',
   ),
 ];
@@ -77,7 +81,7 @@ export const loopTrackNaturalRequestExamples = [
 
 export const loopPlaylistPrefixCommands = ['lq', 'loop queue', 'lp'];
 export const loopPlaylistPrefixCommandPatterns = loopPlaylistPrefixCommands.map(
-  (p) => new RegExp(`${p}${requestPatternTerminator}`, 'gim'),
+  (p) => new RegExp(`${p}${prefixCommandTerminatorPatternStr}`, 'gim'),
 );
 
 export const loopOffPrefixCommands = [
@@ -87,12 +91,12 @@ export const loopOffPrefixCommands = [
   'loopoff',
 ];
 export const loopOffPrefixCommandPatterns = loopOffPrefixCommands.map(
-  (p) => new RegExp(`${p}${requestPatternTerminator}`, 'gim'),
+  (p) => new RegExp(`${p}${prefixCommandTerminatorPatternStr}`, 'gim'),
 );
 
 export const loopCyclePrefixCommands = ['l', 'loop'];
 export const loopCyclePrefixCommandPatterns = loopOffPrefixCommands.map(
-  (p) => new RegExp(`${p}${requestPatternTerminator}`, 'gim'),
+  (p) => new RegExp(`${p}${prefixCommandTerminatorPatternStr}`, 'gim'),
 );
 
 export const removeSongPrefixCommands = ['rm'];
@@ -128,7 +132,9 @@ export const disconnectVCRequests = [
 export const resetPlaylistPrefixCommands = ['forcereset', 'hardreset'];
 export const resetPlaylistPrefixCommandPatterns = [
   new RegExp(
-    `(${resetPlaylistPrefixCommands.join('|')})${requestPatternTerminator}`,
+    `(${resetPlaylistPrefixCommands.join(
+      '|',
+    )})${prefixCommandTerminatorPatternStr}`,
     'gim',
   ),
 ];
@@ -213,5 +219,5 @@ export const clearRequests = [
 
 const debugPrefixCommands = ['debug'];
 export const debugPrefixCommandPatterns = debugPrefixCommands.map(
-  (p) => new RegExp(`${p}${requestPatternTerminator}`, 'gim'),
+  (p) => new RegExp(`${p}${prefixCommandTerminatorPatternStr}`, 'gim'),
 );
