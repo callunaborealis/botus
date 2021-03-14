@@ -9,6 +9,8 @@ import {
   generateVolumeTag,
 } from '../../../src/music/list';
 import { rawTracks } from './constants';
+import { pageTerms } from '../../../src/music/list/constants';
+import { showPlaylistPrefixCommands } from '../../../src/music/list/constants';
 
 const generateMockTracks = (length: number): SongShape[] => {
   return Array.from({ length }).map((_, i) => {
@@ -78,6 +80,15 @@ const generateMockPage = (options: {
 };
 
 export const cases = {
+  identifyRequests: {
+    positive: [
+      ...showPlaylistPrefixCommands.map((t) => `${t}`),
+      ...showPlaylistPrefixCommands.map((t) => `${t} 2`),
+      ...showPlaylistPrefixCommands.map((t) => `${t} ${pageTerms[0]} 2`),
+      ...showPlaylistPrefixCommands.map((t) => `${t} p. 2`),
+    ],
+    negative: showPlaylistPrefixCommands.map((t) => `${t} ${rawTracks[0].url}`),
+  },
   generateDisplayedPlaylistPages: [
     (() => {
       const numberOfTracks = 0;

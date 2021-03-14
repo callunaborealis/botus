@@ -177,6 +177,11 @@ export const playExistingTrackRequests = [
 
 export const playYoutubeLinkPrefixCommands = ['q', 'queue', 'p', 'play', 'add'];
 /**
+ * /((?:https?:\/\/)?(?:(?:(?:www.?)?youtube.com(?:\/(?:(?:watch?\S*?(?:v=[^\&\s]+)\S*)|(?:v(?:\S*))|(?:channel\S+)|(?:user\/(\S+))|(?:results?(?:search_query=\S+))))?)|(?:youtu\.be(?:\S*)?)))/gim
+ */
+export const youtubeLinkPatternStr =
+  '((?:https?:\\/\\/)?(?:(?:(?:www\\.?)?youtube.com(?:\\/(?:(?:watch\\?\\S*?(?:v=[^\\&\\s]+)\\S*)|(?:v(?:\\S*))|(?:channel\\S+)|(?:user\\/(\\S+))|(?:results?(?:search_query=\\S+))))?)|(?:youtu\\.be(?:\\S*)?)))';
+/**
  * @deprecated
  */
 export const playYoutubeURLRequests = [

@@ -1,17 +1,39 @@
+import { prefixCommandTerminatorPatternStr } from '../../constants';
+import { youtubeLinkPatternStr } from '../constants';
+
+const mandatorySpace = '[ ]{1,3}';
+const pageNumberPattern = '[\\d]+';
+/**
+ * Aliases here should extend Groovy unless contradictions appear
+ * @see https://groovy.bot/commands
+ */
 export const showPlaylistPrefixCommands = [
   /**
-   * /^;(q|queue|(play)?list)(( (pg?|page))?( [\d]+)| ((everything|all)))?( |$)/gim
    */ // Groovy aliases
-  'queue',
-  'q',
-  'playlist',
-  'list',
+  'queue', // Groovy-like alias
+  'q', // Groovy-like alias
 ];
+
+export const pageTerms = ['page', 'pp\\.', 'pp', 'pg', 'p\\.', 'p'];
+const pageTermsPattern = pageTerms.join('|');
 
 const showPlaylistPrefixCommandPattern = `(?:${showPlaylistPrefixCommands.join(
   '|',
 )})`;
 
 export const showPlaylistPrefixCommandPatterns = [
-  new RegExp(['(?:', showPlaylistPrefixCommandPattern, ')'].join('')),
+  new RegExp(
+    [
+      '^',
+      '(?:',
+      showPlaylistPrefixCommandPattern,
+      ')',
+      // To prevent matching with playlist
+      `(?!${mandatorySpace}${youtubeLinkPatternStr})`,
+      // page 2 | 2 | none
+      `(?:${mandatorySpace}(?:(?:${pageTermsPattern})${mandatorySpace})?(${pageNumberPattern}))?`,
+      prefixCommandTerminatorPatternStr,
+    ].join(''),
+    'gim',
+  ),
 ];
