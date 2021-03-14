@@ -2,6 +2,7 @@ import {
   askingForPermissionPattern,
   whitespacePattern,
   prefixCommandTerminatorPatternStr,
+  naturalRequestTerminatorPatternStr,
 } from '../../constants';
 import { youtubeLinkPatternStr } from '../constants';
 
@@ -47,6 +48,13 @@ const trackVariants = ['song', 'track'];
 const whatIsVariants = ['what is', "what\\'s"];
 const whatAreVariants = ['what are', "what're"];
 const rightNowVariants = ['right now', 'at the moment', 'now', 'here'];
+
+// "of / in" in "of the playlist"
+const ofPrefixVariants = ['of', 'for', 'in', 'inside', 'within'];
+const ofPrefixPattern = ofPrefixVariants.join('|');
+// "the playlist" / "this playlist"
+const thePlaylistPattern = `(?:(?:the|this)?${whitespacePattern})playlist`;
+
 const whatPlayingRequests = [
   // what is playing
   `(?:${whatIsVariants.join(
@@ -72,7 +80,7 @@ const whatPlayingRequestPattern = whatPlayingRequests
   .join('|');
 const showPlayingRequests = [
   // show the playlist
-  `show${whitespacePattern}(?:the${whitespacePattern})?playlist`,
+  `show${whitespacePattern}(?:${thePlaylistPattern})`,
   // show what is playing
   `show${whitespacePattern}what${whitespacePattern}is${whitespacePattern}playing`,
 ];
@@ -82,19 +90,19 @@ const showPlayingRequestPattern = showPlayingRequests
 
 const pageNrPatterns = [
   // page 2
-  `(?:(?:${pageTermsPattern})${whitespacePattern}(${pageNumberPattern}))`,
+  `(?:${pageTermsPattern})${whitespacePattern}(${pageNumberPattern})`,
   // 2nd page
-  `(?:(${pageNumberPattern})(?:st|nd|rd|th)${whitespacePattern}(?:${pageTermsPattern}))`,
+  `(${pageNumberPattern})(?:st|nd|rd|th)${whitespacePattern}(?:${pageTermsPattern})`,
 ];
-const pageNrPatternGroup = pageNrPatterns.join('|');
+const pageNrPatternGroup = pageNrPatterns.map((p) => `(?:${p})`).join('|');
 
 const showPageNrOfPlaylist = [
   // show page 2 of this playlist
-  `show${whitespacePattern}(?:${pageNrPatternGroup}) of (?:the|this) playlist`,
+  `show${whitespacePattern}(?:${pageNrPatternGroup})${whitespacePattern}(?:${ofPrefixPattern})${whitespacePattern}(?:${thePlaylistPattern})`,
   // show this playlist page 2
-  `show${whitespacePattern}(?:(?:the|this)${whitespacePattern})?playlist${whitespacePattern}((?:${pageTermsPattern}) ${pageNumberPattern})`,
+  `show${whitespacePattern}(?:${thePlaylistPattern})${whitespacePattern}(?:${pageNrPatternGroup})`,
   // show the page 2 of this playlist
-  `show${whitespacePattern}(?:the${whitespacePattern})?(?:${pageNrPatternGroup})${whitespacePattern}(?:of|for|in)${whitespacePattern}(?:(?:the|this)${whitespacePattern})?playlist `,
+  `show${whitespacePattern}(?:the${whitespacePattern})?(?:${pageNrPatternGroup})${whitespacePattern}(?:${ofPrefixPattern})${whitespacePattern}(?:${thePlaylistPattern})`,
 ];
 const showPageNrOfPlaylistPattern = showPageNrOfPlaylist
   .map((p) => `(?:${p})`)
@@ -115,7 +123,7 @@ const showAllRequests = [
   // show everything playing
   `show${whitespacePattern}everything${whitespacePattern}(?:${thatIsPlayingVariants.join(
     '|',
-  )}))`,
+  )})`,
   // show what is playing
   `show${whitespacePattern}all${whitespacePattern}of${whitespacePattern}(?:${whatPlayingRequestPattern})`,
   // show all the playlist tracks
@@ -123,9 +131,38 @@ const showAllRequests = [
     '|',
   )})`,
 ];
+const showAllRequestPattern = showAllRequests.map((p) => `(?:${p})`).join('|');
 
 export const showPlaylistNaturalRequestPatterns = [
-  // what is playing / show playlist - no page number specified
+  new RegExp(
+    [
+      '(?:',
+      '(?:',
+      // optional "Are you able to"
+      `(?:${askingForPermissionPattern}${whitespacePattern})?`,
+      // "show the playlist / show what is playing"
+      `(?:${showPageNrOfPlaylistPattern})`,
+      ')',
+      naturalRequestTerminatorPatternStr,
+      ')',
+    ].join(''),
+    'gim',
+  ),
+  // show all of the playlist / show everything playing - show all pages at once
+  new RegExp(
+    [
+      '(?:',
+      '(?:',
+      // optional "Are you able to"
+      `(?:${askingForPermissionPattern}${whitespacePattern})?`,
+      // "show all of the playlist / show everything playing"
+      `(?:${showAllRequestPattern})`,
+      ')',
+      naturalRequestTerminatorPatternStr,
+      ')',
+    ].join(''),
+    'gim',
+  ), // what is playing / show playlist - no page number specified
   new RegExp(
     [
       '(?:',
@@ -135,33 +172,9 @@ export const showPlaylistNaturalRequestPatterns = [
       // "show the playlist / show what is playing"
       `(?:(?:${whatPlayingRequestPattern})|(?:${showPlayingRequestPattern}))`,
       ')',
-      ')',
-    ].join(''),
-    'gim',
-  ),
-  // what is playing / show playlist - no page number specified
-  new RegExp(
-    [
-      '(?:',
-      '(?:',
-      // optional "Are you able to"
-      `(?:${askingForPermissionPattern}${whitespacePattern})?`,
-      // "show the playlist / show what is playing"
-      `(?:(?:${whatPlayingRequestPattern})|(?:${showPlayingRequestPattern}))`,
-      ')',
-      ')',
-    ].join(''),
-    'gim',
-  ),
-  new RegExp(
-    [
-      '(?:',
-      '(?:',
-      // optional "Are you able to"
-      `(?:${askingForPermissionPattern}${whitespacePattern})?`,
-      // "show the playlist / show what is playing"
-      `(?:${showPageNrOfPlaylistPattern})?`,
-      ')',
+      // don't capture page suffix
+      `(?!${whitespacePattern}(?!${showPageNrOfPlaylistPattern}))`,
+      naturalRequestTerminatorPatternStr,
       ')',
     ].join(''),
     'gim',

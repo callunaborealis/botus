@@ -9,7 +9,7 @@ import {
 } from '../constants';
 import { defaultPlaylistName, getPlaylist } from '../playlist';
 import { LoopType, PlaylistShape, SongShape } from '../types';
-import { DisplayedPlaylistShape } from './types';
+import { DisplayedPlaylistShape, ExtractedPlaylistPageType } from './types';
 
 /**
  * @see https://discordjs.guide/popular-topics/embeds.html#embed-limits
@@ -166,7 +166,7 @@ export const generateDisplayedPlaylistPages = (params: {
   );
 
   const generateFooter = (pp: number) =>
-    `Current page: ${pp}/${pagesOfTracks.length}.\nTo move to another page within the **${defaultPlaylistName}** playlist, send \`;q {any number between ${pp} to ${pagesOfTracks.length}}\`.\n`;
+    `Current page: ${pp}/${pagesOfTracks.length}.\nTo move to another page within the **${defaultPlaylistName}** playlist, send \`;q {any number between 1 to ${pagesOfTracks.length}}\`.\n`;
 
   return {
     pages: pagesOfTracks.map((pageOfFields, i) => {
@@ -190,7 +190,7 @@ export const generateDisplayedPlaylistPages = (params: {
 export const list = async (
   message: Message,
   options: {
-    pageNrRequested?: number;
+    pageNrRequested?: ExtractedPlaylistPageType;
   },
 ) => {
   const { pageNrRequested } = options;
@@ -210,7 +210,7 @@ export const list = async (
   });
 
   const requestedPageIndex = (() => {
-    if (pageNrRequested) {
+    if (typeof pageNrRequested === 'number') {
       if (isFinite(pageNrRequested) && pages[pageNrRequested - 1]) {
         return pageNrRequested - 1;
       }
@@ -220,6 +220,24 @@ export const list = async (
     }
     return currentPageIndex;
   })();
+
+  if (pageNrRequested === 'all') {
+    for (const page of pages) {
+      const playlistPageEmbed = new MessageEmbed()
+        .setColor(THEME_COLOUR)
+        .setAuthor(
+          truncate(message.member?.nickname ?? message.author.username, {
+            length: limits.authorName - 10,
+          }),
+          message.author.avatarURL() ?? undefined,
+        )
+        .setTitle(page.title)
+        .setDescription(page.description ?? '')
+        .addFields(page.fields);
+      await message.channel.send(playlistPageEmbed);
+    }
+    return;
+  }
 
   if (pages[requestedPageIndex]) {
     const page = pages[requestedPageIndex];
@@ -235,20 +253,5 @@ export const list = async (
       .setDescription(page.description ?? '')
       .addFields(page.fields);
     return message.channel.send(playlistPageEmbed);
-  }
-
-  for (const page of pages) {
-    const playlistPageEmbed = new MessageEmbed()
-      .setColor(THEME_COLOUR)
-      .setAuthor(
-        truncate(message.member?.nickname ?? message.author.username, {
-          length: limits.authorName - 10,
-        }),
-        message.author.avatarURL() ?? undefined,
-      )
-      .setTitle(page.title)
-      .setDescription(page.description ?? '')
-      .addFields(page.fields);
-    await message.channel.send(playlistPageEmbed);
   }
 };

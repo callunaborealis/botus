@@ -11,7 +11,6 @@ import {
   skip,
   clear,
   loop,
-  list as listV1,
   setSongVolume,
   removeSong,
   stop,
@@ -25,7 +24,6 @@ import {
   playYoutubeURLRequests,
   playExistingTrackRequests,
   clearRequests,
-  listRequests,
   skipRequests,
   removeSongRequests,
   stopSongRequests,
@@ -39,7 +37,10 @@ import {
   disconnectVCPrefixCommandPatterns,
 } from './music/constants';
 import { list } from './music/list';
-import { showPlaylistPrefixCommandPatterns } from './music/list/constants';
+import {
+  showPlaylistNaturalRequestPatterns,
+  showPlaylistPrefixCommandPatterns,
+} from './music/list/constants';
 
 import {
   respond,
@@ -80,7 +81,11 @@ import {
 } from './music/volume/constants';
 import { TrackVolPrefixCommandMatches } from './music/volume/types';
 import { extractNaturalSetVolumeDetails } from './music/volume';
-import { ListPrefixCommandMatches } from './music/list/types';
+import {
+  ListNaturalRequestMatches,
+  ListPrefixCommandMatches,
+} from './music/list/types';
+import { getPageNrFromNaturalRequestMatches } from './music/list/helper';
 
 const djBotus = new Client();
 
@@ -257,6 +262,19 @@ djBotus.on('message', async (message) => {
       return list(message, {});
     }
   }
+  if (requestDetails.style === MsgBotRequestStyle.Natural) {
+    const showPlaylistPrefixDetails = identifyRequest(
+      messageContent,
+      showPlaylistNaturalRequestPatterns,
+    );
+    if (showPlaylistPrefixDetails.index !== -1) {
+      const pageNrRequested = getPageNrFromNaturalRequestMatches(
+        showPlaylistPrefixDetails.index,
+        showPlaylistPrefixDetails.matches,
+      );
+      return list(message, { pageNrRequested });
+    }
+  }
 
   // Music: Volume
   if (requestDetails.style === MsgBotRequestStyle.Prefix) {
@@ -308,9 +326,6 @@ djBotus.on('message', async (message) => {
     return playAndOrAddYoutubeToPlaylist(message);
   }
 
-  if (interpretRequest(message, listRequests)) {
-    return listV1(message);
-  }
   if (interpretRequest(message, skipRequests)) {
     return skip(message);
   }
