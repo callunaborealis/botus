@@ -1,5 +1,5 @@
 import { EmbedFieldData, Message, MessageEmbed } from 'discord.js';
-import { truncate } from 'lodash';
+import { chunk, truncate } from 'lodash';
 import isNil from 'lodash/isNil';
 
 import { BOT_PREFIX, THEME_COLOUR } from '../../constants';
@@ -146,59 +146,30 @@ export const generateDisplayedPlaylistPages = (params: {
     };
   }
 
-  //TODO: Figure out why for current track 11, page 1 is still current page
-  const { pageNrOfCurrentTrack, pages } = trackChunkedPlaylist.fields.reduce(
-    (eventualPagedData, currentChunk, currentChunkIndex) => {
-      const currentPages = eventualPagedData.pages;
-      const currLastPageIndex = currentPages.length - 1;
-      const nextEventualPagedData =
-        currentChunkIndex === trackChunkedPlaylist.currentTrackIndex
-          ? {
-              ...eventualPagedData,
-              pageNrOfCurrentTrack: eventualPagedData.currentPageIndex,
-            }
-          : eventualPagedData;
-      if (currentPages.length === 0) {
-        return {
-          ...nextEventualPagedData,
-          pages: [[currentChunk]],
-        };
-      }
-
-      const currentPage = currentPages[currLastPageIndex];
-      if (
-        currentChunkIndex <
-        softLimit * (eventualPagedData.currentPageIndex + 1)
-      ) {
-        const remainderPages = [...currentPages];
-        remainderPages.splice(currLastPageIndex, 1);
-        // Append to existing last section
-        return {
-          ...nextEventualPagedData,
-          pages: [...remainderPages, [...currentPage, currentChunk]],
-          currentPageIndex: currLastPageIndex
-            ? eventualPagedData.currentPageIndex + 1
-            : eventualPagedData.currentPageIndex,
-        };
-      }
-      // Add section
-      return {
-        ...nextEventualPagedData,
-        pages: [...currentPages, [currentChunk]],
-      };
+  const pagesOfTracks = chunk(trackChunkedPlaylist.fields, softLimit);
+  const pageIndexOfCurrentTrack = pagesOfTracks.reduce(
+    (eventualPageIndexOfCurrentTrackLv1, pageOfTracks, pageIndex) => {
+      return pageOfTracks.reduce(
+        (eventualPageIndexOfCurrentTrackLv2, _, iteratedTrackIndex) => {
+          if (
+            pageIndex * softLimit + iteratedTrackIndex ===
+            trackChunkedPlaylist.currentTrackIndex
+          ) {
+            return pageIndex;
+          }
+          return eventualPageIndexOfCurrentTrackLv2;
+        },
+        eventualPageIndexOfCurrentTrackLv1,
+      );
     },
-    {
-      pages: [] as EmbedFieldData[][],
-      currentPageIndex: 0,
-      pageNrOfCurrentTrack: -1,
-    },
+    0,
   );
 
   const generateFooter = (pp: number) =>
-    `Current page: ${pp}/${pages.length}.\nTo move to another page within the **${defaultPlaylistName}** playlist, send \`;q {any number between ${pp} to ${pages.length}}\`.\n`;
+    `Current page: ${pp}/${pagesOfTracks.length}.\nTo move to another page within the **${defaultPlaylistName}** playlist, send \`;q {any number between ${pp} to ${pagesOfTracks.length}}\`.\n`;
 
   return {
-    pages: pages.map((pageOfFields, i) => {
+    pages: pagesOfTracks.map((pageOfFields, i) => {
       return {
         title,
         description: generateFooter(i + 1),
@@ -212,7 +183,7 @@ export const generateDisplayedPlaylistPages = (params: {
         ],
       };
     }),
-    currentPageIndex: pageNrOfCurrentTrack,
+    currentPageIndex: pageIndexOfCurrentTrack,
   };
 };
 
