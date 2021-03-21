@@ -13,7 +13,6 @@ import {
   loop,
   setSongVolume,
   stop,
-  playExistingTrack,
   joinVoiceChannel,
   disconnectVoiceChannel,
   displayDebugValues,
@@ -86,6 +85,7 @@ import {
 } from './music/list/types';
 import { getPageNrFromNaturalRequestMatches } from './music/list/helper';
 import { removeTrackPrefixCommandPatterns } from './music/rm/constants';
+import { playExistingTrack } from './music/play/existing';
 
 const djBotus = new Client();
 

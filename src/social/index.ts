@@ -19,10 +19,12 @@ import {
   loopOffPrefixCommands,
   loopPlaylistPrefixCommands,
   loopTrackPrefixCommands,
-  playExistingTrackMandTrackPrefixCommands,
-  playExistingTrackOptTrackPrefixCommands,
   playYoutubeLinkPrefixCommands,
 } from '../music/constants';
+import {
+  playExistingTrackMandTrackPrefixCommands,
+  playExistingTrackOptTrackPrefixCommands,
+} from '../music/play/existing/constants';
 import { setSongVolPrefixCommands } from '../music/volume/constants';
 import { showPlaylistPrefixCommands } from '../music/list/constants';
 import { removeTrackPrefixCommands } from '../music/rm/constants';
