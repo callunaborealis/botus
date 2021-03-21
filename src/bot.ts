@@ -20,7 +20,6 @@ import {
 import { createServerSession } from './music/session';
 import {
   playYoutubeURLRequests,
-  playExistingTrackRequests,
   clearRequests,
   skipRequests,
   stopSongRequests,
@@ -86,6 +85,7 @@ import {
 import { getPageNrFromNaturalRequestMatches } from './music/list/helper';
 import { removeTrackPrefixCommandPatterns } from './music/rm/constants';
 import { playExistingTrack } from './music/play/existing';
+import { playExistingTrackPrefixCommandPatterns } from './music/play/existing/constants';
 
 const djBotus = new Client();
 
@@ -263,10 +263,9 @@ djBotus.on('message', async (message) => {
     }
   }
   if (requestDetails.style === MsgBotRequestStyle.Natural) {
-    const showPlaylistPrefixDetails = identifyRequest(
-      messageContent,
-      showPlaylistNaturalRequestPatterns,
-    );
+    const showPlaylistPrefixDetails = identifyRequest<
+      ListNaturalRequestMatches[0]
+    >(messageContent, showPlaylistNaturalRequestPatterns);
     if (showPlaylistPrefixDetails.index !== -1) {
       const pageNrRequested = getPageNrFromNaturalRequestMatches(
         showPlaylistPrefixDetails.index,
@@ -323,11 +322,19 @@ djBotus.on('message', async (message) => {
       return removeSong(message, { trackNr });
     }
   }
+  if (requestDetails.style === MsgBotRequestStyle.Prefix) {
+    const playExistingTrackPrefixDetails = identifyRequest(
+      messageContent,
+      playExistingTrackPrefixCommandPatterns,
+    );
+    if (playExistingTrackPrefixDetails.index !== -1) {
+      return playExistingTrack(message, {
+        trackNr: parseInt(`${playExistingTrackPrefixDetails.matches[1]}`, 10),
+      });
+    }
+  }
 
   // Music: Playlist Management
-  if (interpretRequest(message, playExistingTrackRequests)) {
-    return playExistingTrack(message);
-  }
   if (interpretRequest(message, playYoutubeURLRequests)) {
     return playAndOrAddYoutubeToPlaylist(message);
   }

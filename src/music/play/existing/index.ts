@@ -3,9 +3,11 @@ import { play } from '../..';
 import logger from '../../../logger';
 import { reactWithEmoji } from '../../../social';
 import { defaultPlaylistName, getPlaylist, setPlaylist } from '../../playlist';
-import { existingTrackPattern } from './constants';
 
-export const playExistingTrack = async (message: Message) => {
+export const playExistingTrack = async (
+  message: Message,
+  options: { trackNr: number },
+) => {
   reactWithEmoji.received(message);
   if (!message.guild?.id) {
     logger.log({
@@ -38,9 +40,8 @@ export const playExistingTrack = async (message: Message) => {
       'Give me permissions for connecting and speaking in the voice channel, then we can party.',
     );
   }
-  const matches = message.content.match(existingTrackPattern);
-  const existingTrackNr = parseInt(matches?.[0] ?? '-');
-  if (!matches || !isFinite(existingTrackNr)) {
+  const existingTrackNr = options.trackNr;
+  if (!isFinite(existingTrackNr)) {
     reactWithEmoji.failed(message);
     return message.channel.send(
       'I can only play existing track numbers, like in numbers, or new tracks that must be YouTube links.',

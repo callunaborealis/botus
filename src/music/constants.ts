@@ -124,17 +124,6 @@ export const resetPlaylistPrefixCommandPatterns = [
   ),
 ];
 
-
-/**
- * @deprecated
- */
-export const playExistingTrackRequests = [
-  /^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]? [\w\d\s]{0,}(play|add)( track| song)? ([\d]+)/gim,
-  /^;(p|play|add)( track| song)? ([\d]+)/gim,
-  // Ensure that it doesn't conflict with list
-  /^;(q|queue) (track|song) ([\d]+)/gim,
-];
-
 export const playYoutubeLinkPrefixCommands = ['q', 'queue', 'p', 'play', 'add'];
 /**
  * /((?:https?:\/\/)?(?:(?:(?:www.?)?youtube.com(?:\/(?:(?:watch?\S*?(?:v=[^\&\s]+)\S*)|(?:v(?:\S*))|(?:channel\S+)|(?:user\/(\S+))|(?:results?(?:search_query=\S+))))?)|(?:youtu\.be(?:\S*)?)))/gim
