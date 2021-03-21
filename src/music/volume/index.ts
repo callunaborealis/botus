@@ -48,7 +48,7 @@ export const extractNaturalSetVolumeDetails = (options: {
           } as ExtractedVolumeDetails;
         }
 
-        if (index === 6) {
+        if (index === 5) {
           return {
             ...eventual,
             volActionType: 'prefix',
@@ -57,26 +57,26 @@ export const extractNaturalSetVolumeDetails = (options: {
           } as ExtractedVolumeDetails;
         }
 
-        if (index === 7) {
+        if (index === 6) {
           return {
             ...eventual,
             volumeType: 'absolute',
           } as ExtractedVolumeDetails;
         }
-        if (index === 8) {
+        if (index === 7) {
           return {
             ...eventual,
             volumeType: 'relative',
           } as ExtractedVolumeDetails;
         }
-        if (index === 9) {
+        if (index === 8) {
           return {
             ...eventual,
             volume: parseFloat(match),
           } as ExtractedVolumeDetails;
         }
 
-        if (index === 10 || index === 11) {
+        if (index === 9 || index === 10) {
           return {
             ...eventual,
             track: parseInt(match, 10),

@@ -20,7 +20,6 @@ export type TrackVolNaturalRequestMatches = [
     upVolSandwichTerm: string | undefined,
     downVolPrefixTerm: string | undefined,
     downVolSandwichTerm: string | undefined,
-    separator: undefined, // Empty
     neutralVolPrefixTerm: string | undefined,
     absoluteVolKeyword: string | undefined,
     relativeVolKeyword: string | undefined,
