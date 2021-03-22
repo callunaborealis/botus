@@ -4,7 +4,7 @@ import {
   prefixCommandTerminatorPatternStr,
   naturalRequestTerminatorPatternStr,
 } from '../../constants';
-import { youtubeLinkPatternStr } from '../constants';
+import { youtubeLinkPatternStr } from '../play/youtube/constants';
 
 const pageNumberPattern = '[\\d]+';
 /**

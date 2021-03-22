@@ -7,7 +7,6 @@ import logger from './logger';
 import { respondWithDiceResult } from './ttrpg';
 import { rollDicePrefixPatterns } from './ttrpg/constants';
 import {
-  playAndOrAddYoutubeToPlaylist,
   skip,
   clear,
   loop,
@@ -19,7 +18,6 @@ import {
 } from './music';
 import { createServerSession } from './music/session';
 import {
-  playYoutubeURLRequests,
   clearRequests,
   skipRequests,
   stopSongRequests,
@@ -86,6 +84,8 @@ import { getPageNrFromNaturalRequestMatches } from './music/list/helper';
 import { removeTrackPrefixCommandPatterns } from './music/rm/constants';
 import { playExistingTrack } from './music/play/existing';
 import { playExistingTrackPrefixCommandPatterns } from './music/play/existing/constants';
+import { playAndOrAddYoutubeToPlaylist } from './music/play/youtube/link';
+import { playYoutubeURLRequests } from './music/play/youtube/constants';
 
 const djBotus = new Client();
 

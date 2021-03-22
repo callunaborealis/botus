@@ -3,10 +3,8 @@ import { chunk, truncate } from 'lodash';
 import isNil from 'lodash/isNil';
 
 import { BOT_PREFIX, THEME_COLOUR } from '../../constants';
-import {
-  maxAllowableVolume,
-  playYoutubeLinkPrefixCommands,
-} from '../constants';
+import { maxAllowableVolume } from '../constants';
+import { playYoutubeLinkPrefixCommands } from '../play/youtube/constants';
 import { defaultPlaylistName, getPlaylist } from '../playlist';
 import { LoopType, PlaylistShape, SongShape } from '../types';
 import { DisplayedPlaylistShape, ExtractedPlaylistPageType } from './types';
