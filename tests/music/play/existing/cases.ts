@@ -42,6 +42,12 @@ export const cases = {
           input: { messageContent: 'queue 2' },
           output: { index: -1, track: -1 },
         },
+        {
+          input: {
+            messageContent: 'play https://www.youtube.com/watch?v=lIzN5LrhQHA',
+          },
+          output: { index: -1, track: -1 },
+        },
       ],
     },
   },
