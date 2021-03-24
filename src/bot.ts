@@ -84,7 +84,10 @@ import { removeTrackPrefixCommandPatterns } from './music/rm/constants';
 import { playExistingTrack } from './music/play/existing';
 import { playExistingTrackPrefixCommandPatterns } from './music/play/existing/constants';
 import { playAndOrAddYoutubeToPlaylist } from './music/play/youtube/link';
-import { playYoutubeURLRequests } from './music/play/youtube/constants';
+import {
+  playYouTubeLinkPrefixCommandPatterns,
+  playYoutubeURLRequests,
+} from './music/play/youtube/constants';
 
 const djBotus = new Client();
 
@@ -330,6 +333,16 @@ djBotus.on('message', async (message) => {
       return playExistingTrack(message, {
         trackNr: parseInt(`${playExistingTrackPrefixDetails.matches[1]}`, 10),
       });
+    }
+  }
+
+  if (requestDetails.style === MsgBotRequestStyle.Prefix) {
+    const playYouTubeLinkPrefixDetails = identifyRequest(
+      messageContent,
+      playYouTubeLinkPrefixCommandPatterns,
+    );
+    if (playYouTubeLinkPrefixDetails.index !== -1) {
+      return playAndOrAddYoutubeToPlaylist(message);
     }
   }
 

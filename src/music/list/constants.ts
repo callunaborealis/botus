@@ -33,7 +33,7 @@ export const showPlaylistPrefixCommandPatterns = [
       showPlaylistPrefixCommandPattern,
       ')',
       // To prevent matching with playlist
-      `(?!${whitespacePattern}${youtubeLinkPatternStr})`,
+      `(?!${whitespacePattern}(?:${youtubeLinkPatternStr}))`,
       // page 2 | 2 | none
       `(?:${whitespacePattern}(?:(?:${pageTermsPattern})${whitespacePattern})?(${pageNumberPattern})(?:\\.[\\d]+)?)?`,
       prefixCommandTerminatorPatternStr,

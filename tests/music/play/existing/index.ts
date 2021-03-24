@@ -4,7 +4,7 @@ import { playExistingTrackPrefixCommandPatterns } from '../../../../src/music/pl
 import { PlayExistingTrackPrefixCommandMatches } from '../../../../src/music/play/existing/types';
 import { cases } from './cases';
 
-describe('Music: Volume', () => {
+describe('Music: Play Existing', () => {
   describe('identifyRequest', () => {
     [
       ...cases.identifyRequest.prefixCommands.positiveMand,

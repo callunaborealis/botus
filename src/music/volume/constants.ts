@@ -6,8 +6,8 @@ import {
 import { trackTermsPattern } from '../constants';
 
 const trackNumberPattern = '[\\d]+';
-const volumeLevelPattern = '[\\d]+(?:(?:\\.)[\\d]+)?';
-const optionalVolumeSynonyms = ['volume', 'vol'];
+export const volumeLevelPattern = '[\\d]+(?:(?:\\.)[\\d]+)?';
+export const optionalVolumeSynonyms = ['volume', 'vol'];
 
 export const setSongVolPrefixCommands = ['v'];
 export const setSongVolPrefixCommandPatterns = [
@@ -125,7 +125,7 @@ const neutralPrefixTermsVolumeSynonyms = [
   'tweak(?: to)?',
   'update(?: to)?',
 ];
-const absoluteVolumeSetKeywords = [
+export const absoluteVolumeSetKeywords = [
   'as',
   'at',
   'to',

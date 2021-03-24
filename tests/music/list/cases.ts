@@ -171,7 +171,6 @@ export const cases = {
           matches: [
             '',
             undefined,
-            undefined,
             input.page ? `${input.page}` : undefined,
             '',
           ] as ListPrefixCommandMatches[0],
