@@ -1,8 +1,8 @@
 import { Message } from 'discord.js';
-import { play } from '../..';
 import logger from '../../../logger';
 import { reactWithEmoji } from '../../../social';
 import { defaultPlaylistName, getPlaylist, setPlaylist } from '../../playlist';
+import { play } from '../youtube';
 
 export const playExistingTrack = async (
   message: Message,

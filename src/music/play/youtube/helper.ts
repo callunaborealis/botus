@@ -2,7 +2,7 @@ import { Message } from 'discord.js';
 import { isNil } from 'lodash';
 import isNull from 'lodash/isNull';
 import { v4 as uuidv4 } from 'uuid';
-import { play } from '../..';
+import { play } from '.';
 
 import logger from '../../../logger';
 import { reactWithEmoji } from '../../../social';

@@ -10,7 +10,6 @@ import {
   skip,
   clear,
   loop,
-  setSongVolume,
   stop,
   joinVoiceChannel,
   disconnectVoiceChannel,
@@ -75,7 +74,7 @@ import {
   setSongVolPrefixCommandPatterns,
 } from './music/volume/constants';
 import { TrackVolPrefixCommandMatches } from './music/volume/types';
-import { extractNaturalSetVolumeDetails } from './music/volume';
+import { extractNaturalSetVolumeDetails, setSongVolume } from './music/volume';
 import {
   ListNaturalRequestMatches,
   ListPrefixCommandMatches,
