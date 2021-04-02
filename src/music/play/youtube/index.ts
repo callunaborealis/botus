@@ -54,6 +54,7 @@ export const play = (message: Message, song: SongShape) => {
     setPlaylist(message, defaultPlaylistName, playlist);
     return;
   }
+
   const dispatcher = playlist.connection
     .play(ytdl(song.url, { filter: 'audioonly' }))
     .on('debug', (info) => {

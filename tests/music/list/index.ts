@@ -81,6 +81,7 @@ describe('List', () => {
       describe(`For a playlist of a total size of ${expected.input.numberOfTracks} tracks`, () => {
         const { currentPageIndex, pages } = generateDisplayedPlaylistPages({
           playlist: expected.input.playlist,
+          streamTime: 0,
         });
         it(`should know that track ${
           expected.input.currentTrackIndex + 1

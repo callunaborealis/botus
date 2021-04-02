@@ -10,6 +10,7 @@ import {
 import {
   generateNowPlayingTag,
   generateVolumeTag,
+  generateDurationTag,
 } from '../../../src/music/list';
 import { rawTracks } from './constants';
 import { pageTerms } from '../../../src/music/list/constants';
@@ -66,6 +67,10 @@ const generateMockPage = (options: {
             nextTrackId: tracks[currentTrackIndex + 1]?.id ?? songScaffold.id,
             playlistLoopType: 'off',
             isLastSong: false,
+          })} ${generateDurationTag({
+            streamTime: 0,
+            duration: track.duration,
+            isCurrentTrack: track.id === tracks[currentTrackIndex]?.id,
           })} ${generateVolumeTag(track.volume)}`,
           value: `${track.title}\n${track.url}`,
         };
