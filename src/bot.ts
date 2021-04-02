@@ -7,21 +7,16 @@ import logger from './logger';
 import { respondWithDiceResult } from './ttrpg';
 import { rollDicePrefixPatterns } from './ttrpg/constants';
 import {
-  playAndOrAddYoutubeToPlaylist,
   skip,
   clear,
   loop,
-  setSongVolume,
   stop,
-  playExistingTrack,
   joinVoiceChannel,
   disconnectVoiceChannel,
   displayDebugValues,
 } from './music';
 import { createServerSession } from './music/session';
 import {
-  playYoutubeURLRequests,
-  playExistingTrackRequests,
   clearRequests,
   skipRequests,
   stopSongRequests,
@@ -79,13 +74,20 @@ import {
   setSongVolPrefixCommandPatterns,
 } from './music/volume/constants';
 import { TrackVolPrefixCommandMatches } from './music/volume/types';
-import { extractNaturalSetVolumeDetails } from './music/volume';
+import { extractNaturalSetVolumeDetails, setSongVolume } from './music/volume';
 import {
   ListNaturalRequestMatches,
   ListPrefixCommandMatches,
 } from './music/list/types';
 import { getPageNrFromNaturalRequestMatches } from './music/list/helper';
 import { removeTrackPrefixCommandPatterns } from './music/rm/constants';
+import { playExistingTrack } from './music/play/existing';
+import { playExistingTrackPrefixCommandPatterns } from './music/play/existing/constants';
+import { playAndOrAddYoutubeToPlaylist } from './music/play/youtube/link';
+import {
+  playYouTubeLinkPrefixCommandPatterns,
+  playYoutubeURLRequests,
+} from './music/play/youtube/constants';
 
 const djBotus = new Client();
 
@@ -263,10 +265,9 @@ djBotus.on('message', async (message) => {
     }
   }
   if (requestDetails.style === MsgBotRequestStyle.Natural) {
-    const showPlaylistPrefixDetails = identifyRequest(
-      messageContent,
-      showPlaylistNaturalRequestPatterns,
-    );
+    const showPlaylistPrefixDetails = identifyRequest<
+      ListNaturalRequestMatches[0]
+    >(messageContent, showPlaylistNaturalRequestPatterns);
     if (showPlaylistPrefixDetails.index !== -1) {
       const pageNrRequested = getPageNrFromNaturalRequestMatches(
         showPlaylistPrefixDetails.index,
@@ -323,11 +324,29 @@ djBotus.on('message', async (message) => {
       return removeSong(message, { trackNr });
     }
   }
+  if (requestDetails.style === MsgBotRequestStyle.Prefix) {
+    const playExistingTrackPrefixDetails = identifyRequest(
+      messageContent,
+      playExistingTrackPrefixCommandPatterns,
+    );
+    if (playExistingTrackPrefixDetails.index !== -1) {
+      return playExistingTrack(message, {
+        trackNr: parseInt(`${playExistingTrackPrefixDetails.matches[1]}`, 10),
+      });
+    }
+  }
+
+  if (requestDetails.style === MsgBotRequestStyle.Prefix) {
+    const playYouTubeLinkPrefixDetails = identifyRequest(
+      messageContent,
+      playYouTubeLinkPrefixCommandPatterns,
+    );
+    if (playYouTubeLinkPrefixDetails.index !== -1) {
+      return playAndOrAddYoutubeToPlaylist(message);
+    }
+  }
 
   // Music: Playlist Management
-  if (interpretRequest(message, playExistingTrackRequests)) {
-    return playExistingTrack(message);
-  }
   if (interpretRequest(message, playYoutubeURLRequests)) {
     return playAndOrAddYoutubeToPlaylist(message);
   }

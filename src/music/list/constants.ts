@@ -4,7 +4,7 @@ import {
   prefixCommandTerminatorPatternStr,
   naturalRequestTerminatorPatternStr,
 } from '../../constants';
-import { youtubeLinkPatternStr } from '../constants';
+import { youtubeLinkPatternStr } from '../play/youtube/constants';
 
 const pageNumberPattern = '[\\d]+';
 /**
@@ -33,7 +33,7 @@ export const showPlaylistPrefixCommandPatterns = [
       showPlaylistPrefixCommandPattern,
       ')',
       // To prevent matching with playlist
-      `(?!${whitespacePattern}${youtubeLinkPatternStr})`,
+      `(?!${whitespacePattern}(?:${youtubeLinkPatternStr}))`,
       // page 2 | 2 | none
       `(?:${whitespacePattern}(?:(?:${pageTermsPattern})${whitespacePattern})?(${pageNumberPattern})(?:\\.[\\d]+)?)?`,
       prefixCommandTerminatorPatternStr,

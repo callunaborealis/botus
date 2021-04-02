@@ -5,7 +5,7 @@ import { identifyRequest } from '../../../src/social';
 import { setVolumeCases } from './cases';
 
 const lengthOfPrefixCommandMatches = 4;
-const lengthOfNaturalReqMatches = [13];
+const lengthOfNaturalReqMatches = [12];
 
 describe('Music: Volume', () => {
   describe('identifyRequests', () => {

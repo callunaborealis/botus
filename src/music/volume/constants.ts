@@ -6,8 +6,8 @@ import {
 import { trackTermsPattern } from '../constants';
 
 const trackNumberPattern = '[\\d]+';
-const volumeLevelPattern = '[\\d]+(?:(?:\\.)[\\d]+)?';
-const optionalVolumeSynonyms = ['volume', 'vol'];
+export const volumeLevelPattern = '[\\d]+(?:(?:\\.)[\\d]+)?';
+export const optionalVolumeSynonyms = ['volume', 'vol'];
 
 export const setSongVolPrefixCommands = ['v'];
 export const setSongVolPrefixCommandPatterns = [
@@ -56,16 +56,26 @@ const upPrefixTermsVolumeSynonyms = [
   'turn up(?: to)?',
   'up(?: to)?',
 ];
+
+const upSuffixSandwichTermsVolume = `${[
+  'way higher',
+  'way louder',
+  'way up',
+  'louder',
+  'higher',
+  'up',
+].join('|')}`;
+
 // xx volume yy
 const upSandwichTermsVolumeSynonyms = [
-  ['raise', '(?:way )?up'],
-  ['turn', '(?:way )?up'],
-  ['pump', '(?:way )?up'],
-  ['crank', '(?:way )?up'],
-  ['bring', '(?:way )?up'],
-  ['boost', '(?:way )?up'],
-  ['set', '(?:way )?up'],
-  ['make', '(?:way )?louder'],
+  ['raise', `(?:${upSuffixSandwichTermsVolume})`],
+  ['turn', `(?:${upSuffixSandwichTermsVolume})`],
+  ['pump', `(?:${upSuffixSandwichTermsVolume})`],
+  ['crank', `(?:${upSuffixSandwichTermsVolume})`],
+  ['bring', `(?:${upSuffixSandwichTermsVolume})`],
+  ['boost', `(?:${upSuffixSandwichTermsVolume})`],
+  ['set', `(?:${upSuffixSandwichTermsVolume})`],
+  ['make', `(?:${upSuffixSandwichTermsVolume})`],
 ];
 // volume yy
 const downPrefixTermsVolumeSynonyms = [
@@ -81,19 +91,29 @@ const downPrefixTermsVolumeSynonyms = [
   'soften',
   'turn down',
 ];
+
+const downSuffixSandwichTermsVolume = `${[
+  'way lower',
+  'way softer',
+  'way down',
+  'lower',
+  'softer',
+  'down',
+].join('|')}`;
+
 // xx volume yy
 const downSandwichTermsVolumeSynonyms = [
-  ['bring', '(?:way )?down'],
-  ['crank', '(?:way )?down'],
-  ['drop', '(?:way )?down'],
-  ['lower', '(?:way )?down'],
-  ['make', '(?:way )?softer'],
-  ['pipe', '(?:way )?down'],
-  ['pump', '(?:way )?down'],
-  ['reduce', '(?:way )?down'],
-  ['set', '(?:way )?(down|softer)'],
-  ['soften', '(?:way )?softer'],
-  ['turn', '(?:way )?down'],
+  ['bring', `(?:${downSuffixSandwichTermsVolume})`],
+  ['crank', `(?:${downSuffixSandwichTermsVolume})`],
+  ['drop', `(?:${downSuffixSandwichTermsVolume})`],
+  ['lower', `(?:${downSuffixSandwichTermsVolume})`],
+  ['make', `(?:${downSuffixSandwichTermsVolume})`],
+  ['pipe', `(?:${downSuffixSandwichTermsVolume})`],
+  ['pump', `(?:${downSuffixSandwichTermsVolume})`],
+  ['reduce', `(?:${downSuffixSandwichTermsVolume})`],
+  ['set', `(?:${downSuffixSandwichTermsVolume})`],
+  ['soften', `(?:${downSuffixSandwichTermsVolume})`],
+  ['turn', `(?:${downSuffixSandwichTermsVolume})`],
 ];
 const neutralPrefixTermsVolumeSynonyms = [
   'adjust(?: to)?',
@@ -105,7 +125,7 @@ const neutralPrefixTermsVolumeSynonyms = [
   'tweak(?: to)?',
   'update(?: to)?',
 ];
-const absoluteVolumeSetKeywords = [
+export const absoluteVolumeSetKeywords = [
   'as',
   'at',
   'to',

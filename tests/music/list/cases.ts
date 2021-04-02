@@ -10,6 +10,7 @@ import {
 import {
   generateNowPlayingTag,
   generateVolumeTag,
+  generateDurationTag,
 } from '../../../src/music/list';
 import { rawTracks } from './constants';
 import { pageTerms } from '../../../src/music/list/constants';
@@ -22,6 +23,7 @@ const generateMockTracks = (length: number): SongShape[] => {
       title: rawTracks[random(0, rawTracks.length - 1)].title,
       url: rawTracks[random(0, rawTracks.length - 1)].url,
       volume: rawTracks[random(0, rawTracks.length - 1)].volume,
+      duration: 0,
     };
   });
 };
@@ -65,6 +67,10 @@ const generateMockPage = (options: {
             nextTrackId: tracks[currentTrackIndex + 1]?.id ?? songScaffold.id,
             playlistLoopType: 'off',
             isLastSong: false,
+          })} ${generateDurationTag({
+            streamTime: 0,
+            duration: track.duration,
+            isCurrentTrack: track.id === tracks[currentTrackIndex]?.id,
           })} ${generateVolumeTag(track.volume)}`,
           value: `${track.title}\n${track.url}`,
         };
@@ -170,7 +176,6 @@ export const cases = {
           index: 0,
           matches: [
             '',
-            undefined,
             undefined,
             input.page ? `${input.page}` : undefined,
             '',

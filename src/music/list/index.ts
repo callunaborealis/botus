@@ -1,12 +1,11 @@
 import { EmbedFieldData, Message, MessageEmbed } from 'discord.js';
 import { chunk, truncate } from 'lodash';
+import floor from 'lodash/floor';
 import isNil from 'lodash/isNil';
 
 import { BOT_PREFIX, THEME_COLOUR } from '../../constants';
-import {
-  maxAllowableVolume,
-  playYoutubeLinkPrefixCommands,
-} from '../constants';
+import { maxAllowableVolume } from '../constants';
+import { playYoutubeLinkPrefixCommands } from '../play/youtube/constants';
 import { defaultPlaylistName, getPlaylist } from '../playlist';
 import { LoopType, PlaylistShape, SongShape } from '../types';
 import { DisplayedPlaylistShape, ExtractedPlaylistPageType } from './types';
@@ -40,19 +39,19 @@ export const generateNowPlayingTag = ({
     iteratedTrackId === nextTrackId &&
     playlistLoopType !== 'off'
   ) {
-    return '**:arrow_forward: :repeat_one: `Looping this song`** |';
+    return '**:arrow_forward: :repeat_one: `Looping this song`**';
   }
   if (iteratedTrackId === currentTrackId) {
     if (isLastSong && playlistLoopType === 'off') {
-      return '**:arrow_forward: :eject: `Now playing (last song)`** |';
+      return '**:arrow_forward: :eject: `Now playing (last song)`**';
     }
     return '**:arrow_forward: `Now playing`**';
   }
   if (iteratedTrackId === nextTrackId) {
     if (isLastSong && playlistLoopType === 'off') {
-      return '**:track_next: :eject: `Up next (last song)`** |';
+      return '**:track_next: :eject: `Up next (last song)`**';
     }
-    return '**:track_next: `Up next`** |';
+    return '**:track_next: `Up next`**';
   }
   return '';
 };
@@ -70,10 +69,40 @@ export const generateVolumeTag = (volume: number) => {
   return `:mute: **${volume} / ${maxAllowableVolume}**`;
 };
 
+export const generateDurationTag = (params: {
+  /**
+   * In milleseconds
+   * @see https://discord.js.org/#/docs/main/stable/class/StreamDispatcher?scrollTo=streamTime
+   */
+  streamTime: number;
+  /**
+   * In seconds
+   */
+  duration: number;
+  isCurrentTrack: boolean;
+}) => {
+  const { streamTime, duration, isCurrentTrack } = params;
+  const streamTotalSecs = streamTime / 1000;
+  const generateTimestamp = (totalSecs: number) => {
+    const totalSecsInt = floor(totalSecs);
+    const mins = floor(totalSecsInt / 60);
+    const secs = totalSecsInt % 60;
+    const displayedMins = mins > 9 ? `${mins}` : `0${mins}`;
+    const displayedSecs = secs > 9 ? `${secs}` : `0${secs}`;
+    return `${displayedMins}:${displayedSecs}`;
+  };
+  return isCurrentTrack
+    ? `\`${generateTimestamp(streamTotalSecs)} / ${generateTimestamp(
+        duration,
+      )}\``
+    : `\`${generateTimestamp(duration)}\``;
+};
+
 export const generateDisplayedPlaylistPages = (params: {
   playlist: PlaylistShape;
+  streamTime: number;
 }): DisplayedPlaylistShape => {
-  const { playlist } = params;
+  const { playlist, streamTime } = params;
   const currentTrackId = playlist.currentSong.id;
   const nextTrackId = playlist.nextSong.id;
   const loopType = playlist.loop;
@@ -103,15 +132,25 @@ export const generateDisplayedPlaylistPages = (params: {
 
       const volumeTag = generateVolumeTag(currentTrackOnList.volume);
 
+      const isCurrentTrack = currentTrackOnList.id === currentTrackId;
+      const durationTag = generateDurationTag({
+        duration: currentTrackOnList.duration,
+        streamTime,
+        isCurrentTrack,
+      });
+
       return {
-        currentTrackIndex:
-          currentTrackOnList.id === currentTrackId
-            ? index
-            : eventualTrackList.currentTrackIndex,
+        currentTrackIndex: isCurrentTrack
+          ? index
+          : eventualTrackList.currentTrackIndex,
         fields: [
           ...eventualTrackList.fields,
           {
-            name: `${index + 1}. ${nowPlayingTag} ${volumeTag}`,
+            name: `${index + 1}) ${
+              nowPlayingTag === ''
+                ? [durationTag, volumeTag].join(' | ')
+                : [nowPlayingTag, durationTag, volumeTag].join(' | ')
+            }`,
             value: truncate(
               [
                 `${currentTrackOnList.title}`,
@@ -205,8 +244,11 @@ export const list = async (
     return message.channel.send(playlistPageEmbed);
   }
 
+  const streamTime = playlist.connection?.dispatcher?.streamTime ?? 0;
+
   const { currentPageIndex, pages } = generateDisplayedPlaylistPages({
     playlist,
+    streamTime,
   });
 
   const requestedPageIndex = (() => {

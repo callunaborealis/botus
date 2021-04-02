@@ -21,7 +21,6 @@ export type ListPrefixCommandMatches = [
   [
     beforeText: string,
     separator1: undefined, // Empty
-    separator2: undefined, // Empty
     pageNr: string | undefined, // Capture 4 from track 4
     afterText: string,
   ],

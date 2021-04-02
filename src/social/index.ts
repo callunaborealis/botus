@@ -19,13 +19,15 @@ import {
   loopOffPrefixCommands,
   loopPlaylistPrefixCommands,
   loopTrackPrefixCommands,
+} from '../music/constants';
+import {
   playExistingTrackMandTrackPrefixCommands,
   playExistingTrackOptTrackPrefixCommands,
-  playYoutubeLinkPrefixCommands,
-} from '../music/constants';
+} from '../music/play/existing/constants';
 import { setSongVolPrefixCommands } from '../music/volume/constants';
 import { showPlaylistPrefixCommands } from '../music/list/constants';
 import { removeTrackPrefixCommands } from '../music/rm/constants';
+import { playYoutubeLinkPrefixCommands } from '../music/play/youtube/constants';
 
 const botPrefix = BOT_PREFIX;
 
