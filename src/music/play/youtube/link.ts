@@ -57,7 +57,7 @@ export const playAndOrAddYoutubeToPlaylist = async (message: Message) => {
 
   if (maxAllowableReached) {
     message.channel.send(
-      `._shakes his head_ I won't play songs louder than a level of **${maxAllowableReached}**.`,
+      `._shakes his head_ I won't play tracks louder than a level of **${maxAllowableReached}**.`,
     );
   }
 
@@ -84,7 +84,16 @@ export const playAndOrAddYoutubeToPlaylist = async (message: Message) => {
           `_nods and adds_ **${numberOfTracks}** _tracks with volume at_ **${volume}** _to the list._`,
         );
       }
-    } catch (error) {}
+    } catch (error) {
+      logger.log({
+        level: 'error',
+        message: `Invalid playlist.`,
+      });
+      reactWithEmoji.failed(message);
+      return message.channel.send(
+        `._shakes his head_ That YouTube playlist is either private or doesn't exist.`,
+      );
+    }
   }
 
   // Single track
