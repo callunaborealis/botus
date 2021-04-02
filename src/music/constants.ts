@@ -17,6 +17,7 @@ export const maxAllowableVolume = 10; // Any more and we might all be deaf
 export const songScaffold: SongShape = {
   id: '-',
   title: '-',
+  duration: 0,
   url: '#',
   volume: 0,
 };

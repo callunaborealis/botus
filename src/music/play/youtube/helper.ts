@@ -15,12 +15,14 @@ import {
   setPlaylist,
 } from '../../playlist';
 
-export const addTrackToPlaylist = async (
-  message: Message,
-  title: string,
-  url: string,
-  trackVolume: number,
-) => {
+export const addTrackToPlaylist = async (options: {
+  duration: number;
+  message: Message;
+  title: string;
+  trackVolume: number;
+  url: string;
+}) => {
+  const { duration, message, title, trackVolume, url } = options;
   const voiceChannel = message.member?.voice.channel;
   if (!voiceChannel) {
     reactWithEmoji.failed(message);
@@ -34,6 +36,7 @@ export const addTrackToPlaylist = async (
     id: uuidv4(),
     title,
     url,
+    duration,
     volume: trackVolume,
   };
   const playlist = getPlaylist(message, defaultPlaylistName);

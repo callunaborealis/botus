@@ -3,6 +3,7 @@ import { GuildMember, Message } from 'discord.js';
 export interface SongShape {
   id: string;
   title: string;
+  duration: number;
   url: string;
   volume: number;
 }

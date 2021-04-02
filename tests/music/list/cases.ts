@@ -22,6 +22,7 @@ const generateMockTracks = (length: number): SongShape[] => {
       title: rawTracks[random(0, rawTracks.length - 1)].title,
       url: rawTracks[random(0, rawTracks.length - 1)].url,
       volume: rawTracks[random(0, rawTracks.length - 1)].volume,
+      duration: 0,
     };
   });
 };

@@ -1,6 +1,7 @@
 import { Message } from 'discord.js';
 import ytpl from 'ytpl';
 import ytdl from 'ytdl-core';
+import isFinite from 'lodash/isFinite';
 
 import logger from '../../../logger';
 import { reactWithEmoji } from '../../../social';
@@ -68,12 +69,15 @@ export const playAndOrAddYoutubeToPlaylist = async (message: Message) => {
         const youtubePlaylist = await ytpl(playlistId);
         const numberOfTracks = youtubePlaylist.items.length;
         for (const track of youtubePlaylist.items) {
-          await addTrackToPlaylist(
+          await addTrackToPlaylist({
+            duration: isFinite(track.durationSec)
+              ? (track.durationSec as number)
+              : 0,
             message,
-            track.title,
-            track.shortUrl,
-            volume,
-          );
+            title: track.title,
+            trackVolume: volume,
+            url: track.shortUrl,
+          });
         }
         reactWithEmoji.succeeded(message);
         return message.channel.send(
@@ -85,12 +89,16 @@ export const playAndOrAddYoutubeToPlaylist = async (message: Message) => {
 
   // Single track
   const songInfo = await ytdl.getInfo(link);
-  await addTrackToPlaylist(
+  await addTrackToPlaylist({
+    duration: (() => {
+      const secs = parseInt(songInfo.videoDetails.lengthSeconds, 10);
+      return isFinite(secs) ? secs : 0;
+    })(),
     message,
-    songInfo.videoDetails.title,
-    songInfo.videoDetails.video_url,
-    volume,
-  );
+    title: songInfo.videoDetails.title,
+    trackVolume: volume,
+    url: songInfo.videoDetails.video_url,
+  });
   reactWithEmoji.succeeded(message);
   return message.channel.send(
     `_nods and adds_ **${songInfo.videoDetails.title}** with volume at **${volume}** _to the list._`,
