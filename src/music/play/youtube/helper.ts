@@ -57,7 +57,7 @@ export const addTrackToPlaylist = async (options: {
         currentSong: song,
         songs: [song],
       });
-      play(message, song);
+      play(message, { track: song });
     } catch (error) {
       reactWithEmoji.failed(message);
       logger.log({
@@ -80,7 +80,7 @@ export const addTrackToPlaylist = async (options: {
       playlist.connection = connection;
       setPlaylist(message, defaultPlaylistName, playlist);
     }
-    play(message, song);
+    play(message, { track: song });
   }
   const [previousSong, currentSong, nextSong] = dryRunTraversePlaylistByStep(
     playlist,

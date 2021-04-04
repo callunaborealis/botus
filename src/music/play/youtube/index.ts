@@ -10,21 +10,27 @@ import { dryRunTraversePlaylistByStep } from '../../helper';
 import { maxAllowableVolume, songScaffold } from '../../constants';
 import { stop } from '../..';
 
-export const play = (message: Message, song: SongShape) => {
+export const play = (
+  message: Message,
+  options: {
+    track: SongShape;
+  },
+) => {
+  const { track } = options;
   if (!message.guild?.id) {
     reactWithEmoji.failed(message);
     logger.log({
       level: 'error',
-      message: `No guild ID found while attempting to play a song.`,
+      message: `No guild ID found while attempting to play a track.`,
     });
     return;
   }
   const playlist = getPlaylist(message, defaultPlaylistName);
-  if (!playlist || !song) {
+  if (!playlist || !track) {
     reactWithEmoji.failed(message);
     logger.log({
       level: 'error',
-      message: `No playlist or song found while attempting to play a song.`,
+      message: `No playlist or track found while attempting to play a track.`,
     });
     return;
   }
@@ -44,7 +50,7 @@ export const play = (message: Message, song: SongShape) => {
     return;
   }
 
-  if (song.id === songScaffold.id) {
+  if (track.id === songScaffold.id) {
     playlist.textChannel.send("That's all the tracks.");
     playlist.isWriteLocked = false;
     if (playlist.disconnectOnFinish) {
@@ -56,7 +62,7 @@ export const play = (message: Message, song: SongShape) => {
   }
 
   const dispatcher = playlist.connection
-    .play(ytdl(song.url, { filter: 'audioonly' }))
+    .play(ytdl(track.url, { filter: 'audioonly' }))
     .on('debug', (info) => {
       logger.log({
         level: 'error',
@@ -66,16 +72,16 @@ export const play = (message: Message, song: SongShape) => {
       stop(message);
     })
     .on('start', () => {
-      dispatcher.setVolumeLogarithmic(song.volume / 5);
+      dispatcher.setVolumeLogarithmic(track.volume / 5);
       playlist.textChannel.send(
-        `Playing **${song.title}** (Volume: ${song.volume} / ${maxAllowableVolume}).`,
+        `Playing **${track.title}** (Volume: ${track.volume} / ${maxAllowableVolume}).`,
       );
       playlist.isWriteLocked = false;
       const [
         previousSong,
         currentSong,
         nextSong,
-      ] = dryRunTraversePlaylistByStep({ ...playlist, currentSong: song }, 1);
+      ] = dryRunTraversePlaylistByStep({ ...playlist, currentSong: track }, 1);
       playlist.previousSong = previousSong;
       playlist.currentSong = currentSong;
       playlist.nextSong = nextSong;
@@ -119,7 +125,7 @@ export const play = (message: Message, song: SongShape) => {
       playlistOnFinish.nextSong = nextNextSong;
       playlistOnFinish.isWriteLocked = false;
       setPlaylist(message, defaultPlaylistName, playlistOnFinish);
-      play(message, nextSong);
+      play(message, { track: nextSong });
     })
     .on('error', (error: any) => {
       logger.log({
