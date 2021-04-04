@@ -226,7 +226,7 @@ export const setSongVolume = async (
     playlist.isWriteLocked = false;
     setPlaylist(message, defaultPlaylistName, playlist);
     return message.channel.send(
-      `._shakes his head_ I won't play songs louder than a volume level of **${maxAllowableVolume}**.`,
+      `_shakes his head_ I won't play songs louder than a volume level of **${maxAllowableVolume}**.`,
     );
   }
 
