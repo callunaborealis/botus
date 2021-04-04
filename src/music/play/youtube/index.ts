@@ -10,6 +10,44 @@ import { dryRunTraversePlaylistByStep } from '../../helper';
 import { maxAllowableVolume, songScaffold } from '../../constants';
 import { stop } from '../..';
 
+export const onConnectionFinish = (message: Message) => {
+  const playlistOnFinish = getPlaylist(message, defaultPlaylistName);
+  if (!playlistOnFinish) {
+    return logger.log({
+      level: 'error',
+      message: `Playlist no longer exists.`,
+    });
+  }
+
+  playlistOnFinish.isWriteLocked = true;
+
+  if (playlistOnFinish.stopOnFinish) {
+    playlistOnFinish.previousSong = songScaffold;
+    playlistOnFinish.currentSong = songScaffold;
+    playlistOnFinish.nextSong = songScaffold;
+    playlistOnFinish.stopOnFinish = false;
+    playlistOnFinish.isWriteLocked = false;
+    playlistOnFinish.textChannel.send('Stopping track.');
+    if (playlistOnFinish.disconnectOnFinish) {
+      playlistOnFinish.connection = null;
+      playlistOnFinish.disconnectOnFinish = false;
+      playlistOnFinish.voiceChannel?.leave();
+    }
+    setPlaylist(message, defaultPlaylistName, playlistOnFinish);
+    return;
+  }
+  const [_, currentSong, nextSong, nextNextSong] = dryRunTraversePlaylistByStep(
+    playlistOnFinish,
+    1,
+  );
+  playlistOnFinish.previousSong = currentSong;
+  playlistOnFinish.currentSong = nextSong;
+  playlistOnFinish.nextSong = nextNextSong;
+  playlistOnFinish.isWriteLocked = false;
+  setPlaylist(message, defaultPlaylistName, playlistOnFinish);
+  play(message, { track: nextSong });
+};
+
 export const play = (
   message: Message,
   options: {
@@ -89,43 +127,7 @@ export const play = (
       setPlaylist(message, defaultPlaylistName, playlist);
     })
     .on('finish', () => {
-      const playlistOnFinish = getPlaylist(message, defaultPlaylistName);
-      if (!playlistOnFinish) {
-        return logger.log({
-          level: 'error',
-          message: `Playlist no longer exists.`,
-        });
-      }
-
-      playlistOnFinish.isWriteLocked = true;
-
-      if (playlistOnFinish.stopOnFinish) {
-        playlistOnFinish.previousSong = songScaffold;
-        playlistOnFinish.currentSong = songScaffold;
-        playlistOnFinish.nextSong = songScaffold;
-        playlistOnFinish.stopOnFinish = false;
-        playlistOnFinish.isWriteLocked = false;
-        playlistOnFinish.textChannel.send('Stopping track.');
-        if (playlistOnFinish.disconnectOnFinish) {
-          playlistOnFinish.connection = null;
-          playlistOnFinish.disconnectOnFinish = false;
-          playlistOnFinish.voiceChannel?.leave();
-        }
-        setPlaylist(message, defaultPlaylistName, playlistOnFinish);
-        return;
-      }
-      const [
-        _,
-        currentSong,
-        nextSong,
-        nextNextSong,
-      ] = dryRunTraversePlaylistByStep(playlistOnFinish, 1);
-      playlistOnFinish.previousSong = currentSong;
-      playlistOnFinish.currentSong = nextSong;
-      playlistOnFinish.nextSong = nextNextSong;
-      playlistOnFinish.isWriteLocked = false;
-      setPlaylist(message, defaultPlaylistName, playlistOnFinish);
-      play(message, { track: nextSong });
+      onConnectionFinish(message);
     })
     .on('error', (error: any) => {
       logger.log({
