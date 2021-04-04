@@ -10,6 +10,16 @@ import { dryRunTraversePlaylistByStep } from '../../helper';
 import { maxAllowableVolume, songScaffold } from '../../constants';
 import { stop } from '../..';
 
+export const onDebug = (message: Message, options: { info: string }) => {
+  const { info } = options;
+  logger.log({
+    level: 'error',
+    message: `Connection debug event triggered. ${JSON.stringify(info)}`,
+  });
+  reactWithEmoji.failed(message);
+  stop(message);
+};
+
 export const onConnectionFinish = (message: Message) => {
   const playlistOnFinish = getPlaylist(message, defaultPlaylistName);
   if (!playlistOnFinish) {
@@ -102,12 +112,7 @@ export const play = (
   const dispatcher = playlist.connection
     .play(ytdl(track.url, { filter: 'audioonly' }))
     .on('debug', (info) => {
-      logger.log({
-        level: 'error',
-        message: `Connection debug event triggered. ${JSON.stringify(info)}`,
-      });
-      reactWithEmoji.failed(message);
-      stop(message);
+      onDebug(message, { info });
     })
     .on('start', () => {
       dispatcher.setVolumeLogarithmic(track.volume / 5);
