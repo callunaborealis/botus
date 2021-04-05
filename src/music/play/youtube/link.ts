@@ -57,7 +57,7 @@ export const playAndOrAddYoutubeToPlaylist = async (message: Message) => {
 
   if (maxAllowableReached) {
     message.channel.send(
-      `_shakes his head_ I won't play tracks louder than a level of **${maxAllowableReached}**.`,
+      `_shakes his head_ I won't play tracks louder than a level of **${maxAllowableVolume}**.`,
     );
   }
 
