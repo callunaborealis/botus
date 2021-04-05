@@ -88,6 +88,8 @@ import {
   playYouTubeLinkPrefixCommandPatterns,
   playYoutubeURLRequests,
 } from './music/play/youtube/constants';
+import { fastForwardPrefixCommandPatterns } from './music/ff/constants';
+import { fastForward } from './music/ff';
 
 const djBotus = new Client();
 
@@ -343,6 +345,16 @@ djBotus.on('message', async (message) => {
     );
     if (playYouTubeLinkPrefixDetails.index !== -1) {
       return playAndOrAddYoutubeToPlaylist(message);
+    }
+  }
+
+  if (requestDetails.style === MsgBotRequestStyle.Prefix) {
+    const fastForwardTrackPrefixDetails = identifyRequest(
+      messageContent,
+      fastForwardPrefixCommandPatterns,
+    );
+    if (fastForwardTrackPrefixDetails.index !== -1) {
+      return fastForward(message);
     }
   }
 
