@@ -1,4 +1,5 @@
-export const BOT_PREFIX = ';';
+export { BOT_PREFIX } from './environment';
+
 export const THEME_COLOUR = '#8a0a29';
 
 // Pattern matching components
