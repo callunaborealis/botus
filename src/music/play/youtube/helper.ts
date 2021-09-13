@@ -62,7 +62,7 @@ export const addTrackToPlaylist = async (options: {
       reactWithEmoji.failed(message);
       logger.log({
         level: 'error',
-        message: `Error occurred while creating a new playlist: ${error.message}`,
+        message: `Error occurred while creating a new playlist: ${error}`,
       });
     }
     return;

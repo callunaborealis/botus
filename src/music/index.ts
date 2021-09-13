@@ -91,12 +91,12 @@ export const joinVoiceChannel = async (message: Message) => {
   } catch (error) {
     logger.log({
       level: 'error',
-      message: `Error occurred while joining the voice channel: ${error.message}`,
+      message: `Error occurred while joining the voice channel: ${error}`,
     });
     playlist.isWriteLocked = false;
     setPlaylist(message, defaultPlaylistName, playlist);
     reactWithEmoji.failed(message);
-    return message.channel.send(error.message);
+    return;
   }
 };
 
@@ -149,7 +149,7 @@ export const skip = async (message: Message) => {
     } catch (error) {
       logger.log({
         level: 'error',
-        message: `Error occurred while joining the voice channel to skip the current song: ${error.message}`,
+        message: `Error occurred while joining the voice channel to skip the current song: ${error}`,
       });
       playlist.isWriteLocked = false;
       setPlaylist(message, defaultPlaylistName, playlist);
@@ -319,7 +319,7 @@ export const clear = async (message: Message) => {
     } catch (error) {
       logger.log({
         level: 'error',
-        message: `Error occurred while joining the voice channel to clear the playlist: ${error.message}`,
+        message: `Error occurred while joining the voice channel to clear the playlist: ${error}`,
       });
       playlist.isWriteLocked = false;
       setPlaylist(message, defaultPlaylistName, playlist);
