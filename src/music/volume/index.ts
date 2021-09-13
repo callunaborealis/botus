@@ -226,7 +226,7 @@ export const setSongVolume = async (
     playlist.isWriteLocked = false;
     setPlaylist(message, defaultPlaylistName, playlist);
     return message.channel.send(
-      `._shakes his head_ I won't play songs louder than a volume level of **${maxAllowableVolume}**.`,
+      `_shakes his head_ I won't play songs louder than a volume level of **${maxAllowableVolume}**.`,
     );
   }
 
@@ -258,7 +258,7 @@ export const setSongVolume = async (
     } catch (error) {
       logger.log({
         level: 'error',
-        message: `Error occurred while joining the voice channel to set the volume: ${error.message}`,
+        message: `Error occurred while joining the voice channel to set the volume: ${error}`,
       });
       playlist.isWriteLocked = false;
       setPlaylist(message, defaultPlaylistName, playlist);

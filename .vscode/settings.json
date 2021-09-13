@@ -4,6 +4,10 @@
   "eslint.codeAction.showDocumentation": {
     "enable": true
   },
+  "files.associations": {
+    ".env": "ini",
+    ".env.example": "ini"
+  },
   "eslint.validate": ["typescript"],
   "editor.formatOnSave": true
 }

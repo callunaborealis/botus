@@ -57,12 +57,12 @@ export const addTrackToPlaylist = async (options: {
         currentSong: song,
         songs: [song],
       });
-      play(message, song);
+      play(message, { track: song });
     } catch (error) {
       reactWithEmoji.failed(message);
       logger.log({
         level: 'error',
-        message: `Error occurred while creating a new playlist: ${error.message}`,
+        message: `Error occurred while creating a new playlist: ${error}`,
       });
     }
     return;
@@ -80,7 +80,7 @@ export const addTrackToPlaylist = async (options: {
       playlist.connection = connection;
       setPlaylist(message, defaultPlaylistName, playlist);
     }
-    play(message, song);
+    play(message, { track: song });
   }
   const [previousSong, currentSong, nextSong] = dryRunTraversePlaylistByStep(
     playlist,

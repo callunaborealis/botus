@@ -52,6 +52,7 @@ const generateMockPage = (options: {
   totalPages: number;
 }) => {
   const { tracks, currentTrackIndex, currentPage, totalPages } = options;
+
   return {
     title: 'Default Playlist',
     description:
@@ -60,18 +61,22 @@ const generateMockPage = (options: {
         : 'Now playing the **default** playlist:',
     fields: [
       ...tracks.map((track, i) => {
+        const nowPlayingTag = generateNowPlayingTag({
+          currentTrackId: tracks[currentTrackIndex]?.id ?? songScaffold.id,
+          iteratedTrackId: track.id,
+          nextTrackId: tracks[currentTrackIndex + 1]?.id ?? songScaffold.id,
+          playlistLoopType: 'off',
+          isLastSong: false,
+        });
+        const durationTag = generateDurationTag({
+          streamTime: 0,
+          duration: track.duration,
+          isCurrentTrack: track.id === tracks[currentTrackIndex]?.id,
+        });
         return {
-          name: `1. ${generateNowPlayingTag({
-            currentTrackId: tracks[currentTrackIndex]?.id ?? songScaffold.id,
-            iteratedTrackId: track.id,
-            nextTrackId: tracks[currentTrackIndex + 1]?.id ?? songScaffold.id,
-            playlistLoopType: 'off',
-            isLastSong: false,
-          })} ${generateDurationTag({
-            streamTime: 0,
-            duration: track.duration,
-            isCurrentTrack: track.id === tracks[currentTrackIndex]?.id,
-          })} ${generateVolumeTag(track.volume)}`,
+          name: `1) ${
+            nowPlayingTag === '' ? '' : `${nowPlayingTag} | `
+          }${durationTag} | ${generateVolumeTag(track.volume)}`,
           value: `${track.title}\n${track.url}`,
         };
       }),

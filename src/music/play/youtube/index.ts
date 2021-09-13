@@ -10,21 +10,75 @@ import { dryRunTraversePlaylistByStep } from '../../helper';
 import { maxAllowableVolume, songScaffold } from '../../constants';
 import { stop } from '../..';
 
-export const play = (message: Message, song: SongShape) => {
+export const onDebug = (message: Message, options: { info: string }) => {
+  const { info } = options;
+  logger.log({
+    level: 'error',
+    message: `Connection debug event triggered. ${JSON.stringify(info)}`,
+  });
+  reactWithEmoji.failed(message);
+  stop(message);
+};
+
+export const onConnectionFinish = (message: Message) => {
+  const playlistOnFinish = getPlaylist(message, defaultPlaylistName);
+  if (!playlistOnFinish) {
+    return logger.log({
+      level: 'error',
+      message: `Playlist no longer exists.`,
+    });
+  }
+
+  playlistOnFinish.isWriteLocked = true;
+
+  if (playlistOnFinish.stopOnFinish) {
+    playlistOnFinish.previousSong = songScaffold;
+    playlistOnFinish.currentSong = songScaffold;
+    playlistOnFinish.nextSong = songScaffold;
+    playlistOnFinish.stopOnFinish = false;
+    playlistOnFinish.isWriteLocked = false;
+    playlistOnFinish.textChannel.send('Stopping track.');
+    if (playlistOnFinish.disconnectOnFinish) {
+      playlistOnFinish.connection = null;
+      playlistOnFinish.disconnectOnFinish = false;
+      playlistOnFinish.voiceChannel?.leave();
+    }
+    setPlaylist(message, defaultPlaylistName, playlistOnFinish);
+    return;
+  }
+  const [_, currentSong, nextSong, nextNextSong] = dryRunTraversePlaylistByStep(
+    playlistOnFinish,
+    1,
+  );
+  playlistOnFinish.previousSong = currentSong;
+  playlistOnFinish.currentSong = nextSong;
+  playlistOnFinish.nextSong = nextNextSong;
+  playlistOnFinish.isWriteLocked = false;
+  setPlaylist(message, defaultPlaylistName, playlistOnFinish);
+  play(message, { track: nextSong });
+};
+
+export const play = (
+  message: Message,
+  options: {
+    track: SongShape;
+  },
+) => {
+  const { track } = options;
   if (!message.guild?.id) {
     reactWithEmoji.failed(message);
     logger.log({
       level: 'error',
-      message: `No guild ID found while attempting to play a song.`,
+      message: `No guild ID found while attempting to play a track.`,
     });
     return;
   }
   const playlist = getPlaylist(message, defaultPlaylistName);
-  if (!playlist || !song) {
+  if (!playlist || !track) {
     reactWithEmoji.failed(message);
     logger.log({
       level: 'error',
-      message: `No playlist or song found while attempting to play a song.`,
+      message: `No playlist or track found while attempting to play a track.`,
     });
     return;
   }
@@ -44,7 +98,7 @@ export const play = (message: Message, song: SongShape) => {
     return;
   }
 
-  if (song.id === songScaffold.id) {
+  if (track.id === songScaffold.id) {
     playlist.textChannel.send("That's all the tracks.");
     playlist.isWriteLocked = false;
     if (playlist.disconnectOnFinish) {
@@ -56,26 +110,21 @@ export const play = (message: Message, song: SongShape) => {
   }
 
   const dispatcher = playlist.connection
-    .play(ytdl(song.url, { filter: 'audioonly' }))
+    .play(ytdl(track.url, { filter: 'audioonly' }))
     .on('debug', (info) => {
-      logger.log({
-        level: 'error',
-        message: `Connection debug event triggered. ${JSON.stringify(info)}`,
-      });
-      reactWithEmoji.failed(message);
-      stop(message);
+      onDebug(message, { info });
     })
     .on('start', () => {
-      dispatcher.setVolumeLogarithmic(song.volume / 5);
+      dispatcher.setVolumeLogarithmic(track.volume / 5);
       playlist.textChannel.send(
-        `Playing **${song.title}** (Volume: ${song.volume} / ${maxAllowableVolume}).`,
+        `Playing **${track.title}** (Volume: ${track.volume} / ${maxAllowableVolume}).`,
       );
       playlist.isWriteLocked = false;
       const [
         previousSong,
         currentSong,
         nextSong,
-      ] = dryRunTraversePlaylistByStep({ ...playlist, currentSong: song }, 1);
+      ] = dryRunTraversePlaylistByStep({ ...playlist, currentSong: track }, 1);
       playlist.previousSong = previousSong;
       playlist.currentSong = currentSong;
       playlist.nextSong = nextSong;
@@ -83,43 +132,7 @@ export const play = (message: Message, song: SongShape) => {
       setPlaylist(message, defaultPlaylistName, playlist);
     })
     .on('finish', () => {
-      const playlistOnFinish = getPlaylist(message, defaultPlaylistName);
-      if (!playlistOnFinish) {
-        return logger.log({
-          level: 'error',
-          message: `Playlist no longer exists.`,
-        });
-      }
-
-      playlistOnFinish.isWriteLocked = true;
-
-      if (playlistOnFinish.stopOnFinish) {
-        playlistOnFinish.previousSong = songScaffold;
-        playlistOnFinish.currentSong = songScaffold;
-        playlistOnFinish.nextSong = songScaffold;
-        playlistOnFinish.stopOnFinish = false;
-        playlistOnFinish.isWriteLocked = false;
-        playlistOnFinish.textChannel.send('Stopping track.');
-        if (playlistOnFinish.disconnectOnFinish) {
-          playlistOnFinish.connection = null;
-          playlistOnFinish.disconnectOnFinish = false;
-          playlistOnFinish.voiceChannel?.leave();
-        }
-        setPlaylist(message, defaultPlaylistName, playlistOnFinish);
-        return;
-      }
-      const [
-        _,
-        currentSong,
-        nextSong,
-        nextNextSong,
-      ] = dryRunTraversePlaylistByStep(playlistOnFinish, 1);
-      playlistOnFinish.previousSong = currentSong;
-      playlistOnFinish.currentSong = nextSong;
-      playlistOnFinish.nextSong = nextNextSong;
-      playlistOnFinish.isWriteLocked = false;
-      setPlaylist(message, defaultPlaylistName, playlistOnFinish);
-      play(message, nextSong);
+      onConnectionFinish(message);
     })
     .on('error', (error: any) => {
       logger.log({

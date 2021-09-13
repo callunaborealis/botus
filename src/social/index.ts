@@ -4,6 +4,7 @@ import isArray from 'lodash/isArray';
 import random from 'lodash/random';
 
 import { BOT_PREFIX, THEME_COLOUR } from '../constants';
+import { DISCORD_APP_INVITE_LINK } from '../environment';
 import { ExtractedMsgBotRequestDetails, MsgBotRequestStyle } from './types';
 import {
   botNameContentSeparator,
@@ -361,8 +362,7 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
       },
       {
         name: ':link: Invite Link',
-        value:
-          'https://discord.com/api/oauth2/authorize?client_id=803234675446906920&permissions=3795320640&scope=bot',
+        value: DISCORD_APP_INVITE_LINK,
         inline: false,
       },
       {

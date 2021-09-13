@@ -99,5 +99,5 @@ export const playExistingTrack = async (
   }
   playlist.isWriteLocked = false;
   setPlaylist(message, defaultPlaylistName, playlist);
-  play(message, existingTrack);
+  play(message, { track: existingTrack });
 };
