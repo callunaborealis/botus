@@ -1,4 +1,5 @@
 import { prefixCommandTerminatorPatternStr } from '../constants';
+import { BOT_NAME } from '../environment';
 import { LoopType, SongShape } from './types';
 
 export const loopOrder: LoopType[] = ['playlist', 'song', 'off'];
@@ -130,7 +131,11 @@ export const skipPrefixCommands = ['next', 'n', 'skip', 'jump'];
  * @deprecated
  */
 export const skipRequests = [
-  /^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]? (skip|next|jump)/gim,
+  // /^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?BOT_NAME[,?!]? (skip|next|jump)/gim,
+  new RegExp(
+    `^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?${BOT_NAME.toLowerCase()}[,?!]? (skip|next|jump)`,
+    'gim',
+  ),
   // Groovy aliases
   /^;(next|n|skip|jump)/gim,
 ];
@@ -140,7 +145,11 @@ export const clearPrefixCommands = ['clear'];
  * @deprecated
  */
 export const clearRequests = [
-  /^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]? clear/gim,
+  // /^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?BOT_NAME[,?!]? clear/gim,
+  new RegExp(
+    `(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?${BOT_NAME.toLowerCase()}[,?!]? clear`,
+    'gim',
+  ),
   // Shortcut
   /^;clear/gim,
 ];

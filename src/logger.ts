@@ -1,9 +1,10 @@
 import winston from 'winston';
+import { BOT_NAME } from './environment';
 
 const logger = winston.createLogger({
   level: 'info',
   format: winston.format.json(),
-  defaultMeta: { service: 'botus' },
+  defaultMeta: { service: BOT_NAME },
   transports: [
     //
     // - Write all logs with level `error` and below to `error.log`

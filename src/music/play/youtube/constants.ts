@@ -1,4 +1,5 @@
 import { whitespacePattern } from '../../../constants';
+import { BOT_NAME, BOT_PREFIX } from '../../../environment';
 import {
   absoluteVolumeSetKeywords,
   optionalVolumeSynonyms as volumeSynonyms,
@@ -15,10 +16,18 @@ export const youtubeLinkPatternStr =
  * @deprecated
  */
 export const playYoutubeURLRequests = [
-  // hey / hi / sup / hello / yo / oi / oy (optional) botus ... play/add [youtube link] (natural language processing)
-  /^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus[,?!]? [\w\d\s]{0,}(queue|play|add) ((?:https?:\/\/)?(?:(?:(?:www\.?)?youtube\.com(?:\/(?:(?:watch\?\S*?(v=[^&\s]+)\S*)|(?:v(\/\S*))|(channel\/\S+)|(?:user\/(\S+))|(?:results\?(search_query=\S+))))?)|(?:youtu\.be(\/\S*)?)))/gim,
+  // hey / hi / sup / hello / yo / oi / oy (optional) BOT_NAME ... play/add [youtube link] (natural language processing)
+  // /^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?BOT_NAME[,?!]? [\w\d\s]{0,}(queue|play|add) ((?:https?:\/\/)?(?:(?:(?:www\.?)?youtube\.com(?:\/(?:(?:watch\?\S*?(v=[^&\s]+)\S*)|(?:v(\/\S*))|(channel\/\S+)|(?:user\/(\S+))|(?:results\?(search_query=\S+))))?)|(?:youtu\.be(\/\S*)?)))/gim,
+  new RegExp(
+    `(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?${BOT_NAME.toLowerCase()}[,?!]? [\\w\\d\\s]{0,}(queue|play|add) ((?:https?:\\/\\/)?(?:(?:(?:www\\.?)?youtube\\.com(?:\\/(?:(?:watch\\?\\S*?(v=[^&\\s]+)\\S*)|(?:v(\\/\\S*))|(channel\\/\\S+)|(?:user\\/(\\S+))|(?:results\\?(search_query=\\S+))))?)|(?:youtu\\.be(\\/\\S*)?)))`,
+    'gim',
+  ),
   // ;p [youtube link] (shortcut)
-  /^;(q|queue|p|play|add) ((?:https?:\/\/)?(?:(?:(?:www\.?)?youtube\.com(?:\/(?:(?:watch\?\S*?(v=[^&\s]+)\S*)|(?:v(\/\S*))|(channel\/\S+)|(?:user\/(\S+))|(?:results\?(search_query=\S+))))?)|(?:youtu\.be(\/\S*)?)))/gim,
+  // /^;(q|queue|p|play|add) ((?:https?:\/\/)?(?:(?:(?:www\.?)?youtube\.com(?:\/(?:(?:watch\?\S*?(v=[^&\s]+)\S*)|(?:v(\/\S*))|(channel\/\S+)|(?:user\/(\S+))|(?:results\?(search_query=\S+))))?)|(?:youtu\.be(\/\S*)?)))/gim,
+  new RegExp(
+    `${BOT_PREFIX}(q|queue|p|play|add) ((?:https?:\\/\\/)?(?:(?:(?:www\\.?)?youtube\\.com(?:\\/(?:(?:watch\\?\\S*?(v=[^&\\s]+)\\S*)|(?:v(\\/\\S*))|(channel\\/\\S+)|(?:user\\/(\\S+))|(?:results\\?(search_query=\\S+))))?)|(?:youtu\\.be(\\/\\S*)?)))`,
+    'gim',
+  ),
 ];
 
 export const playYouTubeLinkPrefixCommandPatterns = [
