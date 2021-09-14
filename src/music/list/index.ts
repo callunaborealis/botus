@@ -4,6 +4,7 @@ import floor from 'lodash/floor';
 import isNil from 'lodash/isNil';
 
 import { BOT_PREFIX, THEME_COLOUR } from '../../constants';
+import { BOT_NAME } from '../../environment';
 import { maxAllowableVolume } from '../constants';
 import { playYoutubeLinkPrefixCommands } from '../play/youtube/constants';
 import { defaultPlaylistName, getPlaylist } from '../playlist';
@@ -239,7 +240,7 @@ export const list = async (
       .setColor(THEME_COLOUR)
       .setTitle('No playlist found')
       .setDescription(
-        `To begin playing tracks, enter a voice channel then add a YouTube playlist or YouTube video link: \`${BOT_PREFIX}${playYoutubeLinkPrefixCommands[0]} {YouTube Link / Playlist}\`. Botus will then join you in VC and play the audio of your newly added track of your voice channel.`,
+        `To begin playing tracks, enter a voice channel then add a YouTube playlist or YouTube video link: \`${BOT_PREFIX}${playYoutubeLinkPrefixCommands[0]} {YouTube Link / Playlist}\`. ${BOT_NAME} will then join you in VC and play the audio of your newly added track of your voice channel.`,
       );
     return message.channel.send(playlistPageEmbed);
   }

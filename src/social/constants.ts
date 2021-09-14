@@ -2,16 +2,37 @@ import {
   naturalRequestTerminatorPatternStr,
   prefixCommandTerminatorPatternStr,
 } from '../constants';
+import {
+  BOT_FLAVOUR_MENTOR,
+  BOT_NAME,
+  BOT_FLAVOUR_ORIGIN,
+  BOT_PREFIX,
+  BOT_FLAVOUR_DOWNTIME_ACTION_1,
+  BOT_FLAVOUR_OLD_MOTIVATION,
+  BOT_FLAVOUR_USER_FRIENDLY_N_NICKNAME_1,
+  BOT_FLAVOUR_OLD_MEANING_OF_LIFE,
+  BOT_FLAVOUR_DOWNTIME_ACTION_2,
+  BOT_FLAVOUR_OLD_MOTIVATION_2,
+} from '../environment';
 
 /**
  * @deprecated
  */
 export const hailRequests = [
   // name + greeting
-  /^botus[\s]?[,?!(\.\.\.)]?(h?ello|[h]?ey([h]?ey)?|hi|ay|(wa[s]{0,100})?su[p]{1,100}|yo|o[iy])?( |$)/gim,
+  // /^BOT_NAME[\s]?[,?!(\.\.\.)]?(h?ello|[h]?ey([h]?ey)?|hi|ay|(wa[s]{0,100})?su[p]{1,100}|yo|o[iy])?( |$)/gim
+  new RegExp(
+    `^${BOT_NAME}[s]?[,?!(...)]?(h?ello|[h]?ey([h]?ey)?|hi|ay|(wa[s]{0,100})?su[p]{1,100}|yo|o[iy])?( |$)`,
+    'gim',
+  ),
   // greeting + name
-  /^(([h]?ello|[h]?ey( [h]?ey)?|hi|ay|(wa[s]{0,100})?su[p]{1,100}|yo|o[iy]) )?botus[\s]?[,?!(\.\.\.)]?/gim,
-  /^;hail$/gim,
+  // /^(([h]?ello|[h]?ey( [h]?ey)?|hi|ay|(wa[s]{0,100})?su[p]{1,100}|yo|o[iy]) )?BOT_NAME[\s]?[,?!(\.\.\.)]?/gim,
+  new RegExp(
+    `(([h]?ello|[h]?ey( [h]?ey)?|hi|ay|(wa[s]{0,100})?su[p]{1,100}|yo|o[iy]) )?${BOT_NAME}[\\s]?[,?!(\\.\\.\\.)]?`,
+    'gim',
+  ),
+  // /^;hail$/gim,
+  new RegExp(`^${BOT_PREFIX}hail$`, 'gim'),
 ];
 
 /**
@@ -43,10 +64,6 @@ export const hailResponses = [
   (username: string) => `Hi, ${username}.`,
 ];
 
-/**
- * @deprecated
- */
-export const helphelpRequests = [/^(;help[\s]?help)|(botus help[\s]?help)/gim];
 export const helpHelpPrefixCommands = ['help help', 'helphelp'];
 export const helpHelpPrefixCommandPatterns = [
   new RegExp(
@@ -104,23 +121,45 @@ export const helpNaturalRequestPatterns = [
  */
 export const greetingRequests = [
   // greeting + name
-  /^(([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?botus( |$)/gim,
+  // /^(([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?BOT_NAME( |$)/gim
+  new RegExp(
+    `^(([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?${BOT_NAME}( |$)`,
+    'gim',
+  ),
   // name + greeting
-  /^botus (([h]?ello|[h]?ey( [h]?ey)?|hi|ay|(wa[s]{0,100})?su[p]{1,100}|yo|o[iy]))?( |$)/gim,
+  // /^BOT_NAME (([h]?ello|[h]?ey( [h]?ey)?|hi|ay|(wa[s]{0,100})?su[p]{1,100}|yo|o[iy]))?( |$)/gim
+  new RegExp(
+    `${BOT_NAME} (([h]?ello|[h]?ey( [h]?ey)?|hi|ay|(wa[s]{0,100})?su[p]{1,100}|yo|o[iy]))?( |$)`,
+    'gim',
+  ),
   // time of day
-  /^botus (good )?(mornin[g]?|day|afternoon|evenin[g]?|night|nite)[,.!]?( |$)/gim,
-  /^(good )?(mornin[g]?|day|afternoon|evenin[g]?|night|nite)[,.!]? botus( |$)/gim,
+  // /^BOT_NAME (good )?(mornin[g]?|day|afternoon|evenin[g]?|night|nite)[,.!]?( |$)/gim
+  new RegExp(
+    `${BOT_NAME} (good )?(mornin[g]?|day|afternoon|evenin[g]?|night|nite)[,.!]?( |$)`,
+    'gim',
+  ),
+  // /^(good )?(mornin[g]?|day|afternoon|evenin[g]?|night|nite)[,.!]? BOT_NAME( |$)/gim
+  new RegExp(
+    `(good )?(mornin[g]?|day|afternoon|evenin[g]?|night|nite)[,.!]? ${BOT_NAME}( |$)`,
+    'gim',
+  ),
   // whats up
   /^(([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?what[']?s[\s]?up( |$)/gim,
-  /^what[']?s[\s]?up botus/gim,
+  // /^what[']?s[\s]?up BOT_NAME/gim,
+  new RegExp(`^what[']?s[\\s]?up ${BOT_NAME}`, 'gim'),
   /^(([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?wa[s]{1,100}up( |$)/gim,
-  /^wa[s]{1,100}up botus/gim,
+  // /^wa[s]{1,100}up BOT_NAME/gim,
+  new RegExp(`^wa[s]{1,100}up ${BOT_NAME}`, 'gim'),
   /^(([h]?ello |[h]?ey ([h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?wh[au]t[\s]?up( |$)/gim,
-  /^wh[au]t[\s]?up botus( |$)/gim,
-  /^botus[,.!?]? wassup( |$)/gim,
-  /^[was]?sup botus( |$)/gim,
+  // /^wh[au]t[\s]?up BOT_NAME( |$)/gim,
+  new RegExp(`^wh[au]t[\\s]?up ${BOT_NAME}`, 'gim'),
+  // /^BOT_NAME[,.!?]? wassup( |$)/gim,
+  new RegExp(`^${BOT_NAME}[,.!?]? wassup( |$)`, 'gim'),
+  // /^[was]?sup BOT_NAME( |$)/gim,
+  new RegExp(`^[was]?sup${BOT_NAME}( |$)`, 'gim'),
   // Debug
-  /^;hi$/i,
+  // /^;hi$/i,
+  new RegExp(`${BOT_PREFIX}hi$`, 'i'),
 ];
 export const greetingResponses = [
   () => '_barely nods._',
@@ -148,33 +187,57 @@ export const howsItGoingNaturalRequests = [
  * @deprecated
  */
 export const howIsItGoingRequests = [
-  /^botus[,.!?]? how(( i)|')?s it goin[g]?( |$)/gim,
-  /^botus[,.!?]? how are things?( |$)/gim,
-  /^botus[,.!?]? how(( i)|')?s things?( |$)/gim,
-  /^botus[,.!?]? what('| i)?s up( |$)/gim,
+  // /^BOT_NAME[,.!?]? how(( i)|')?s it goin[g]?( |$)/gim,
+  new RegExp(`^${BOT_NAME}[,.!?]? how(( i)|')?s it goin[g]?( |$)`, 'gim'),
+  // /^BOT_NAME[,.!?]? how are things?( |$)/gim,
+  new RegExp(`^${BOT_NAME}[,.!?]? how are things?( |$)`, 'gim'),
+  // /^BOT_NAME[,.!?]? how(( i)|')?s things?( |$)/gim,
+  new RegExp(`^${BOT_NAME}[,.!?]? how(( i)|')?s things?( |$)`, 'gim'),
+  // /^BOT_NAME[,.!?]? what('| i)?s up( |$)/gim,
+  new RegExp(`^${BOT_NAME}[,.!?]? what('| i)?s up( |$)`, 'gim'),
   // Debug
-  /^;howru$/i,
+  // /^;howru$/i,
+  new RegExp(`^${BOT_PREFIX}$`, 'i'),
 ];
 
 /**
- * Asking if Botus is okay
+ * Asking if BOT_NAME is okay
  * @deprecated
  */
 export const howAreYouRequests = [
   /**
-   * botus how are ya
-   * botus! how are ya
-   * botus? how are ya
-   * botus, how are ya
-   * botus how are you
+   * BOT_NAME how are ya
+   * BOT_NAME! how are ya
+   * BOT_NAME? how are ya
+   * BOT_NAME, how are ya
+   * BOT_NAME how are you
    */
-  /^botus[,.!?]? how (are|r) (ya|(you|ya|u))( |$)/gim,
-  /how are (ya|(you|ya|u))[,?!]? botus[!?]?( |$)/gim,
-  /^(are (you|ya|u) )?doin['g]? (alright|alrite|okay|fine)[,?!]? botus[!?]?( |$)/gim,
-  /^((you|ya|u) )?(alright|alrite|okay|fine)[,?!]? botus[!?]?( |$)/gim,
-  /^botus[,.!?]? (are (you|ya|u) )?doin['g]? (alright|alrite|oka?y?|fine)[?!]?( |$)/gim,
-  /^botus[,.!?]? (are (you|ya|u) )?(doin['g]? )?(alright|alrite|oka?y?|fine)[?!]?( |$)/gim,
-  /^botus[,.!?]? how're (you|ya|u)[?!]?( |$)/gim,
+  // /^BOT_NAME[,.!?]? how (are|r) (ya|(you|ya|u))( |$)/gim,
+  new RegExp(`^${BOT_NAME}[,.!?]? how (are|r) (ya|(you|ya|u))( |$)`, 'gim'),
+  // /how are (ya|(you|ya|u))[,?!]? BOT_NAME[!?]?( |$)/gim,
+  new RegExp(`how are (ya|(you|ya|u))[,?!]? ${BOT_NAME}[!?]?( |$)`, 'gim'),
+  // /^(are (you|ya|u) )?doin['g]? (alright|alrite|okay|fine)[,?!]? BOT_NAME[!?]?( |$)/gim,
+  new RegExp(
+    `^(are (you|ya|u) )?doin['g]? (alright|alrite|okay|fine)[,?!]? ${BOT_NAME}[!?]?( |$)`,
+    'gim',
+  ),
+  // /^((you|ya|u) )?(alright|alrite|okay|fine)[,?!]? BOT_NAME[!?]?( |$)/gim,
+  new RegExp(
+    `^((you|ya|u) )?(alright|alrite|okay|fine)[,?!]? ${BOT_NAME}[!?]?( |$)`,
+    'gim',
+  ),
+  // /^BOT_NAME[,.!?]? (are (you|ya|u) )?doin['g]? (alright|alrite|oka?y?|fine)[?!]?( |$)/gim,
+  new RegExp(
+    `^${BOT_NAME} (are (you|ya|u) )?doin['g]? (alright|alrite|oka?y?|fine)[?!]?( |$)`,
+    'gim',
+  ),
+  // /^BOT_NAME[,.!?]? (are (you|ya|u) )?(doin['g]? )?(alright|alrite|oka?y?|fine)[?!]?( |$)/gim,
+  new RegExp(
+    `^${BOT_NAME} (are (you|ya|u) )?(doin['g]? )?(alright|alrite|oka?y?|fine)[?!]?( |$)`,
+    'gim',
+  ),
+  // /^BOT_NAME[,.!?]? how're (you|ya|u)[?!]?( |$)/gim,
+  new RegExp(`^${BOT_NAME}[,.!?]? how're (you|ya|u)[?!]?( |$)`, 'gim'),
 ];
 
 export const howsItGoingResponses = [
@@ -193,11 +256,11 @@ export const howsItGoingResponses = [
 
 export const howAreYouResponses = [
   (username: string) =>
-    `I'm alright, ${username}. Just miss Aricarus a little.`,
+    `I'm alright, ${username}. Just miss ${BOT_FLAVOUR_ORIGIN} a little.`,
   (username: string) => `I'm as good as I ever can be, ${username}.`,
   () => '_gives a thumbs up._',
   () => "I'm doing okay. Barely.",
-  () => 'I miss Aricarus, to be honest.',
+  () => `I miss ${BOT_FLAVOUR_ORIGIN}, to be honest.`,
   () => "I have my hair on my head. So I'm just peachy.",
   () => "_shrugs._ I'll be fine. Take care friendo.",
 ];
@@ -206,41 +269,86 @@ export const howAreYouResponses = [
  * @deprecated
  */
 export const gratitudeRequests = [
-  /^[\w\d\s]{0,10}botus(,|\.+|!)? thank (you|ya|u)( |$)/gim,
-  /^[\w\d\s]{0,10}botus(,|\.+|!)? thanks( |$)/gim,
-  /^[\w\d\s]{0,10}thank (you|ya|u)(,|\.+|!)? botus( |$)/gim,
-  /^[\w\d\s]{0,10}thanks(,|\.+|!)? botus( |$)/gim,
-  /^[\w\d\s]{0,10}thank (you|ya|u) for[\w\d\s]{0,20}?,? botus( |$)/i,
-  /^[\w\d\s]{0,10}thanks for[\w\d\s]{0,20}?(,|\.+)? botus( |$)/i,
+  // /^[\w\d\s]{0,10}BOT_NAME(,|\.+|!)? thank (you|ya|u)( |$)/gim,
+  new RegExp(
+    `[\\w\\d\\s]{0,10}${BOT_NAME}(,|\\.+|!)? thank (you|ya|u)( |$)`,
+    'gim',
+  ),
+  // /^[\w\d\s]{0,10}BOT_NAME(,|\.+|!)? thanks( |$)/gim,
+  new RegExp(`[\\w\\d\\s]{0,10}${BOT_NAME}(,|\\.+|!)? thanks( |$)`, 'gim'),
+  // /^[\w\d\s]{0,10}thank (you|ya|u)(,|\.+|!)? BOT_NAME( |$)/gim,
+  new RegExp(
+    `^[\\w\\d\\s]{0,10}thank (you|ya|u)(,|\\.+|!)? ${BOT_NAME}( |$)`,
+    'gim',
+  ),
+  // /^[\w\d\s]{0,10}thanks(,|\.+|!)? BOT_NAME( |$)/gim,
+  new RegExp(`^[\\w\\d\\s]{0,10}thanks(,|\\.+|!)? ${BOT_NAME}( |$)`, 'gim'),
+  // /^[\w\d\s]{0,10}thank (you|ya|u) for[\w\d\s]{0,20}?,? BOT_NAME( |$)/i,
+  new RegExp(
+    `^[\\w\\d\\s]{0,10}thank (you|ya|u) for[\\w\\d\\s]{0,20}?,? ${BOT_NAME}( |$)`,
+    'gim',
+  ),
+  // /^[\w\d\s]{0,10}thanks for[\w\d\s]{0,20}?(,|\.+)? BOT_NAME( |$)/i,
+  new RegExp(
+    `^[\\w\\d\\s]{0,10}thanks for[\\w\\d\\s]{0,20}?(,|\\.+)? ${BOT_NAME}( |$)`,
+    'gim',
+  ),
   // Debug
-  /^;thanks$/i,
+  // /^;thanks$/i,
+  new RegExp(`^${BOT_PREFIX}thanks$`, 'i'),
 ];
 
 /**
  * @deprecated
  */
 export const hugRequests = [
-  /^botus[,\.!?]? (I want|give me|I need|I would like|can (you|ya|u)|can you give me|can I have) (a )?hugs?( |$)/gim,
-  /^botus[,\.!?]? (I'?m|I am) (glum|hopeless|miserable|sad|depressed|down|unhappy)( |$)/gim,
-  /^(I'?m|I am) (glum|hopeless|miserable|sad|depressed|down|unhappy) botus[,.!]?( |$)/gim,
-  /botus[,\.!?]? I wanna hug( (you|ya|u))?( |$)/gim,
-  /botus[,\.!?]? can I hug( (you|ya|u))?( |$)/gim,
-  /botus[,\.!?]? can (you|ya|u) hug( (you|ya|u))?( |$)/gim,
-  /botus[,\.!?]? can I (get|have)( a)? hug[,.!]?( |$)/gim,
-  /can I hug (you|ya|u)[,\.]? botus( |$)/gim,
-  /(I want|give me) (a )?hugs?[,\.!?]? botus( |$)/gim,
-  /^botus[,\.!?]? hug$/gim,
+  // /^BOT_NAME[,\.!?]? (I want|give me|I need|I would like|can (you|ya|u)|can you give me|can I have) (a )?hugs?( |$)/gim,
+  new RegExp(
+    `^${BOT_NAME}[,\\.!?]? (I want|give me|I need|I would like|can (you|ya|u)|can you give me|can I have) (a )?hugs?( |$)`,
+    'gim',
+  ),
+  // /^BOT_NAME[,\.!?]? (I'?m|I am) (glum|hopeless|miserable|sad|depressed|down|unhappy)( |$)/gim,
+  new RegExp(
+    `^${BOT_NAME}[,\\.!?]? (I'?m|I am) (glum|hopeless|miserable|sad|depressed|down|unhappy)( |$)`,
+    'gim',
+  ),
+  // /^(I'?m|I am) (glum|hopeless|miserable|sad|depressed|down|unhappy) BOT_NAME[,.!]?( |$)/gim,
+  new RegExp(
+    `^(I'?m|I am) (glum|hopeless|miserable|sad|depressed|down|unhappy) ${BOT_NAME}[,.!]?( |$)`,
+    'gim',
+  ),
+  // /BOT_NAME[,\.!?]? I wanna hug( (you|ya|u))?( |$)/gim,
+  new RegExp(`${BOT_NAME}[,\\.!?]? I wanna hug( (you|ya|u))?( |$)`, 'gim'),
+  // /BOT_NAME[,\.!?]? can I hug( (you|ya|u))?( |$)/gim,
+  new RegExp(`${BOT_NAME}[,\\.!?]? can I hug( (you|ya|u))?( |$)`, 'gim'),
+  // /BOT_NAME[,\.!?]? can (you|ya|u) hug( (you|ya|u))?( |$)/gim,
+  new RegExp(
+    `${BOT_NAME}[,\\.!?]? can (you|ya|u) hug( (you|ya|u))?( |$)`,
+    'gim',
+  ),
+  // /BOT_NAME[,\.!?]? can I (get|have)( a)? hug[,.!]?( |$)/gim,
+  new RegExp(
+    `${BOT_NAME}[,\\.!?]? can I (get|have)( a)? hug[,.!]?( |$)`,
+    'gim',
+  ),
+  // /can I hug (you|ya|u)[,\.]? BOT_NAME( |$)/gim,
+  new RegExp(`can I hug (you|ya|u)[,\\.]? ${BOT_NAME}( |$)`, 'gim'),
+  // /(I want|give me) (a )?hugs?[,\.!?]? BOT_NAME( |$)/gim,
+  new RegExp(`(I want|give me) (a )?hugs?[,\.!?]? ${BOT_NAME}( |$)`, 'gim'),
+  // /^BOT_NAME[,\.!?]? hug$/gim,
+  new RegExp(`^${BOT_NAME}[,\.!?]? hug$`, 'gim'),
   // Debug
-  /^;hug$/gim,
+  // /^;hug$/gim,
+  new RegExp(`^${BOT_NAME}$`, 'gim'),
 ];
 export const hugResponses = [
   (username: string) =>
-    `_lights a cigarette and puffs it. He then walks to ${username} and pats them on the back._ You'll live to fight another day.`,
+    `_${BOT_FLAVOUR_DOWNTIME_ACTION_2}. He then walks to ${username} and pats them on the back._ You'll live to fight another day.`,
   (username: string) => `_sighs and gives ${username} a reluctant half-hug._`,
   (username: string) =>
-    `_sighs and sits down next to ${username}._ Here's something my old squad leader told me: When you lose, do not lose the lesson.`,
+    `_sighs and sits down next to ${username}._ Here's something ${BOT_FLAVOUR_MENTOR} taught me: When you lose, do not lose the lesson.`,
   () =>
-    `My ex-girlfriend once told me that the shortest distance between friends is their hugs.`,
+    `An ex-lover of mine once told me that the shortest distance between friends is their hugs.`,
   () =>
     `_pats you on the back, giving you a half-smile._ It's gonna be alright in the end.`,
   (username: string) =>
@@ -262,27 +370,51 @@ export const gratitudeResponses = [
  * @deprecated
  */
 export const meaningOfLifeRequests = [
-  /^botus[,\.!?]? tell (me|us|them) the meaning? of life(\?|$)/gim,
-  /^botus[,\.!?]? what('| i)?s the meaning? of life(\?|$)/gim,
-  /( |^)what('| i)?s the meaning? of life[,\.!?]? botus( |$)/gim,
-  /( |^)what do (you|ya|u) think is the meaning? of life[,\.!?]? botus( |$)/gim,
-  /( |^)tell (me|us|them) the meaning? of life[,\.!?]? botus( |$)/gim,
-  /( |^)do you know what('| i)?s the meaning? of life[,\.!?]? botus( |$)/gim,
+  // /^BOT_NAME[,\.!?]? tell (me|us|them) the meaning? of life(\?|$)/gim,
+  new RegExp(
+    `^${BOT_NAME}[,\\.!?]? tell (me|us|them) the meaning? of life( |\\?|$)`,
+    'gim',
+  ),
+  // /^BOT_NAME[,\.!?]? what('| i)?s the meaning? of life(\?|$)/gim,
+  new RegExp(
+    `^${BOT_NAME}[,\\.!?]? what('| i)?s the meaning? of life( |\\?|$)`,
+    'gim',
+  ),
+  // /( |^)what('| i)?s the meaning? of life[,\.!?]? BOT_NAME( |$)/gim,
+  new RegExp(
+    `( |^)what('| i)?s the meaning? of life[,\\.!?]? ${BOT_NAME}( |\\?|$)`,
+    'gim',
+  ),
+  // /( |^)what do (you|ya|u) think is the meaning? of life[,\.!?]? BOT_NAME( |$)/gim,
+  new RegExp(
+    `( |^)what do (you|ya|u) think is the meaning? of life[,\\.!?]? ${BOT_NAME}( |\\?|$)`,
+    'gim',
+  ),
+  // /( |^)tell (me|us|them) the meaning? of life[,\.!?]? BOT_NAME( |$)/gim,
+  new RegExp(
+    `( |^)tell (me|us|them) the meaning? of life[,\\.!?]? ${BOT_NAME}( |\\?|$)`,
+    'gim',
+  ),
+  // /(?: |^)do you know what(?:'| i)?s the meaning? of life[,.!?]? BOT_NAME[,.!? ]?(?: |$)/gim,
+  new RegExp(
+    `(?: |^)do you know what(?:'| i)?s the meaning? of life[,.!?]? ${BOT_NAME}[,.!? ]?( |\\?|$)`,
+    'gim',
+  ),
 ];
 export const meaningOfLifeResponses = [
   () => `...42.`,
   () =>
-    `To me? It was fighting for what for the rights of my home... _He closes his eyes sadly._ But that was a long time ago.`,
+    `To me? ${BOT_FLAVOUR_OLD_MEANING_OF_LIFE}... _He closes his eyes sadly._ But that was a long time ago.`,
+  () => `For me, ${BOT_FLAVOUR_OLD_MOTIVATION_2}.`,
   () =>
-    `For me, it was about doing the right thing. Fighting for freedom and so on.`,
-  () => `Whatever you want it to be, buckaroo.`,
+    `Whatever you want it to be, ${BOT_FLAVOUR_USER_FRIENDLY_N_NICKNAME_1}.`,
   () =>
-    `I dunno. _He shrugs._ I thought I was supposed to lead Ariarcus to freedom from UA control, but now it's just bein' a third rate shitty music Discord chat bot application.`,
+    `I dunno. _He shrugs._ I thought ${BOT_FLAVOUR_OLD_MOTIVATION}, but now it's just bein' a third rate shitty music Discord chat bot application.`,
   () =>
-    `Meanin' of life huh? _He lights a cigarette and exhales, shrugging._ Whatever you tell yourself that gets you out of bed in the mornin', I guess.`,
+    `Meanin' of life huh? _He ${BOT_FLAVOUR_DOWNTIME_ACTION_1}, shrugging._ Whatever you tell yourself that gets you out of bed in the mornin', I guess.`,
 ];
 
-// Bot is mentioned but doesn't know how to respond. Botus will behave awkwardly.
+// BOT_NAME is mentioned but doesn't know how to respond. BOT_NAME will behave awkwardly.
 export const defaultResponses = [
   () => '_shrugs._',
   () => '_flips his hair and looks away, unconcerned._',

@@ -4,7 +4,7 @@ import isArray from 'lodash/isArray';
 import random from 'lodash/random';
 
 import { BOT_PREFIX, THEME_COLOUR } from '../constants';
-import { DISCORD_APP_INVITE_LINK } from '../environment';
+import { BOT_NAME, DISCORD_APP_INVITE_LINK } from '../environment';
 import { ExtractedMsgBotRequestDetails, MsgBotRequestStyle } from './types';
 import {
   botNameContentSeparator,
@@ -58,7 +58,7 @@ export const extractRequestDetailsForBot = (
     };
   }
 
-  const botName = 'botus';
+  const botName = BOT_NAME;
 
   const nameThenOptionalGreetingPattern = new RegExp(
     [

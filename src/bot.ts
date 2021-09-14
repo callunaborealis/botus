@@ -1,7 +1,7 @@
 import { Client } from 'discord.js';
 import isString from 'lodash/isString';
 
-import { DISCORD_APP_BOT_TOKEN } from './environment';
+import { BOT_NAME, DISCORD_APP_BOT_TOKEN } from './environment';
 import logger from './logger';
 
 import { respondWithDiceResult } from './ttrpg';
@@ -389,7 +389,12 @@ djBotus.on('message', async (message) => {
       // Respond to mentions of it
       return true;
     }
-    if (message.content.match(/(?:(^|\s))botus(?=\W|$)/gim)) {
+    if (
+      // /(?:(^|s))BOT_NAME(?=W|$)/gim
+      message.content.match(
+        new RegExp(`(?:(^|s))${BOT_NAME.toLowerCase()}(?=W|$)`, 'gim'),
+      )
+    ) {
       return true;
     }
     return interpretRequest(message, hailRequests);
@@ -398,7 +403,11 @@ djBotus.on('message', async (message) => {
     return respond(message, hailResponses);
   }
 
-  if (message.content.match(/^botus(?=\W|$)/gim)) {
+  if (
+    message.content.match(
+      new RegExp(`^${BOT_NAME.toLowerCase()}(?=\W|$)`, 'gim'),
+    )
+  ) {
     return respond(message, defaultResponses);
   }
 });
