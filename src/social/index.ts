@@ -354,7 +354,7 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
       `**Botus - Music and Social Discord Bot, former Bald Insurgent Leader**`,
     )
     .addFields(
-      { name: ':checkered_flag: Version', value: '1.0.0', inline: true },
+      { name: ':checkered_flag: Version', value: '1.1.1', inline: true },
       {
         name: ':tools: Developer',
         value: 'CallunaBorealis#0001',

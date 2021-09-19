@@ -91,7 +91,7 @@ export const playAndOrAddYoutubeToPlaylist = async (message: Message) => {
       });
       reactWithEmoji.failed(message);
       return message.channel.send(
-        `._shakes his head_ That YouTube playlist is either private or doesn't exist.`,
+        `_shakes his head_ That YouTube playlist is either private or doesn't exist.`,
       );
     }
   }
