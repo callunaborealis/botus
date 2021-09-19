@@ -110,7 +110,7 @@ export const play = (
   }
 
   const dispatcher = playlist.connection
-    .play(ytdl(track.url, { filter: 'audioonly' }))
+    .play(ytdl(track.url, { filter: 'audioonly', highWaterMark: 1 << 25 }))
     .on('debug', (info) => {
       onDebug(message, { info });
     })
