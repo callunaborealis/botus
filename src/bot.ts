@@ -254,9 +254,9 @@ djBotus.on('message', async (message) => {
       ListPrefixCommandMatches[0]
     >(messageContent, showPlaylistPrefixCommandPatterns);
     if (showPlaylistPrefixDetails.index !== -1) {
-      if (showPlaylistPrefixDetails.matches[3]) {
+      if (showPlaylistPrefixDetails.matches[2]) {
         const pageNrRequested = parseInt(
-          showPlaylistPrefixDetails.matches[3],
+          showPlaylistPrefixDetails.matches[2],
           10,
         );
         return list(message, { pageNrRequested });
