@@ -232,6 +232,7 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
         {
           name: 'Joins the voice channel',
           value: [
+            'Ensure no leading space and number afterwards (as shared with `j / jump` commands)',
             joinPrefixCommands.map((cmd) => `\`${cmd}\``).join(' , '),
             '\n',
             '**e.g.**',
