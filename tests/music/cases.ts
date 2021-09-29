@@ -1,44 +1,40 @@
+import { BOT_NAME } from '../../src/environment';
+
+const botName = BOT_NAME.toLowerCase();
+
 export const expectedInputs = {
   getYoutubeLinkAndVolFromRequest: [
     {
-      request:
-        'botus play https://www.youtube.com/watch?v=rmL1D_aWTAY&t=688s at vol 2.222',
+      request: `${botName} play https://www.youtube.com/watch?v=rmL1D_aWTAY&t=688s at vol 2.222`,
       maxAllowableVolume: 10,
     },
     {
-      request:
-        'botus play https://www.youtube.com/watch?v=rmL1D_aWTAY&t=688s at vol 2.2',
+      request: `${botName} play https://www.youtube.com/watch?v=rmL1D_aWTAY&t=688s at vol 2.2`,
       maxAllowableVolume: 10,
     },
     {
-      request:
-        'botus play https://www.youtube.com/watch?v=rmL1D_aWTAY&t=688s at vol 2',
+      request: `${botName} play https://www.youtube.com/watch?v=rmL1D_aWTAY&t=688s at vol 2`,
       maxAllowableVolume: 10,
     },
     {
-      request:
-        'botus add https://www.youtube.com/watch?v=rmL1D_aWTAY&t=688s at vol 2.222',
+      request: `${botName} add https://www.youtube.com/watch?v=rmL1D_aWTAY&t=688s at vol 2.222`,
       maxAllowableVolume: 10,
     },
     {
-      request:
-        'botus add https://www.youtube.com/watch?v=rmL1D_aWTAY&t=688s at vol 2.2',
+      request: `${botName} add https://www.youtube.com/watch?v=rmL1D_aWTAY&t=688s at vol 2.2`,
       maxAllowableVolume: 10,
     },
     {
-      request:
-        'botus add https://www.youtube.com/watch?v=rmL1D_aWTAY&t=688s at vol 2',
+      request: `${botName} add https://www.youtube.com/watch?v=rmL1D_aWTAY&t=688s at vol 2`,
       maxAllowableVolume: 10,
     },
     // Playlist
     {
-      request:
-        'botus play https://www.youtube.com/playlist?list=PLxmJrG61oPEYHGMdmzqNE3P7O1UUdCezk',
+      request: `${botName} play https://www.youtube.com/playlist?list=PLxmJrG61oPEYHGMdmzqNE3P7O1UUdCezk`,
       maxAllowableVolume: 10,
     },
     {
-      request:
-        'botus play https://www.youtube.com/playlist?list=PLxmJrG61oPEYHGMdmzqNE3P7O1UUdCezk at vol 2',
+      request: `${botName} play https://www.youtube.com/playlist?list=PLxmJrG61oPEYHGMdmzqNE3P7O1UUdCezk at vol 2`,
       maxAllowableVolume: 10,
     },
   ],

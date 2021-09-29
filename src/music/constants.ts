@@ -28,11 +28,15 @@ export const trackTermsPattern = trackTermSynonyms.join('|');
 
 // Makes the bot join your voice channel.
 export const joinPrefixCommands = ['j', 'join'];
+// /(j|join)(?:[ ]{1,}|$)(?![\d]+)/gim
 export const joinPrefixCommandPatterns = [
   new RegExp(
-    `(${joinPrefixCommands.join('|')})${prefixCommandTerminatorPatternStr}`,
+    `(${joinPrefixCommands.join(
+      '|',
+    )})${prefixCommandTerminatorPatternStr}(?![\\d]+)`, // Ensure that j does not trigger jump instead
   ),
 ];
+
 export const joinNaturalRequestExamples = ['join vc', 'join the voice chat'];
 export const joinNaturalRequests = [
   'join(?: the)? vc',

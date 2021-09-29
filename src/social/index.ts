@@ -174,13 +174,17 @@ export const reply = (message: Message, reply: string) => {
   return message.reply(reply);
 };
 
+const botName = BOT_NAME.toLowerCase();
+
 export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
   if (helpType === 'music') {
     const musicHelpEmbed = new MessageEmbed()
       .setColor(THEME_COLOUR)
       .setTitle(`**Music**`)
       .setDescription(
-        'I\'m mostly like Groovy but with a ";" instead of a "-" prefix.',
+        botPrefix === '-'
+          ? `I'm mostly like the late Groovy and I also use the "${botPrefix}" prefix.`
+          : `I'm mostly like the late Groovy but with a "${botPrefix}" instead of a "-" prefix.`,
       )
       .addFields(
         {
@@ -194,11 +198,11 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
             '\n',
             `\`${playYoutubeLinkPrefixCommands[0]} {youtube link/playlist}\` -- Adds a track and plays it if it's the first track.`,
             '\n',
-            '`botus play/add {youtube link/playlist}`    -- Plays / Adds a YouTube track or playlist to the playlist',
+            `\`${botName} play/add {youtube link/playlist}\`    -- Plays / Adds a YouTube track or playlist to the playlist`,
             '\n',
             `\`${botPrefix}${playYoutubeLinkPrefixCommands[0]} {youtube link/playlist} at vol 5.4\` -- With volume set at 5.4 out of 10`,
             '\n',
-            '`botus play/add {youtube link/playlist} at volume 4`  -- With volume set at 4 out of 10',
+            `\`${botName} play/add {youtube link/playlist} at volume 4\`  -- With volume set at 4 out of 10`,
           ].join(''),
         },
         {
@@ -228,11 +232,12 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
         {
           name: 'Joins the voice channel',
           value: [
+            'Ensure no leading space and number afterwards (as shared with `j / jump` commands)',
             joinPrefixCommands.map((cmd) => `\`${cmd}\``).join(' , '),
             '\n',
             '**e.g.**',
             ' ',
-            `\`;${joinPrefixCommands[0]}\``,
+            `\`${botPrefix}${joinPrefixCommands[0]}\``,
           ].join(''),
         },
         {
@@ -242,7 +247,7 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
             '\n',
             '**e.g.**',
             ' ',
-            `\`;${disconnectVCPrefixCommands[0]}\``,
+            `\`${botPrefix}${disconnectVCPrefixCommands[0]}\``,
           ].join(''),
         },
         {
@@ -254,7 +259,7 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
             '\n',
             '**e.g.**',
             ' ',
-            `\`;${removeTrackPrefixCommands[0]}\``,
+            `\`${botPrefix}${removeTrackPrefixCommands[0]}\``,
           ].join(''),
         },
         {
@@ -354,7 +359,7 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
       `**Botus - Music and Social Discord Bot, former Bald Insurgent Leader**`,
     )
     .addFields(
-      { name: ':checkered_flag: Version', value: '1.1.1', inline: true },
+      { name: ':checkered_flag: Version', value: '1.1.2', inline: true },
       {
         name: ':tools: Developer',
         value: 'CallunaBorealis#0001',

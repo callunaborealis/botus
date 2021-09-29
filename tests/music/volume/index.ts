@@ -28,35 +28,42 @@ describe('Music: Volume', () => {
   });
   describe('extractNaturalSetVolumeDetails', () => {
     setVolumeCases.extractNaturalSetVolumeDetails.forEach((expected) => {
-      it(`should be able to receive "${
-        expected.input.messageContent
-      }" and set the volume to ${expected.output.volume} for ${
-        expected.output.track === 'current'
-          ? 'the current track'
-          : expected.output.track
-      } for the "${expected.output.playlist}" playlist, know that "${
-        expected.output.volActionVerb
-      }" is a ${
-        expected.output.volAction
-      } type of volume setting action `, () => {
+      describe(`should be able to receive "${expected.input.messageContent}" and...`, () => {
         const { index, matches } = identifyRequest(
           expected.input.messageContent,
           setSongVolNaturalRequestPatterns,
         );
-        expect(matches.length).to.equal(lengthOfNaturalReqMatches[0]);
+        it('returns all matches back correctly', () => {
+          expect(matches.length).to.equal(lengthOfNaturalReqMatches[0]);
+        });
 
         const actualOutput = extractNaturalSetVolumeDetails({ index, matches });
-        expect(actualOutput.playlist).to.equal(expected.output.playlist);
-        expect(actualOutput.track).to.equal(expected.output.track);
-        expect(actualOutput.volAction).to.equal(expected.output.volAction);
-        expect(actualOutput.volActionType).to.equal(
-          expected.output.volActionType,
-        );
-        expect(actualOutput.volActionVerb).to.equal(
-          expected.output.volActionVerb,
-        );
-        expect(actualOutput.volume).to.equal(expected.output.volume);
-        expect(actualOutput.volumeType).to.equal(expected.output.volumeType);
+
+        it(`detects the playlist correctly as ${expected.output.playlist}`, () => {
+          expect(actualOutput.playlist).to.equal(expected.output.playlist);
+        });
+        it(`detects the track correctly as ${expected.output.track}`, () => {
+          expect(actualOutput.track).to.equal(expected.output.track);
+        });
+        it(`detects the volume action correctly as ${expected.output.volAction}`, () => {
+          expect(actualOutput.volAction).to.equal(expected.output.volAction);
+        });
+        it(`detects the volume action type correctly as ${expected.output.volActionType}`, () => {
+          expect(actualOutput.volActionType).to.equal(
+            expected.output.volActionType,
+          );
+        });
+        it(`detects the volume action verb correctly as ${expected.output.volActionVerb}`, () => {
+          expect(actualOutput.volActionVerb).to.equal(
+            expected.output.volActionVerb,
+          );
+        });
+        it(`detects the volume level correctly as ${expected.output.volume}`, () => {
+          expect(actualOutput.volume).to.equal(expected.output.volume);
+        });
+        it(`detects the volume type correctly as ${expected.output.volumeType}`, () => {
+          expect(actualOutput.volumeType).to.equal(expected.output.volumeType);
+        });
       });
     });
   });
