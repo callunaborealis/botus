@@ -6,19 +6,23 @@ describe('Social: Requests processing', () => {
   describe('extractRequestDetailsForBot', () => {
     expectations.extractRequestDetailsForBot.forEach((expected) => {
       const wasGreeted = expected.output.greeting !== '';
-      it(`should be able to receive "${expected.input.messageContent}", know ${
-        wasGreeted
-          ? `it was greeted with "${expected.output.greeting}"`
-          : 'it was not greeted'
-      } and knows it was asked regarding "${
-        expected.output.requestStr
-      }" from the message`, () => {
+      describe(`should be able to receive "${expected.input.messageContent}" and`, () => {
         const { greeting, requestStr, style } = extractRequestDetailsForBot(
           expected.input.messageContent,
         );
-        expect(greeting).to.equal(expected.output.greeting);
-        expect(requestStr).to.equal(expected.output.requestStr);
-        expect(style).to.equal(expected.output.style);
+        it(`know ${
+          wasGreeted
+            ? `it was greeted with "${expected.output.greeting}"`
+            : 'it was not greeted'
+        }`, () => {
+          expect(greeting).to.equal(expected.output.greeting);
+        });
+        it(`knows it was asked regarding "${expected.output.requestStr}" from the message`, () => {
+          expect(requestStr).to.equal(expected.output.requestStr);
+        });
+        it(`knows it was asked in the ${expected.output.style} style`, () => {
+          expect(style).to.equal(expected.output.style);
+        });
       });
     });
   });
