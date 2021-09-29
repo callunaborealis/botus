@@ -27,20 +27,46 @@ describe('Social: Requests processing', () => {
     });
   });
   describe('identifyRequest', () => {
-    expectations.identifyRequest.forEach((expected) => {
-      it(`should ${expected.output.index === -1 ? 'not ' : ''}match "${
-        expected.input.messageContent
-      }" ${
-        expected.input.listOfMatches[expected.output.index]
-          ? `with "${expected.input.listOfMatches[expected.output.index]}"`
-          : ''
-      }`, () => {
-        const { index, matches } = identifyRequest(
-          expected.input.messageContent,
-          expected.input.listOfMatches,
+    describe('Positive test cases', () => {
+      expectations.identifyRequest.positive.forEach((expected) => {
+        it(`should ${expected.output.index === -1 ? 'not ' : ''}match "${
+          expected.input.messageContent
+        }" ${
+          expected.input.listOfMatches[expected.output.index]
+            ? `with "${expected.input.listOfMatches[expected.output.index]}"`
+            : ''
+        }`, () => {
+          const { index, matches } = identifyRequest(
+            expected.input.messageContent,
+            expected.input.listOfMatches,
+          );
+          expect(index).to.equal(expected.output.index);
+          expect(matches).to.deep.equal(expected.output.matches);
+        });
+      });
+    });
+    describe('Negative test cases', () => {
+      const clearShouldNotTriggerRm =
+        expectations.identifyRequest.negative.clearShouldNotTriggerRm;
+      describe('should not just remove the current track when requesting to clear a playlist', () => {
+        clearShouldNotTriggerRm.input.messageContents.forEach(
+          (messageContent) => {
+            describe(`-> "${messageContent}"`, () => {
+              const { index, matches } = identifyRequest(
+                messageContent,
+                clearShouldNotTriggerRm.input.listOfMatches,
+              );
+              it(`should not have an index for the match`, () => {
+                expect(index).to.equal(clearShouldNotTriggerRm.output.index);
+              });
+              it(`should have no matches`, () => {
+                expect(matches).to.deep.equal(
+                  clearShouldNotTriggerRm.output.matches,
+                );
+              });
+            });
+          },
         );
-        expect(index).to.equal(expected.output.index);
-        expect(matches).to.deep.equal(expected.output.matches);
       });
     });
   });
