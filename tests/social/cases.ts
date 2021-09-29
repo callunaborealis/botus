@@ -31,6 +31,9 @@ import { showPlaylistPrefixCommands } from '../../src/music/list/constants';
 import { removeTrackPrefixCommands } from '../../src/music/rm/constants';
 import { setSongVolPrefixCommands } from '../../src/music/volume/constants';
 import { rollDicePrefixPatterns } from '../../src/ttrpg/constants';
+import { BOT_NAME } from '../../src/environment';
+
+const botName = BOT_NAME.toLowerCase();
 
 const greetingsBotWillRecognise = [
   '',
@@ -124,7 +127,7 @@ export const expectations = {
               ...acc3,
               {
                 input: {
-                  messageContent: `${greetingAndSep}botus${separator}${naturalRequest}`,
+                  messageContent: `${greetingAndSep}${botName}${separator}${naturalRequest}`,
                 },
                 output: {
                   greeting,
