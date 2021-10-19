@@ -1,5 +1,5 @@
 import { prefixCommandTerminatorPatternStr } from '../constants';
-import { BOT_NAME } from '../environment';
+import { BOT_NAME, BOT_PREFIX } from '../environment';
 import { LoopType, SongShape } from './types';
 
 export const loopOrder: LoopType[] = ['playlist', 'song', 'off'];
@@ -118,7 +118,10 @@ export const stopSongRequests = [/^;(stop|enough|halt)$/gim];
  * @deprecated
  */
 export const disconnectVCRequests = [
-  /^;(dc|fuck ?off|go ?away|get ?out|kick|leave|reset|bye)( (\w+)?)?$/gi,
+  new RegExp(
+    `^${BOT_PREFIX}(dc|fuck ?off|go ?away|get ?out|kick|leave|reset|bye)$`,
+    'gim',
+  ),
 ];
 export const resetPlaylistPrefixCommands = ['forcereset', 'hardreset'];
 export const resetPlaylistPrefixCommandPatterns = [
@@ -140,8 +143,7 @@ export const skipRequests = [
     `^(([h]?ello |[h]?ey( [h]?ey)? |hi |ay |(wa[s]{0,100})?su[p]{1,100} |yo |o[iy] ))?${BOT_NAME.toLowerCase()}[,?!]? (skip|next|jump)`,
     'gim',
   ),
-  // Groovy aliases
-  /^;(next|n|skip|jump)/gim,
+  new RegExp(`^${BOT_PREFIX}(${skipPrefixCommands.join('|')})`, 'gim'),
 ];
 
 export const clearPrefixCommands = ['clear'];
@@ -155,7 +157,8 @@ export const clearRequests = [
     'gim',
   ),
   // Shortcut
-  /^;clear/gim,
+  // /^;clear/gim,
+  new RegExp(`^${BOT_PREFIX}(${clearPrefixCommands.join('|')})`, 'gim'),
 ];
 
 const debugPrefixCommands = ['debug'];
