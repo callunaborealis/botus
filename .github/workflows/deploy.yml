@@ -54,8 +54,19 @@ jobs:
             sh stop.sh
             cd botus
             rm -rf node_modules
+            rm .env
             git pull origin master
             npm install
+
+      - name: Copy environment file
+        uses: appleboy/scp-action@v0.1.2
+        with:
+          host: ${{ secrets.REMOTE_SERVER_HOST }}
+          key: ${{ secrets.REMOTE_SERVER_PVT_KEY }}
+          passphrase: ${{ secrets.REMOTE_SERVER_PASSPHRASE }}
+          username: ${{ secrets.REMOTE_SERVER_USERNAME }}
+          source: '.env'
+          target: 'botus'
 
       - name: Copy compiled Botus build onto the remote server
         uses: appleboy/scp-action@v0.1.2
