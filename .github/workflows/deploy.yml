@@ -52,8 +52,10 @@ jobs:
           username: ${{ secrets.REMOTE_SERVER_USERNAME }}
           script: |
             sh stop.sh
-            rm -rf botus
-            mkdir botus
+            cd botus
+            rm -rf node_modules
+            git pull origin master
+            npm install
 
       - name: Copy compiled Botus build onto the remote server
         uses: appleboy/scp-action@v0.1.2
