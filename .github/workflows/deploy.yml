@@ -17,9 +17,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: pnpm/action-setup@v2.0.1
-        with:
-          version: 6.20.3
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
@@ -31,7 +28,6 @@ jobs:
 
       - name: Add environment variables and rebuild Botus
         run: |
-          rm .env
           echo $'DISCORD_APP_BOT_TOKEN=${{ secrets.DISCORD_APP_BOT_TOKEN }}' >> .env
           echo $'SERVER_APP_PORT=3000' >> .env
           echo $'DISCORD_APP_INVITE_LINK=${{ secrets.DISCORD_APP_INVITE_LINK }}' >> .env
@@ -46,7 +42,7 @@ jobs:
           echo $'BOT_FLAVOUR_USER_FRIENDLY_N_NICKNAME_1=buckaroo' >> .env
           echo $'BOT_FLAVOUR_OLD_MEANING_OF_LIFE=It was fighting for Aricarus, and for the freedom of my people from the clutches of UA' >> .env
           npm run build
-          
+
       - name: Stop Botus and remove existing Botus build from the remote server
         uses: appleboy/ssh-action@v0.1.4
         with:
@@ -66,8 +62,8 @@ jobs:
           key: ${{ secrets.REMOTE_SERVER_PVT_KEY }}
           passphrase: ${{ secrets.REMOTE_SERVER_PASSPHRASE }}
           username: ${{ secrets.REMOTE_SERVER_USERNAME }}
-          source: "dist"
-          target: "botus"
+          source: 'dist'
+          target: 'botus'
 
       - name: Restart Botus with updated assets
         uses: appleboy/ssh-action@v0.1.4
