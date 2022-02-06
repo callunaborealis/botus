@@ -1,12 +1,12 @@
 import { expect } from 'chai';
 import { cases } from './cases';
-import { generateDisplayedPlaylistPages } from '../../../src/music/list';
+import { generateDisplayedPlaylistPages } from '../../../src/music/v1/list';
 import { identifyRequest } from '../../../src/social';
 import {
   showPlaylistNaturalRequestPatterns,
   showPlaylistPrefixCommandPatterns,
-} from '../../../src/music/list/constants';
-import { getPageNrFromNaturalRequestMatches } from '../../../src/music/list/helper';
+} from '../../../src/music/v1/list/constants';
+import { getPageNrFromNaturalRequestMatches } from '../../../src/music/v1/list/helper';
 
 describe('List', () => {
   describe('identifyRequest', () => {

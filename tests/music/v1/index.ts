@@ -1,10 +1,10 @@
 import { expect } from 'chai';
-import { getYoutubeLinkAndVolFromRequest } from '../../src/music/helper';
+import { getYoutubeLinkAndVolFromRequest } from '../../src/music/v1/helper';
 import { expectations, expectedInputs, expectedOutputs } from './cases';
 import { identifyRequest } from '../../src/social';
-import { getTrackNrFromRmSongCommand } from '../../src/music/rm';
-import { removeTrackPrefixCommandPatterns } from '../../src/music/rm/constants';
-import { RemoveTrackMatchPatterns } from '../../src/music/rm/types';
+import { getTrackNrFromRmSongCommand } from '../../src/music/v1/rm';
+import { removeTrackPrefixCommandPatterns } from '../../src/music/v1/rm/constants';
+import { RemoveTrackMatchPatterns } from '../../src/music/v1/rm/types';
 describe('Music: Requests processing', () => {
   describe('getYoutubeLinkAndVolFromRequest', () => {
     expectedInputs.getYoutubeLinkAndVolFromRequest.forEach(

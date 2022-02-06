@@ -1,4 +1,4 @@
-import { TrackVolNaturalRequestMatches } from '../../../src/music/volume/types';
+import { TrackVolNaturalRequestMatches } from '../../../../src/music/v1/volume/types';
 
 export const naturalRequestSharedCases = [
   {

@@ -1,20 +1,24 @@
 import random from 'lodash/random';
 import { v4 as uuidv4 } from 'uuid';
 
-import { songScaffold } from '../../../src/music/constants';
-import { LoopType, PlaylistShape, SongShape } from '../../../src/music/types';
+import { songScaffold } from '../../../src/music/v1/constants';
+import {
+  LoopType,
+  PlaylistShape,
+  SongShape,
+} from '../../../src/music/v1/types';
 import {
   DisplayedPlaylistShape,
   ListPrefixCommandMatches,
-} from '../../../src/music/list/types';
+} from '../../../src/music/v1/list/types';
 import {
   generateNowPlayingTag,
   generateVolumeTag,
   generateDurationTag,
-} from '../../../src/music/list';
+} from '../../../src/music/v1/list';
 import { rawTracks } from './constants';
-import { pageTerms } from '../../../src/music/list/constants';
-import { showPlaylistPrefixCommands } from '../../../src/music/list/constants';
+import { pageTerms } from '../../../src/music/v1/list/constants';
+import { showPlaylistPrefixCommands } from '../../../src/music/v1/list/constants';
 
 const generateMockTracks = (length: number): SongShape[] => {
   return Array.from({ length }).map((_, i) => {

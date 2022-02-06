@@ -1,7 +1,7 @@
 import { expect } from 'chai';
-import { extractNaturalSetVolumeDetails } from '../../../src/music/volume';
-import { setSongVolNaturalRequestPatterns } from '../../../src/music/volume/constants';
-import { identifyRequest } from '../../../src/social';
+import { extractNaturalSetVolumeDetails } from '../../../../src/music/v1/volume';
+import { setSongVolNaturalRequestPatterns } from '../../../../src/music/v1/volume/constants';
+import { identifyRequest } from '../../../../src/social';
 import { setVolumeCases } from './cases';
 
 const lengthOfPrefixCommandMatches = 4;

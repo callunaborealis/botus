@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { identifyRequest } from '../../../../src/social';
-import { playExistingTrackPrefixCommandPatterns } from '../../../../src/music/play/existing/constants';
-import { PlayExistingTrackPrefixCommandMatches } from '../../../../src/music/play/existing/types';
+import { playExistingTrackPrefixCommandPatterns } from '../../../../src/music/v1/play/existing/constants';
+import { PlayExistingTrackPrefixCommandMatches } from '../../../../src/music/v1/play/existing/types';
 import { cases } from './cases';
 
 describe('Music: Play Existing', () => {

@@ -1,11 +1,11 @@
 import {
   setSongVolNaturalRequestPatterns,
   setSongVolPrefixCommandPatterns,
-} from '../../../src/music/volume/constants';
+} from '../../../../src/music/v1/volume/constants';
 import {
   ExtractedVolumeDetails,
   TrackVolPrefixCommandMatches,
-} from '../../../src/music/volume/types';
+} from '../../../../src/music/v1/volume/types';
 import { naturalRequestSharedCases } from './constants';
 
 export const setVolumeCases = {

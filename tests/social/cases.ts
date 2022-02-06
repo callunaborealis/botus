@@ -26,13 +26,13 @@ import {
   disconnectVCPrefixCommands,
   stopSongPrefixCommands,
   joinNaturalRequests,
-} from '../../src/music/constants';
-import { showPlaylistPrefixCommands } from '../../src/music/list/constants';
+} from '../../src/music/v1/constants';
+import { showPlaylistPrefixCommands } from '../../src/music/v1/list/constants';
 import {
   removeTrackPrefixCommandPatterns,
   removeTrackPrefixCommands,
-} from '../../src/music/rm/constants';
-import { setSongVolPrefixCommands } from '../../src/music/volume/constants';
+} from '../../src/music/v1/rm/constants';
+import { setSongVolPrefixCommands } from '../../src/music/v1/volume/constants';
 import { rollDicePrefixPatterns } from '../../src/ttrpg/constants';
 import { BOT_NAME } from '../../src/environment';
 

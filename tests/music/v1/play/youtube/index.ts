@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { identifyRequest } from '../../../../src/social';
-import { playYouTubeLinkPrefixCommandPatterns } from '../../../../src/music/play/youtube/constants';
-import { PlayYouTubeLinkPrefixCommandMatches } from '../../../../src/music/play/youtube/types';
+import { playYouTubeLinkPrefixCommandPatterns } from '../../../../src/music/v1/play/youtube/constants';
+import { PlayYouTubeLinkPrefixCommandMatches } from '../../../../src/music/v1/play/youtube/types';
 import { cases } from './cases';
 
 describe('Music: Play YouTube link', () => {
