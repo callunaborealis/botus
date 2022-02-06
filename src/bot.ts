@@ -1,4 +1,4 @@
-import { Client } from 'discord.js';
+import { Client, Intents } from 'discord.js';
 import isString from 'lodash/isString';
 
 import { BOT_NAME, DISCORD_APP_BOT_TOKEN } from './environment';
@@ -91,7 +91,9 @@ import {
 import { fastForwardPrefixCommandPatterns } from './music/ff/constants';
 import { fastForward } from './music/ff';
 
-const djBotus = new Client();
+const djBotus = new Client({
+  intents: Object.values(Intents.FLAGS),
+});
 
 djBotus.on('ready', () => {
   const userTag = djBotus?.user?.tag ?? '-';
@@ -114,18 +116,15 @@ djBotus.on('message', async (message) => {
   const userId = djBotus?.user?.id ?? '-';
   if (message.author.bot) {
     // Don't talk to itself or other bots
-    return false;
+    return;
   }
-
   const requestDetails = extractRequestDetailsForBot(message.content);
-
   if (requestDetails.style !== MsgBotRequestStyle.NotARequest) {
     logger.log({
       level: 'info',
       message: `${message.author.tag} | ${message.author.id} | ${message.content} | ${requestDetails.requestStr}`,
     });
   }
-
   const messageContent = (() => {
     if (message.mentions.has(userId)) {
       // Respond to mentions of it
@@ -133,7 +132,6 @@ djBotus.on('message', async (message) => {
     }
     return requestDetails.requestStr;
   })();
-
   // TTRPG
   if (requestDetails.style === MsgBotRequestStyle.Prefix) {
     const { matches } = identifyRequest<DiceRequestStrMatchesShape>(
@@ -142,10 +140,10 @@ djBotus.on('message', async (message) => {
     );
     if (matches.length > 1) {
       const [_, diceFormatStr] = matches;
-      return respondWithDiceResult(message, diceFormatStr as string);
+      respondWithDiceResult(message, diceFormatStr as string);
+      return;
     }
   }
-
   // Help
   if (requestDetails.style === MsgBotRequestStyle.Prefix) {
     const helpPrefixMatchDetails = identifyRequest<HelpPrefixRequestMatchesShape>(
@@ -153,10 +151,12 @@ djBotus.on('message', async (message) => {
       helpPrefixCommandPatterns,
     );
     if (helpPrefixMatchDetails.matches?.[1] === 'music') {
-      return sendHelpDoc(message, 'music');
+      sendHelpDoc(message, 'music');
+      return;
     }
     if (helpPrefixMatchDetails.index !== -1) {
-      return sendHelpDoc(message, 'about');
+      sendHelpDoc(message, 'about');
+      return;
     }
   }
   if (requestDetails.style === MsgBotRequestStyle.Natural) {
@@ -165,23 +165,24 @@ djBotus.on('message', async (message) => {
       helpNaturalRequestPatterns,
     );
     if (isString(helpMatchDetails.matches[2])) {
-      return sendHelpDoc(message, 'music');
+      sendHelpDoc(message, 'music');
+      return;
     }
     if (helpMatchDetails.index !== -1) {
-      return sendHelpDoc(message, 'about');
+      sendHelpDoc(message, 'about');
+      return;
     }
   }
-
   if (requestDetails.style === MsgBotRequestStyle.Prefix) {
     const helpHelpMatchDetails = identifyRequest(
       messageContent,
       helpHelpPrefixCommandPatterns,
     );
     if (helpHelpMatchDetails.index !== -1) {
-      return message.channel.send('No help for you!');
+      message.channel.send('No help for you!');
+      return;
     }
   }
-
   // Music: Debug - Hard resets the server session on the spot in case of failure
   if (requestDetails.style === MsgBotRequestStyle.Prefix) {
     const hardResetDetails = identifyRequest(
@@ -189,17 +190,18 @@ djBotus.on('message', async (message) => {
       resetPlaylistPrefixCommandPatterns,
     );
     if (hardResetDetails.index !== -1) {
-      return createServerSession(message, true);
+      createServerSession(message, true);
+      return;
     }
     const debugDetails = identifyRequest(
       messageContent,
       debugPrefixCommandPatterns,
     );
     if (debugDetails.index !== -1) {
-      return displayDebugValues(message);
+      displayDebugValues(message);
+      return;
     }
   }
-
   // Music: Loop
   if (requestDetails.style === MsgBotRequestStyle.Prefix) {
     const loopTrackDetails = identifyRequest(
@@ -207,31 +209,34 @@ djBotus.on('message', async (message) => {
       loopTrackPrefixCommandPatterns,
     );
     if (loopTrackDetails.index !== -1) {
-      return loop(message, 'song');
+      loop(message, 'song');
+      return;
     }
     const loopPlaylistDetails = identifyRequest(
       messageContent,
       loopPlaylistPrefixCommandPatterns,
     );
     if (loopPlaylistDetails.index !== -1) {
-      return loop(message, 'playlist');
+      loop(message, 'playlist');
+      return;
     }
     const loopOffDetails = identifyRequest(
       messageContent,
       loopOffPrefixCommandPatterns,
     );
     if (loopOffDetails.index !== -1) {
-      return loop(message, 'off');
+      loop(message, 'off');
+      return;
     }
     const loopCycleDetails = identifyRequest(
       messageContent,
       loopCyclePrefixCommandPatterns,
     );
     if (loopCycleDetails.index !== -1) {
-      return loop(message);
+      loop(message);
+      return;
     }
   }
-
   // Music: Voice Connection
   if (requestDetails.style === MsgBotRequestStyle.Prefix) {
     const joinVCDetails = identifyRequest(
@@ -239,17 +244,18 @@ djBotus.on('message', async (message) => {
       joinPrefixCommandPatterns,
     );
     if (joinVCDetails.index !== -1) {
-      return joinVoiceChannel(message);
+      joinVoiceChannel(message);
+      return;
     }
     const dcVCDetails = identifyRequest(
       messageContent,
       disconnectVCPrefixCommandPatterns,
     );
     if (dcVCDetails.index !== -1) {
-      return disconnectVoiceChannel(message);
+      disconnectVoiceChannel(message);
+      return;
     }
   }
-
   // Music: Playlist Management
   if (requestDetails.style === MsgBotRequestStyle.Prefix) {
     const showPlaylistPrefixDetails = identifyRequest<
@@ -261,9 +267,11 @@ djBotus.on('message', async (message) => {
           showPlaylistPrefixDetails.matches[2],
           10,
         );
-        return list(message, { pageNrRequested });
+        list(message, { pageNrRequested });
+        return;
       }
-      return list(message, {});
+      list(message, {});
+      return;
     }
   }
   if (requestDetails.style === MsgBotRequestStyle.Natural) {
@@ -275,10 +283,10 @@ djBotus.on('message', async (message) => {
         showPlaylistPrefixDetails.index,
         showPlaylistPrefixDetails.matches,
       );
-      return list(message, { pageNrRequested });
+      list(message, { pageNrRequested });
+      return;
     }
   }
-
   // Music: Volume
   if (requestDetails.style === MsgBotRequestStyle.Prefix) {
     const setVolPrefixDetails = identifyRequest(
@@ -287,17 +295,19 @@ djBotus.on('message', async (message) => {
     );
     if (setVolPrefixDetails.index === 0) {
       const matches = setVolPrefixDetails.matches as TrackVolPrefixCommandMatches[0];
-      return setSongVolume(message, {
+      setSongVolume(message, {
         volume: matches[1],
         track: matches[2],
       });
+      return;
     }
     if (setVolPrefixDetails.index === 1) {
       const matches = setVolPrefixDetails.matches as TrackVolPrefixCommandMatches[1];
-      return setSongVolume(message, {
+      setSongVolume(message, {
         volume: matches[2],
         track: matches[1],
       });
+      return;
     }
   }
   if (requestDetails.style === MsgBotRequestStyle.Natural) {
@@ -310,10 +320,11 @@ djBotus.on('message', async (message) => {
         index: setVolNaturalDetails.index,
         matches: setVolNaturalDetails.matches,
       });
-      return setSongVolume(message, {
+      setSongVolume(message, {
         volume: naturalVolDetails.volume.toString(), // TODO: Remove yo-yo string conversion
         track: naturalVolDetails.track.toString(),
       });
+      return;
     }
   }
   if (requestDetails.style === MsgBotRequestStyle.Prefix) {
@@ -323,7 +334,8 @@ djBotus.on('message', async (message) => {
     );
     const trackNr = getTrackNrFromRmSongCommand(rmTrackPrefixDetails.matches);
     if (rmTrackPrefixDetails.index === 0) {
-      return removeSong(message, { trackNr });
+      removeSong(message, { trackNr });
+      return;
     }
   }
   if (requestDetails.style === MsgBotRequestStyle.Prefix) {
@@ -332,70 +344,74 @@ djBotus.on('message', async (message) => {
       playExistingTrackPrefixCommandPatterns,
     );
     if (playExistingTrackPrefixDetails.index !== -1) {
-      return playExistingTrack(message, {
+      playExistingTrack(message, {
         trackNr: parseInt(`${playExistingTrackPrefixDetails.matches[1]}`, 10),
       });
+      return;
     }
   }
-
   if (requestDetails.style === MsgBotRequestStyle.Prefix) {
     const playYouTubeLinkPrefixDetails = identifyRequest(
       messageContent,
       playYouTubeLinkPrefixCommandPatterns,
     );
     if (playYouTubeLinkPrefixDetails.index !== -1) {
-      return playAndOrAddYoutubeToPlaylist(message);
+      playAndOrAddYoutubeToPlaylist(message);
+      return;
     }
   }
-
   if (requestDetails.style === MsgBotRequestStyle.Prefix) {
     const fastForwardTrackPrefixDetails = identifyRequest(
       messageContent,
       fastForwardPrefixCommandPatterns,
     );
     if (fastForwardTrackPrefixDetails.index !== -1) {
-      return fastForward(message);
+      fastForward(message);
+      return;
     }
   }
-
   // Music: Playlist Management
   if (interpretRequest(message, playYoutubeURLRequests)) {
-    return playAndOrAddYoutubeToPlaylist(message);
+    playAndOrAddYoutubeToPlaylist(message);
+    return;
   }
-
   if (interpretRequest(message, skipRequests)) {
-    return skip(message);
+    skip(message);
+    return;
   }
   if (interpretRequest(message, stopSongRequests)) {
-    return stop(message);
+    stop(message);
+    return;
   }
   if (interpretRequest(message, clearRequests)) {
-    return clear(message);
+    clear(message);
+    return;
   }
-
   // Social
   if (interpretRequest(message, hugRequests)) {
-    return respond(message, hugResponses);
+    respond(message, hugResponses);
+    return;
   }
   if (interpretRequest(message, howIsItGoingRequests)) {
-    return respond(message, howsItGoingResponses);
+    respond(message, howsItGoingResponses);
+    return;
   }
   if (interpretRequest(message, howAreYouRequests)) {
-    return respond(message, howAreYouResponses);
+    respond(message, howAreYouResponses);
+    return;
   }
-
   if (interpretRequest(message, greetingRequests)) {
-    return respond(message, greetingResponses);
+    respond(message, greetingResponses);
+    return;
   }
-
   if (interpretRequest(message, meaningOfLifeRequests)) {
-    return respond(message, meaningOfLifeResponses);
+    respond(message, meaningOfLifeResponses);
+    return;
   }
-
   if (interpretRequest(message, gratitudeRequests)) {
-    return respond(message, gratitudeResponses);
+    respond(message, gratitudeResponses);
+    return;
   }
-
   const isMentioned = (() => {
     if (message.mentions.has(userId)) {
       // Respond to mentions of it
@@ -412,7 +428,8 @@ djBotus.on('message', async (message) => {
     return interpretRequest(message, hailRequests);
   })();
   if (isMentioned) {
-    return respond(message, hailResponses);
+    respond(message, hailResponses);
+    return;
   }
 
   if (
