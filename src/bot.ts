@@ -140,10 +140,11 @@ djBotus.on('message', async (message) => {
   }
   // Help
   if (requestDetails.style === MsgBotRequestStyle.Prefix) {
-    const helpPrefixMatchDetails = identifyRequest<HelpPrefixRequestMatchesShape>(
-      messageContent,
-      helpPrefixCommandPatterns,
-    );
+    const helpPrefixMatchDetails =
+      identifyRequest<HelpPrefixRequestMatchesShape>(
+        messageContent,
+        helpPrefixCommandPatterns,
+      );
     if (helpPrefixMatchDetails.matches?.[1] === 'music') {
       sendHelpDoc(message, 'music');
       return;
@@ -288,7 +289,8 @@ djBotus.on('message', async (message) => {
       setSongVolPrefixCommandPatterns,
     );
     if (setVolPrefixDetails.index === 0) {
-      const matches = setVolPrefixDetails.matches as TrackVolPrefixCommandMatches[0];
+      const matches =
+        setVolPrefixDetails.matches as TrackVolPrefixCommandMatches[0];
       setVolume(message, {
         volume: matches[1],
         track: matches[2],
@@ -296,7 +298,8 @@ djBotus.on('message', async (message) => {
       return;
     }
     if (setVolPrefixDetails.index === 1) {
-      const matches = setVolPrefixDetails.matches as TrackVolPrefixCommandMatches[1];
+      const matches =
+        setVolPrefixDetails.matches as TrackVolPrefixCommandMatches[1];
       setVolume(message, {
         volume: matches[2],
         track: matches[1],
