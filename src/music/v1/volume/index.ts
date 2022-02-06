@@ -2,8 +2,8 @@ import { Message } from 'discord.js';
 import { joinVoiceChannel } from '@discordjs/voice';
 import { isNil } from 'lodash';
 import isString from 'lodash/isString';
-import logger from '../../logger';
-import { reactWithEmoji } from '../../social';
+import logger from '../../../logger';
+import { reactWithEmoji } from '../../../social';
 import { maxAllowableVolume } from '../constants';
 import { defaultPlaylistName, getPlaylist, setPlaylist } from '../playlist';
 

@@ -1,5 +1,5 @@
-import { whitespacePattern } from '../../../constants';
-import { BOT_NAME, BOT_PREFIX } from '../../../environment';
+import { whitespacePattern } from '../../../../constants';
+import { BOT_NAME, BOT_PREFIX } from '../../../../environment';
 import {
   absoluteVolumeSetKeywords,
   optionalVolumeSynonyms as volumeSynonyms,

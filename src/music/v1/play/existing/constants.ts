@@ -1,4 +1,4 @@
-import { whitespacePattern } from '../../../constants';
+import { whitespacePattern } from '../../../../constants';
 
 const trackNrPatternStr = '[\\d]+';
 /**

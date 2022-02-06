@@ -3,7 +3,7 @@ import {
   whitespacePattern,
   prefixCommandTerminatorPatternStr,
   naturalRequestTerminatorPatternStr,
-} from '../../constants';
+} from '../../../constants';
 import { youtubeLinkPatternStr } from '../play/youtube/constants';
 
 const pageNumberPattern = '[\\d]+';

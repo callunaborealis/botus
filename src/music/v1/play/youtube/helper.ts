@@ -6,8 +6,8 @@ import isNull from 'lodash/isNull';
 import { v4 as uuidv4 } from 'uuid';
 import { play } from '.';
 
-import logger from '../../../logger';
-import { reactWithEmoji } from '../../../social';
+import logger from '../../../../logger';
+import { reactWithEmoji } from '../../../../social';
 import { songScaffold } from '../../constants';
 import { dryRunTraversePlaylistByStep } from '../../helper';
 import {

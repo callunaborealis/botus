@@ -1,4 +1,4 @@
-import { prefixCommandTerminatorPatternStr } from '../../constants';
+import { prefixCommandTerminatorPatternStr } from '../../../constants';
 
 export const fastForwardPrefixKeywords = ['fast forward', 'fwd', 'ff'];
 const fastForwardPrefixCommands: string[] = [

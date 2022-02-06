@@ -1,6 +1,6 @@
 import { Message, Snowflake } from 'discord.js';
 import { clear } from '.';
-import { reactWithEmoji } from '../social';
+import { reactWithEmoji } from '../../social';
 import { defaultPlaylistName, generateEmptyPlaylist } from './playlist';
 import { PlaylistShape } from './types';
 

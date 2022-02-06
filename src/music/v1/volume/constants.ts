@@ -2,7 +2,7 @@ import {
   askingForPermissionPattern,
   whitespacePattern,
   prefixCommandTerminatorPatternStr,
-} from '../../constants';
+} from '../../../constants';
 import { trackTermsPattern } from '../constants';
 
 const trackNumberPattern = '[\\d]+';

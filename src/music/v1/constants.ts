@@ -1,5 +1,5 @@
-import { prefixCommandTerminatorPatternStr } from '../constants';
-import { BOT_NAME, BOT_PREFIX } from '../environment';
+import { prefixCommandTerminatorPatternStr } from '../../constants';
+import { BOT_NAME, BOT_PREFIX } from '../../environment';
 import { LoopType, SongShape } from './types';
 
 export const loopOrder: LoopType[] = ['playlist', 'song', 'off'];

@@ -1,6 +1,6 @@
 import isArray from 'lodash/isArray';
 import isString from 'lodash/isString';
-import { getNextLoopedIndex } from '../utils';
+import { getNextLoopedIndex } from '../../utils';
 import { songScaffold } from './constants';
 import { PlaylistShape, SongShape } from './types';
 

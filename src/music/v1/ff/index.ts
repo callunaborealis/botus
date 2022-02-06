@@ -2,8 +2,8 @@ import { Message } from 'discord.js';
 import floor from 'lodash/floor';
 import isNil from 'lodash/isNil';
 
-import logger from '../../logger';
-import { reactWithEmoji } from '../../social';
+import logger from '../../../logger';
+import { reactWithEmoji } from '../../../social';
 import { songScaffold } from '../constants';
 import { play } from '../play/youtube';
 import { defaultPlaylistName, getPlaylist } from '../playlist';

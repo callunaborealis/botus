@@ -20,15 +20,15 @@ import {
   loopOffPrefixCommands,
   loopPlaylistPrefixCommands,
   loopTrackPrefixCommands,
-} from '../music/constants';
+} from '../music/v1/constants';
 import {
   playExistingTrackMandTrackPrefixCommands,
   playExistingTrackOptTrackPrefixCommands,
-} from '../music/play/existing/constants';
-import { setSongVolPrefixCommands } from '../music/volume/constants';
-import { showPlaylistPrefixCommands } from '../music/list/constants';
-import { removeTrackPrefixCommands } from '../music/rm/constants';
-import { playYoutubeLinkPrefixCommands } from '../music/play/youtube/constants';
+} from '../music/v1/play/existing/constants';
+import { setSongVolPrefixCommands } from '../music/v1/volume/constants';
+import { showPlaylistPrefixCommands } from '../music/v1/list/constants';
+import { removeTrackPrefixCommands } from '../music/v1/rm/constants';
+import { playYoutubeLinkPrefixCommands } from '../music/v1/play/youtube/constants';
 
 const botPrefix = BOT_PREFIX;
 

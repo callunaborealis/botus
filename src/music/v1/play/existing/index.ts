@@ -2,8 +2,8 @@ import { Message } from 'discord.js';
 import { joinVoiceChannel } from '@discordjs/voice';
 import isFinite from 'lodash/isFinite';
 
-import logger from '../../../logger';
-import { reactWithEmoji } from '../../../social';
+import logger from '../../../../logger';
+import { reactWithEmoji } from '../../../../social';
 import { defaultPlaylistName, getPlaylist, setPlaylist } from '../../playlist';
 import { play } from '../youtube';
 

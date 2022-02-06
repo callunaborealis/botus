@@ -14,8 +14,8 @@ import {
   joinServerVC,
   disconnectVoiceChannel,
   displayDebugValues,
-} from './music';
-import { createServerSession } from './music/session';
+} from './music/v1';
+import { createServerSession } from './music/v1/session';
 import {
   clearRequests,
   skipRequests,
@@ -28,13 +28,13 @@ import {
   loopOffPrefixCommandPatterns,
   joinPrefixCommandPatterns,
   disconnectVCPrefixCommandPatterns,
-} from './music/constants';
-import { list } from './music/list';
-import { getTrackNrFromRmSongCommand, removeSong } from './music/rm';
+} from './music/v1/constants';
+import { list } from './music/v1/list';
+import { getTrackNrFromRmSongCommand, removeSong } from './music/v1/rm';
 import {
   showPlaylistNaturalRequestPatterns,
   showPlaylistPrefixCommandPatterns,
-} from './music/list/constants';
+} from './music/v1/list/constants';
 
 import {
   respond,
@@ -72,24 +72,27 @@ import { DiceRequestStrMatchesShape } from './ttrpg/types';
 import {
   setSongVolNaturalRequestPatterns,
   setSongVolPrefixCommandPatterns,
-} from './music/volume/constants';
-import { TrackVolPrefixCommandMatches } from './music/volume/types';
-import { extractNaturalSetVolumeDetails, setSongVolume } from './music/volume';
+} from './music/v1/volume/constants';
+import { TrackVolPrefixCommandMatches } from './music/v1/volume/types';
+import {
+  extractNaturalSetVolumeDetails,
+  setSongVolume,
+} from './music/v1/volume';
 import {
   ListNaturalRequestMatches,
   ListPrefixCommandMatches,
-} from './music/list/types';
-import { getPageNrFromNaturalRequestMatches } from './music/list/helper';
-import { removeTrackPrefixCommandPatterns } from './music/rm/constants';
-import { playExistingTrack } from './music/play/existing';
-import { playExistingTrackPrefixCommandPatterns } from './music/play/existing/constants';
-import { playAndOrAddYoutubeToPlaylist } from './music/play/youtube/link';
+} from './music/v1/list/types';
+import { getPageNrFromNaturalRequestMatches } from './music/v1/list/helper';
+import { removeTrackPrefixCommandPatterns } from './music/v1/rm/constants';
+import { playExistingTrack } from './music/v1/play/existing';
+import { playExistingTrackPrefixCommandPatterns } from './music/v1/play/existing/constants';
+import { playAndOrAddYoutubeToPlaylist } from './music/v1/play/youtube/link';
 import {
   playYouTubeLinkPrefixCommandPatterns,
   playYoutubeURLRequests,
-} from './music/play/youtube/constants';
-import { fastForwardPrefixCommandPatterns } from './music/ff/constants';
-import { fastForward } from './music/ff';
+} from './music/v1/play/youtube/constants';
+import { fastForwardPrefixCommandPatterns } from './music/v1/ff/constants';
+import { fastForward } from './music/v1/ff';
 
 const djBotus = new Client({
   intents: Object.values(Intents.FLAGS),

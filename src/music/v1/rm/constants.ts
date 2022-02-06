@@ -1,7 +1,7 @@
 import {
   prefixCommandTerminatorPatternStr,
   whitespacePattern,
-} from '../../constants';
+} from '../../../constants';
 import { trackTermsPattern } from '../constants';
 
 export const removeTrackPrefixCommands = ['remove', 'rm', 'r'];

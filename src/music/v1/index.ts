@@ -7,7 +7,7 @@ import {
 
 import isNil from 'lodash/isNil';
 
-import { reactWithEmoji } from '../social';
+import { reactWithEmoji } from '../../social';
 import { songScaffold, loopOrder, loopOrderedMessages } from './constants';
 import {
   createPlaylist,
@@ -17,8 +17,8 @@ import {
   setPlaylist,
 } from './playlist';
 import { LoopType } from './types';
-import { getNextLoopedIndex } from '../utils';
-import logger from '../logger';
+import { getNextLoopedIndex } from '../../utils';
+import logger from '../../logger';
 import { dryRunTraversePlaylistByStep } from './helper';
 
 export const displayDebugValues = (message: Message) => {

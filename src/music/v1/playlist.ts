@@ -1,5 +1,5 @@
 import { Message, StageChannel, VoiceChannel } from 'discord.js';
-import logger from '../logger';
+import logger from '../../logger';
 import { songScaffold } from './constants';
 import { createServerSession, multiServerSession } from './session';
 import { PlaylistShape } from './types';

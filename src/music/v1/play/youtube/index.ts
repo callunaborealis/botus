@@ -2,8 +2,8 @@ import { Message } from 'discord.js';
 import ytdl from 'ytdl-core';
 import isNil from 'lodash/isNil';
 
-import logger from '../../../logger';
-import { reactWithEmoji } from '../../../social';
+import logger from '../../../../logger';
+import { reactWithEmoji } from '../../../../social';
 import { defaultPlaylistName, getPlaylist, setPlaylist } from '../../playlist';
 import { SongShape } from '../../types';
 import { dryRunTraversePlaylistByStep } from '../../helper';

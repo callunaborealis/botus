@@ -3,8 +3,8 @@ import ytpl from 'ytpl';
 import ytdl from 'ytdl-core';
 import isFinite from 'lodash/isFinite';
 
-import logger from '../../../logger';
-import { reactWithEmoji } from '../../../social';
+import logger from '../../../../logger';
+import { reactWithEmoji } from '../../../../social';
 import { maxAllowableVolume } from '../../constants';
 import { getYoutubeLinkAndVolFromRequest } from '../../helper';
 import { addTrackToPlaylist } from './helper';

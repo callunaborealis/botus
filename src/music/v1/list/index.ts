@@ -3,8 +3,8 @@ import { chunk, truncate } from 'lodash';
 import floor from 'lodash/floor';
 import isNil from 'lodash/isNil';
 
-import { BOT_PREFIX, THEME_COLOUR } from '../../constants';
-import { BOT_NAME } from '../../environment';
+import { BOT_PREFIX, THEME_COLOUR } from '../../../constants';
+import { BOT_NAME } from '../../../environment';
 import { maxAllowableVolume } from '../constants';
 import { playYoutubeLinkPrefixCommands } from '../play/youtube/constants';
 import { defaultPlaylistName, getPlaylist } from '../playlist';
