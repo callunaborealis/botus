@@ -437,7 +437,8 @@ djBotus.on('message', async (message) => {
       new RegExp(`^${BOT_NAME.toLowerCase()}(?=\W|$)`, 'gim'),
     )
   ) {
-    return respond(message, defaultResponses);
+    respond(message, defaultResponses);
+    return;
   }
 });
 
