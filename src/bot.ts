@@ -3,45 +3,60 @@ import isString from 'lodash/isString';
 
 import { BOT_NAME, DISCORD_APP_BOT_TOKEN } from './environment';
 import logger from './logger';
-
-import { respondWithDiceResult } from './ttrpg';
-import { rollDicePrefixPatterns } from './ttrpg/constants';
 import {
-  skip,
   clear,
-  loop,
-  stop,
-  joinServerVC,
   disconnectVoiceChannel,
   displayDebugValues,
+  joinServerVC,
+  loop,
+  skip,
+  stop,
 } from './music/v1';
-import { createServerSession } from './music/v1/session';
 import {
   clearRequests,
-  skipRequests,
-  stopSongRequests,
-  resetPlaylistPrefixCommandPatterns,
   debugPrefixCommandPatterns,
-  loopPlaylistPrefixCommandPatterns,
-  loopTrackPrefixCommandPatterns,
+  disconnectVCPrefixCommandPatterns,
+  joinPrefixCommandPatterns,
   loopCyclePrefixCommandPatterns,
   loopOffPrefixCommandPatterns,
-  joinPrefixCommandPatterns,
-  disconnectVCPrefixCommandPatterns,
+  loopPlaylistPrefixCommandPatterns,
+  loopTrackPrefixCommandPatterns,
+  resetPlaylistPrefixCommandPatterns,
+  skipRequests,
+  stopSongRequests,
 } from './music/v1/constants';
+import { fastForward } from './music/v1/ff';
+import { fastForwardPrefixCommandPatterns } from './music/v1/ff/constants';
 import { list } from './music/v1/list';
-import { getTrackNrFromRmSongCommand, removeSong } from './music/v1/rm';
 import {
   showPlaylistNaturalRequestPatterns,
   showPlaylistPrefixCommandPatterns,
 } from './music/v1/list/constants';
-
+import { getPageNrFromNaturalRequestMatches } from './music/v1/list/helper';
+import { playExistingTrack } from './music/v1/play/existing';
+import { playExistingTrackPrefixCommandPatterns } from './music/v1/play/existing/constants';
 import {
-  respond,
-  interpretRequest,
-  sendHelpDoc,
+  playYouTubeLinkPrefixCommandPatterns,
+  playYoutubeURLRequests,
+} from './music/v1/play/youtube/constants';
+import { playAndOrAddYoutubeToPlaylist } from './music/v1/play/youtube/link';
+import { getTrackNrFromRmSongCommand, removeSong } from './music/v1/rm';
+import { removeTrackPrefixCommandPatterns } from './music/v1/rm/constants';
+import { createServerSession } from './music/v1/session';
+import {
+  extractNaturalSetVolumeDetails,
+  setSongVolume,
+} from './music/v1/volume';
+import {
+  setSongVolNaturalRequestPatterns,
+  setSongVolPrefixCommandPatterns,
+} from './music/v1/volume/constants';
+import {
   extractRequestDetailsForBot,
   identifyRequest,
+  interpretRequest,
+  respond,
+  sendHelpDoc,
 } from './social';
 import {
   defaultResponses,
@@ -49,50 +64,34 @@ import {
   gratitudeResponses,
   greetingRequests,
   greetingResponses,
-  howIsItGoingRequests,
-  howAreYouRequests,
   hailRequests,
   hailResponses,
-  howsItGoingResponses,
+  helpHelpPrefixCommandPatterns,
+  helpNaturalRequestPatterns,
+  helpPrefixCommandPatterns,
+  howAreYouRequests,
   howAreYouResponses,
+  howIsItGoingRequests,
+  howsItGoingResponses,
   hugRequests,
   hugResponses,
   meaningOfLifeRequests,
   meaningOfLifeResponses,
-  helpPrefixCommandPatterns,
-  helpNaturalRequestPatterns,
-  helpHelpPrefixCommandPatterns,
 } from './social/constants';
-import {
-  HelpNaturalRequestMatchesShape,
-  HelpPrefixRequestMatchesShape,
-  MsgBotRequestStyle,
-} from './social/types';
-import { DiceRequestStrMatchesShape } from './ttrpg/types';
-import {
-  setSongVolNaturalRequestPatterns,
-  setSongVolPrefixCommandPatterns,
-} from './music/v1/volume/constants';
-import { TrackVolPrefixCommandMatches } from './music/v1/volume/types';
-import {
-  extractNaturalSetVolumeDetails,
-  setSongVolume,
-} from './music/v1/volume';
-import {
+import { MsgBotRequestStyle } from './social/types';
+import { respondWithDiceResult } from './ttrpg';
+import { rollDicePrefixPatterns } from './ttrpg/constants';
+
+import type {
   ListNaturalRequestMatches,
   ListPrefixCommandMatches,
 } from './music/v1/list/types';
-import { getPageNrFromNaturalRequestMatches } from './music/v1/list/helper';
-import { removeTrackPrefixCommandPatterns } from './music/v1/rm/constants';
-import { playExistingTrack } from './music/v1/play/existing';
-import { playExistingTrackPrefixCommandPatterns } from './music/v1/play/existing/constants';
-import { playAndOrAddYoutubeToPlaylist } from './music/v1/play/youtube/link';
-import {
-  playYouTubeLinkPrefixCommandPatterns,
-  playYoutubeURLRequests,
-} from './music/v1/play/youtube/constants';
-import { fastForwardPrefixCommandPatterns } from './music/v1/ff/constants';
-import { fastForward } from './music/v1/ff';
+import type { TrackVolPrefixCommandMatches } from './music/v1/volume/types';
+import type {
+  HelpNaturalRequestMatchesShape,
+  HelpPrefixRequestMatchesShape,
+} from './social/types';
+import type { DiceRequestStrMatchesShape } from './ttrpg/types';
 
 const djBotus = new Client({
   intents: Object.values(Intents.FLAGS),
