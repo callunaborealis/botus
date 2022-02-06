@@ -1,5 +1,7 @@
 import { Message } from 'discord.js';
-import { isNil } from 'lodash';
+import { joinVoiceChannel } from '@discordjs/voice';
+
+import isNil from 'lodash/isNil';
 import isNull from 'lodash/isNull';
 import { v4 as uuidv4 } from 'uuid';
 import { play } from '.';
@@ -50,7 +52,11 @@ export const addTrackToPlaylist = async (options: {
       if (isNull(newPlaylist)) {
         throw new Error('No playlist found.');
       }
-      const connection = await voiceChannel.join();
+      const connection = joinVoiceChannel({
+        channelId: voiceChannel.id,
+        guildId: voiceChannel.guild.id,
+        adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+      });
       setPlaylist(message, defaultPlaylistName, {
         ...newPlaylist,
         connection,
@@ -76,7 +82,11 @@ export const addTrackToPlaylist = async (options: {
   ) {
     // Need to check if playlist.connection = null
     if (isNil(playlist.connection)) {
-      const connection = await voiceChannel.join();
+      const connection = joinVoiceChannel({
+        channelId: voiceChannel.id,
+        guildId: voiceChannel.guild.id,
+        adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+      });
       playlist.connection = connection;
       setPlaylist(message, defaultPlaylistName, playlist);
     }

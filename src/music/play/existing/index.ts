@@ -1,4 +1,7 @@
 import { Message } from 'discord.js';
+import { joinVoiceChannel } from '@discordjs/voice';
+import isFinite from 'lodash/isFinite';
+
 import logger from '../../../logger';
 import { reactWithEmoji } from '../../../social';
 import { defaultPlaylistName, getPlaylist, setPlaylist } from '../../playlist';
@@ -79,7 +82,11 @@ export const playExistingTrack = async (
   const existingTrack = playlist.songs[existingTrackIndex];
   try {
     if (voiceChannel.joinable) {
-      const connection = await voiceChannel.join();
+      const connection = joinVoiceChannel({
+        channelId: voiceChannel.id,
+        guildId: voiceChannel.guild.id,
+        adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+      });
       playlist.connection = connection;
       setPlaylist(message, defaultPlaylistName, playlist);
     } else {

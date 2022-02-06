@@ -11,7 +11,7 @@ import {
   clear,
   loop,
   stop,
-  joinVoiceChannel,
+  joinServerVC,
   disconnectVoiceChannel,
   displayDebugValues,
 } from './music';
@@ -244,7 +244,7 @@ djBotus.on('message', async (message) => {
       joinPrefixCommandPatterns,
     );
     if (joinVCDetails.index !== -1) {
-      joinVoiceChannel(message);
+      joinServerVC(message);
       return;
     }
     const dcVCDetails = identifyRequest(

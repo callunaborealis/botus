@@ -1,4 +1,5 @@
 import { Message } from 'discord.js';
+import { joinVoiceChannel } from '@discordjs/voice';
 import { isNil } from 'lodash';
 import isString from 'lodash/isString';
 import logger from '../../logger';
@@ -246,7 +247,11 @@ export const setSongVolume = async (
       if (!voiceChannel.joinable) {
         throw new Error('Voice channel not joinable.');
       }
-      const connection = await voiceChannel.join();
+      const connection = joinVoiceChannel({
+        channelId: voiceChannel.id,
+        guildId: voiceChannel.guild.id,
+        adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+      });
       playlist.connection = connection;
       if (isNil(playlist.connection)) {
         throw new Error('Playlist connection invalid after joining.');

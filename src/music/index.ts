@@ -1,4 +1,9 @@
 import { Message } from 'discord.js';
+import {
+  getVoiceConnection,
+  joinVoiceChannel,
+  VoiceConnectionStatus,
+} from '@discordjs/voice';
 
 import isNil from 'lodash/isNil';
 
@@ -22,11 +27,6 @@ export const displayDebugValues = (message: Message) => {
     ? {
         textChannel: playlist.textChannel ? '[exists]' : null,
         voiceChannel: playlist.voiceChannel ? '[exists]' : null,
-        connection: playlist.connection
-          ? {
-              dispatcher: playlist.connection.dispatcher ? '[exists]' : null,
-            }
-          : null,
         songs: playlist.songs,
         volume: playlist.volume,
         currentSong: playlist.currentSong,
@@ -55,49 +55,50 @@ export const displayDebugValues = (message: Message) => {
   return;
 };
 
-export const joinVoiceChannel = async (message: Message) => {
-  reactWithEmoji.received(message);
-  let playlist = getPlaylist(message, defaultPlaylistName);
-  if (!playlist) {
-    playlist = await createPlaylist(
-      message,
-      defaultPlaylistName,
-      'join a voice channel',
-    );
-  }
-  if (!playlist) {
-    reactWithEmoji.failed(message);
-    logger.log({
-      level: 'error',
-      message: `No playlist created even after attempting create one. - ${defaultPlaylistName}`,
-    });
-    return;
-  }
+export const joinServerVC = (message: Message) => {
   const voiceChannel = message.member?.voice.channel;
-  try {
-    if (!voiceChannel) {
-      throw new Error(`No one is in a voice channel.`);
-    }
-    if (!voiceChannel.joinable) {
-      throw new Error(`I can't seem to join the voice channel.`);
-    }
-    const connection = await voiceChannel.join();
-    playlist.connection = connection;
-    if (isNil(playlist.connection)) {
-      throw new Error("There isn't a playlist connection.");
-    }
-    setPlaylist(message, defaultPlaylistName, playlist);
-    reactWithEmoji.succeeded(message);
-  } catch (error) {
+  if (!voiceChannel) {
+    reactWithEmoji.failed(message);
     logger.log({
       level: 'error',
-      message: `Error occurred while joining the voice channel: ${error}`,
+      message: `Voice channel not found`,
     });
-    playlist.isWriteLocked = false;
-    setPlaylist(message, defaultPlaylistName, playlist);
-    reactWithEmoji.failed(message);
+    message.channel.send(
+      'You need to join a voice channel so I can play tracks on the VC you are in.',
+    );
     return;
   }
+  if (!voiceChannel.joinable) {
+    reactWithEmoji.failed(message);
+    logger.log({
+      level: 'error',
+      message: `Unable to join voice channel`,
+    });
+    message.channel.send("I can't join this voice channel for some reason.");
+    return;
+  }
+  const connection = joinVoiceChannel({
+    channelId: voiceChannel.id,
+    guildId: voiceChannel.guild.id,
+    adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+  });
+  connection.on(VoiceConnectionStatus.Connecting, () => {
+    reactWithEmoji.received(message);
+  });
+  connection.on(VoiceConnectionStatus.Ready, () => {
+    const playlist = getPlaylist(message, defaultPlaylistName);
+    if (playlist) {
+      setPlaylist(message, defaultPlaylistName, playlist);
+      reactWithEmoji.succeeded(message);
+    } else {
+      reactWithEmoji.failed(message);
+      logger.log({
+        level: 'error',
+        message: `No playlist created even after attempting create one. - ${defaultPlaylistName}`,
+      });
+      return;
+    }
+  });
 };
 
 export const disconnectVoiceChannel = async (message: Message) => {
@@ -115,52 +116,38 @@ export const disconnectVoiceChannel = async (message: Message) => {
 export const skip = async (message: Message) => {
   reactWithEmoji.received(message);
   const playlist = getPlaylist(message, defaultPlaylistName);
-  if (!message?.member?.voice.channel) {
-    reactWithEmoji.failed(message);
-    return message.channel.send(
-      'You have to be in a voice channel to stop the music!',
-    );
-  }
   if (!playlist) {
     reactWithEmoji.failed(message);
     return message.channel.send(
       "I can't skip if there isn't a playlist to skip songs with.",
     );
   }
-
-  if (!playlist.connection?.dispatcher) {
-    const voiceChannel = message.member?.voice.channel;
-    try {
-      if (!voiceChannel) {
-        throw new Error('No voice channel.');
-      }
-      if (!voiceChannel.joinable) {
-        throw new Error('Voice channel not joinable.');
-      }
-      const connection = await voiceChannel.join();
-      playlist.connection = connection;
-      if (isNil(playlist.connection)) {
-        throw new Error('Playlist connection invalid after joining.');
-      }
-      if (!playlist.connection.dispatcher) {
-        throw new Error('No dispatcher after joining.');
-      }
-      setPlaylist(message, defaultPlaylistName, playlist);
-    } catch (error) {
-      logger.log({
-        level: 'error',
-        message: `Error occurred while joining the voice channel to skip the current song: ${error}`,
-      });
-      playlist.isWriteLocked = false;
-      setPlaylist(message, defaultPlaylistName, playlist);
-      reactWithEmoji.failed(message);
-      return message.channel.send(
-        `I can't seem to join the voice channel to skip the current song.`,
-      );
-    }
+  setPlaylist(message, defaultPlaylistName, playlist);
+  if (!playlist.voiceChannel) {
+    reactWithEmoji.failed(message);
+    logger.log({
+      level: 'error',
+      message: `Playlist does not have a voice channel.`,
+    });
+    message.channel.send(
+      "There isn't a voice channel for me to stop the playing track.",
+    );
+    return;
   }
+  const connection = getVoiceConnection(playlist.voiceChannel.guild.id);
+  if (!connection) {
+    reactWithEmoji.failed(message);
+    logger.log({
+      level: 'error',
+      message: `Playlist does not have a voice connection.`,
+    });
+    message.channel.send(
+      "There isn't a voice connection for me to stop the playing track.",
+    );
+    return;
+  }
+  connection.destroy();
   reactWithEmoji.succeeded(message);
-  playlist.connection.dispatcher.end();
 };
 
 export const loop = (message: Message, loopType?: LoopType) => {
@@ -207,12 +194,6 @@ export const loop = (message: Message, loopType?: LoopType) => {
 
 export const stop = (message: Message) => {
   const playlist = getPlaylist(message, defaultPlaylistName);
-  if (!message?.member?.voice.channel) {
-    reactWithEmoji.failed(message);
-    return message.channel.send(
-      `I can't stop the **${defaultPlaylistName}** playlist if there isn't a voice channel.`,
-    );
-  }
   if (!playlist) {
     reactWithEmoji.failed(message);
     logger.log({
@@ -233,37 +214,31 @@ export const stop = (message: Message) => {
   }
   playlist.stopOnFinish = true;
   setPlaylist(message, defaultPlaylistName, playlist);
-  if (!playlist?.connection) {
+  if (!playlist.voiceChannel) {
     reactWithEmoji.failed(message);
     logger.log({
       level: 'error',
-      message: `Playlist has no connection to stop the current song.`,
+      message: `Playlist does not have a voice channel.`,
     });
+    message.channel.send(
+      "There isn't a voice channel for me to stop the playing track.",
+    );
     return;
   }
-  if (!playlist?.connection.dispatcher) {
-    if (!playlist.disconnectOnFinish) {
-      reactWithEmoji.failed(message);
-      logger.log({
-        level: 'error',
-        message: `Playlist has no connection dispatcher to stop the current song.`,
-      });
-      return;
-    }
-    if (!playlist.voiceChannel) {
-      reactWithEmoji.failed(message);
-      logger.log({
-        level: 'error',
-        message: `Unable to leave voice channel as no voice channel and no connection dispatcher even when requested to disconnect on finish.`,
-      });
-      return;
-    }
-    reactWithEmoji.succeeded(message);
-    playlist.voiceChannel?.leave();
+  const connection = getVoiceConnection(playlist.voiceChannel.guild.id);
+  if (!connection) {
+    reactWithEmoji.failed(message);
+    logger.log({
+      level: 'error',
+      message: `Playlist does not have a voice connection.`,
+    });
+    message.channel.send(
+      "There isn't a voice connection for me to stop the playing track.",
+    );
     return;
   }
+  connection.destroy();
   reactWithEmoji.succeeded(message);
-  playlist.connection.dispatcher.end();
 };
 
 export const clear = async (message: Message) => {
@@ -310,7 +285,11 @@ export const clear = async (message: Message) => {
       if (!voiceChannel.joinable) {
         throw new Error('Voice channel not joinable.');
       }
-      const connection = await voiceChannel.join();
+      const connection = joinVoiceChannel({
+        channelId: voiceChannel.id,
+        guildId: voiceChannel.guild.id,
+        adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+      });
       playlist.connection = connection;
       if (isNil(playlist.connection)) {
         throw new Error('Playlist connection invalid after joining.');

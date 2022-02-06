@@ -1,4 +1,4 @@
-import { Message, TextChannel, VoiceChannel } from 'discord.js';
+import { Message, StageChannel, VoiceChannel } from 'discord.js';
 import logger from '../logger';
 import { songScaffold } from './constants';
 import { createServerSession, multiServerSession } from './session';
@@ -8,13 +8,12 @@ export const defaultPlaylistName = 'default';
 
 export const generateEmptyPlaylist = (params: {
   textChannel: Message['channel'];
-  voiceChannel: VoiceChannel | null | undefined;
+  voiceChannel: VoiceChannel | StageChannel | null | undefined;
 }): PlaylistShape => {
   const { textChannel, voiceChannel } = params;
   return {
     textChannel,
     voiceChannel: voiceChannel ?? null,
-    connection: null,
     songs: [],
     volume: 0,
     currentSong: songScaffold,
