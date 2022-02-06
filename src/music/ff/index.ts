@@ -1,9 +1,11 @@
 import { Message } from 'discord.js';
+import floor from 'lodash/floor';
 import isNil from 'lodash/isNil';
+
 import logger from '../../logger';
 import { reactWithEmoji } from '../../social';
-
 import { songScaffold } from '../constants';
+import { play } from '../play/youtube';
 import { defaultPlaylistName, getPlaylist } from '../playlist';
 
 export const fastForward = (message: Message) => {
@@ -28,4 +30,14 @@ export const fastForward = (message: Message) => {
     });
     return;
   }
+  const streamTime = playlist.connection?.dispatcher?.streamTime ?? 0;
+  const streamTotalSecs = floor(streamTime / 1000);
+  const duration = floor(playlist.currentSong.duration);
+  const ffDuration = (() => {
+    if (streamTotalSecs + 10 < duration) {
+      return streamTotalSecs + 5;
+    }
+    return 0;
+  })();
+  play(message, { ff: ffDuration, track: playlist.currentSong });
 };

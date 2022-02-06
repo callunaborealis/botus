@@ -61,10 +61,11 @@ export const onConnectionFinish = (message: Message) => {
 export const play = (
   message: Message,
   options: {
+    ff?: number;
     track: SongShape;
   },
 ) => {
-  const { track } = options;
+  const { ff, track } = options;
   if (!message.guild?.id) {
     reactWithEmoji.failed(message);
     logger.log({
@@ -108,6 +109,15 @@ export const play = (
     setPlaylist(message, defaultPlaylistName, playlist);
     return;
   }
+
+  const trackUrl = (() => {
+    if (ff) {
+      const url = new URL(track.url);
+      url.searchParams.set('t', `${ff}s`);
+      return url.toString();
+    }
+    return track.url;
+  })();
 
   const dispatcher = playlist.connection
     .play(ytdl(track.url, { filter: 'audioonly', highWaterMark: 1 << 25 }))
