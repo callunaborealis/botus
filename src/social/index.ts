@@ -351,7 +351,7 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
           ].join(''),
         },
       );
-    return message.channel.send(musicHelpEmbed);
+    return message.channel.send({ embeds: [musicHelpEmbed] });
   }
   const aboutEmbed = new MessageEmbed()
     .setColor(THEME_COLOUR)
@@ -393,7 +393,7 @@ export const sendHelpDoc = (message: Message, helpType: 'music' | 'about') => {
       },
     );
 
-  message.channel.send(aboutEmbed);
+  message.channel.send({ embeds: [aboutEmbed] });
   return;
 };
 

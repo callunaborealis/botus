@@ -242,7 +242,7 @@ export const list = async (
       .setDescription(
         `To begin playing tracks, enter a voice channel then add a YouTube playlist or YouTube video link: \`${BOT_PREFIX}${playYoutubeLinkPrefixCommands[0]} {YouTube Link / Playlist}\`. ${BOT_NAME} will then join you in VC and play the audio of your newly added track of your voice channel.`,
       );
-    return message.channel.send(playlistPageEmbed);
+    return message.channel.send({ embeds: [playlistPageEmbed] });
   }
 
   const streamTime = playlist.connection?.dispatcher?.streamTime ?? 0;
@@ -277,7 +277,7 @@ export const list = async (
         .setTitle(page.title)
         .setDescription(page.description ?? '')
         .addFields(page.fields);
-      await message.channel.send(playlistPageEmbed);
+      await message.channel.send({ embeds: [playlistPageEmbed] });
     }
     return;
   }
@@ -295,6 +295,6 @@ export const list = async (
       .setTitle(page.title)
       .setDescription(page.description ?? '')
       .addFields(page.fields);
-    return message.channel.send(playlistPageEmbed);
+    return message.channel.send({ embeds: [playlistPageEmbed] });
   }
 };

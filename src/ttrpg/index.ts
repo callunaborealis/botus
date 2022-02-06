@@ -211,8 +211,8 @@ export const respondWithDiceResult = (message: Message, requestStr: string) => {
     )
     .setTitle(`Rolling ${requestStr}`)
     .addFields(
-      { name: 'Total', value: total },
+      { name: 'Total', value: `${total}` },
       { name: 'Values', value: values.join('') },
     );
-  return message.channel.send(embed);
+  return message.channel.send({ embeds: [embed] });
 };
