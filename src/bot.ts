@@ -4,18 +4,8 @@ import isString from 'lodash/isString';
 import { BOT_NAME, DISCORD_APP_BOT_TOKEN } from './environment';
 import logger from './logger';
 import {
-  clear,
-  disconnectVoiceChannel,
-  displayDebugValues,
-  joinServerVC,
-  loop,
-  skip,
-  stop,
-} from './music/v1';
-import {
   clearRequests,
   debugPrefixCommandPatterns,
-  disconnectVCPrefixCommandPatterns,
   joinPrefixCommandPatterns,
   loopCyclePrefixCommandPatterns,
   loopOffPrefixCommandPatterns,
@@ -25,32 +15,35 @@ import {
   skipRequests,
   stopSongRequests,
 } from './music/v1/constants';
-import { fastForward } from './music/v1/ff';
 import { fastForwardPrefixCommandPatterns } from './music/v1/ff/constants';
-import { list } from './music/v1/list';
 import {
   showPlaylistNaturalRequestPatterns,
   showPlaylistPrefixCommandPatterns,
 } from './music/v1/list/constants';
 import { getPageNrFromNaturalRequestMatches } from './music/v1/list/helper';
-import { playExistingTrack } from './music/v1/play/existing';
 import { playExistingTrackPrefixCommandPatterns } from './music/v1/play/existing/constants';
 import {
   playYouTubeLinkPrefixCommandPatterns,
   playYoutubeURLRequests,
 } from './music/v1/play/youtube/constants';
-import { playAndOrAddYoutubeToPlaylist } from './music/v1/play/youtube/link';
-import { getTrackNrFromRmSongCommand, removeSong } from './music/v1/rm';
 import { removeTrackPrefixCommandPatterns } from './music/v1/rm/constants';
-import { createServerSession } from './music/v1/session';
-import {
-  extractNaturalSetVolumeDetails,
-  setSongVolume,
-} from './music/v1/volume';
+import { extractNaturalSetVolumeDetails } from './music/v1/volume';
 import {
   setSongVolNaturalRequestPatterns,
   setSongVolPrefixCommandPatterns,
 } from './music/v1/volume/constants';
+import { clear } from './music/v2/clear';
+import { fastForward } from './music/v2/ff';
+import { list } from './music/v2/list';
+import { loop } from './music/v2/loop';
+import { playExistingTrack } from './music/v2/play/existing';
+import { addYouTubeLinkOrPlaylist } from './music/v2/play/youtube';
+import { getTrackNrFromRmSongCommand, remove } from './music/v2/rm';
+import { skip } from './music/v2/skip';
+import { stop } from './music/v2/stop';
+import { connect, disconnect } from './music/v2/vc';
+import { disconnectVCPrefixCommandPatterns } from './music/v2/vc/constants';
+import { setVolume } from './music/v2/volume';
 import {
   extractRequestDetailsForBot,
   identifyRequest,
@@ -92,7 +85,6 @@ import type {
   HelpPrefixRequestMatchesShape,
 } from './social/types';
 import type { DiceRequestStrMatchesShape } from './ttrpg/types';
-
 const djBotus = new Client({
   intents: Object.values(Intents.FLAGS),
 });
@@ -192,7 +184,7 @@ djBotus.on('message', async (message) => {
       resetPlaylistPrefixCommandPatterns,
     );
     if (hardResetDetails.index !== -1) {
-      createServerSession(message, true);
+      // createServerSession(message, true);
       return;
     }
     const debugDetails = identifyRequest(
@@ -200,7 +192,7 @@ djBotus.on('message', async (message) => {
       debugPrefixCommandPatterns,
     );
     if (debugDetails.index !== -1) {
-      displayDebugValues(message);
+      // displayDebugValues(message);
       return;
     }
   }
@@ -211,7 +203,7 @@ djBotus.on('message', async (message) => {
       loopTrackPrefixCommandPatterns,
     );
     if (loopTrackDetails.index !== -1) {
-      loop(message, 'song');
+      loop(message, { type: 'track' });
       return;
     }
     const loopPlaylistDetails = identifyRequest(
@@ -219,7 +211,7 @@ djBotus.on('message', async (message) => {
       loopPlaylistPrefixCommandPatterns,
     );
     if (loopPlaylistDetails.index !== -1) {
-      loop(message, 'playlist');
+      loop(message, { type: 'playlist' });
       return;
     }
     const loopOffDetails = identifyRequest(
@@ -227,7 +219,7 @@ djBotus.on('message', async (message) => {
       loopOffPrefixCommandPatterns,
     );
     if (loopOffDetails.index !== -1) {
-      loop(message, 'off');
+      loop(message, { type: 'off' });
       return;
     }
     const loopCycleDetails = identifyRequest(
@@ -235,7 +227,7 @@ djBotus.on('message', async (message) => {
       loopCyclePrefixCommandPatterns,
     );
     if (loopCycleDetails.index !== -1) {
-      loop(message);
+      loop(message, { type: 'cycle' });
       return;
     }
   }
@@ -246,7 +238,7 @@ djBotus.on('message', async (message) => {
       joinPrefixCommandPatterns,
     );
     if (joinVCDetails.index !== -1) {
-      joinServerVC(message);
+      connect(message);
       return;
     }
     const dcVCDetails = identifyRequest(
@@ -254,7 +246,7 @@ djBotus.on('message', async (message) => {
       disconnectVCPrefixCommandPatterns,
     );
     if (dcVCDetails.index !== -1) {
-      disconnectVoiceChannel(message);
+      disconnect(message);
       return;
     }
   }
@@ -297,7 +289,7 @@ djBotus.on('message', async (message) => {
     );
     if (setVolPrefixDetails.index === 0) {
       const matches = setVolPrefixDetails.matches as TrackVolPrefixCommandMatches[0];
-      setSongVolume(message, {
+      setVolume(message, {
         volume: matches[1],
         track: matches[2],
       });
@@ -305,7 +297,7 @@ djBotus.on('message', async (message) => {
     }
     if (setVolPrefixDetails.index === 1) {
       const matches = setVolPrefixDetails.matches as TrackVolPrefixCommandMatches[1];
-      setSongVolume(message, {
+      setVolume(message, {
         volume: matches[2],
         track: matches[1],
       });
@@ -322,7 +314,7 @@ djBotus.on('message', async (message) => {
         index: setVolNaturalDetails.index,
         matches: setVolNaturalDetails.matches,
       });
-      setSongVolume(message, {
+      setVolume(message, {
         volume: naturalVolDetails.volume.toString(), // TODO: Remove yo-yo string conversion
         track: naturalVolDetails.track.toString(),
       });
@@ -336,7 +328,7 @@ djBotus.on('message', async (message) => {
     );
     const trackNr = getTrackNrFromRmSongCommand(rmTrackPrefixDetails.matches);
     if (rmTrackPrefixDetails.index === 0) {
-      removeSong(message, { trackNr });
+      remove(message, { trackNr });
       return;
     }
   }
@@ -358,7 +350,7 @@ djBotus.on('message', async (message) => {
       playYouTubeLinkPrefixCommandPatterns,
     );
     if (playYouTubeLinkPrefixDetails.index !== -1) {
-      playAndOrAddYoutubeToPlaylist(message);
+      addYouTubeLinkOrPlaylist(message);
       return;
     }
   }
@@ -374,7 +366,7 @@ djBotus.on('message', async (message) => {
   }
   // Music: Playlist Management
   if (interpretRequest(message, playYoutubeURLRequests)) {
-    playAndOrAddYoutubeToPlaylist(message);
+    addYouTubeLinkOrPlaylist(message);
     return;
   }
   if (interpretRequest(message, skipRequests)) {
